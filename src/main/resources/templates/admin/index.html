@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link href="assets/images/favicon/favicon.png" rel="icon">
+  <title>LisaBB Admin</title>
+  <!-- plugins:css -->
+    <link rel="stylesheet" th:href="@{/assets/admin/vendors/feather/feather.css}">
+  <link rel="stylesheet" th:href="@{/assets/admin/vendors/ti-icons/css/themify-icons.css}">
+  <link rel="stylesheet" th:href="@{/assets/admin/vendors/css/vendor.bundle.base.css}">
+  <!-- endinject -->
+  <!-- Plugin css for this page -->
+  <link rel="stylesheet" th:href="@{/assets/admin/vendors/datatables.net-bs4/dataTables.bootstrap4.css}">
+  <link rel="stylesheet" th:href="@{/assets/admin/vendors/ti-icons/css/themify-icons.css}">
+  <link rel="stylesheet" type="text/css" th:href="@{/assets/admin/js/select.dataTables.min.css}">
+  <!-- End plugin css for this page -->
+  <!-- inject:css -->
+  <link rel="stylesheet" th:href="@{/assets/admin/css/vertical-layout-light/style.css}">
+  <!-- endinject -->
+  <link rel="shortcut icon" th:href="@{/assets/images/logo/logo-xl.png}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" th:href="@{/assets/admin/css/toastStyle.css}" />
+</head>
+<body>
+  <div class="container-scroller">
+  <div id="toast" class="hidden">
+      <div id="toast-list" class="toast-list"></div>
+    </div>
+    <!-- partial:partials/_navbar.html -->
+    <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+      <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+        <a class="navbar-brand brand-logo mr-5" href="/admin/dashboard"><img th:src="@{/assets/images/logo/logo-dark.png}" class="mr-2" alt="logo"/></a>
+        <a class="navbar-brand brand-logo-mini" href="/admin/dashboard"><img th:src="@{/assets/images/logo/logo-dark.png}" alt="logo"/></a>
+      </div>
+      <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
+        <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+          <span class="icon-menu"></span>
+        </button>
+        <ul class="navbar-nav navbar-nav-right">
+          <li class="nav-item dropdown">
+            <a class="nav-link count-indicator dropdown-toggle" id="notificationDropdown" href="#" data-toggle="dropdown">
+              <i class="icon-bell mx-0"></i>
+              <span class="count"></span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list" aria-labelledby="notificationDropdown">
+              <p class="mb-0 font-weight-normal float-left dropdown-header">Notifications</p>
+              <a class="dropdown-item preview-item">
+                <div class="preview-thumbnail">
+                  <div class="preview-icon bg-success">
+                    <i class="ti-info-alt mx-0"></i>
+                  </div>
+                </div>
+                <div class="preview-item-content">
+                  <h6 class="preview-subject font-weight-normal">Application Error</h6>
+                  <p class="font-weight-light small-text mb-0 text-muted">
+                    Just now
+                  </p>
+                </div>
+              </a>
+              <a class="dropdown-item preview-item">
+                <div class="preview-thumbnail">
+                  <div class="preview-icon bg-warning">
+                    <i class="ti-settings mx-0"></i>
+                  </div>
+                </div>
+                <div class="preview-item-content">
+                  <h6 class="preview-subject font-weight-normal">Settings</h6>
+                  <p class="font-weight-light small-text mb-0 text-muted">
+                    Private message
+                  </p>
+                </div>
+              </a>
+              <a class="dropdown-item preview-item">
+                <div class="preview-thumbnail">
+                  <div class="preview-icon bg-info">
+                    <i class="ti-user mx-0"></i>
+                  </div>
+                </div>
+                <div class="preview-item-content">
+                  <h6 class="preview-subject font-weight-normal">New user registration</h6>
+                  <p class="font-weight-light small-text mb-0 text-muted">
+                    2 days ago
+                  </p>
+                </div>
+              </a>
+            </div>
+          </li>
+          <li class="nav-item nav-profile dropdown">
+            <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" id="profileDropdown">
+              <img th:src="@{/assets/admin/images/faces/face28.jpg}" alt="profile"/>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
+              <a class="dropdown-item">
+                <i class="ti-settings text-primary"></i>
+                Settings
+              </a>
+              <a class="dropdown-item">
+                <i class="ti-power-off text-primary"></i>
+                Logout
+              </a>
+            </div>
+          </li>
+        </ul>
+        <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas">
+          <span class="icon-menu"></span>
+        </button>
+      </div>
+    </nav>
+    
+    
+    <!-- partial -->
+    <div class="container-fluid page-body-wrapper">
+      <!-- partial:../../partials/_settings-panel.html -->
+      <!-- partial -->
+      <!-- partial:../../partials/_sidebar.html -->
+      <nav class="sidebar sidebar-offcanvas" id="sidebar">
+        <ul class="nav">
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/dashboard">
+              <i class="icon-grid menu-icon"></i>
+              <span class="menu-title">Tổng quan</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/orders">
+              <i class="icon-grid menu-icon"></i>
+              <span class="menu-title">Quản lý đơn đặt hàng</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/foods">
+              <i class="icon-grid menu-icon"></i>
+              <span class="menu-title">Quản lý món ăn</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/cates">
+              <i class="icon-grid menu-icon"></i>
+              <span class="menu-title">Quản lý danh mục</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/coupons">
+              <i class="icon-grid menu-icon"></i>
+              <span class="menu-title">Quản lý mã giảm</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    
+      <!-- partial -->
+      <div class="main-panel">
+        <div class="content-wrapper">
+          <div class="row">
+            <div class="col-md-12 grid-margin">
+              <div class="row">
+                <div class="col-12 col-xl-8 mb-4 mb-xl-0">
+                </div>
+                <div class="col-12 col-xl-4">
+                 <div class="justify-content-end d-flex">
+                  <div class="dropdown flex-md-grow-1 flex-xl-grow-0">
+                    <button class="btn btn-sm btn-light bg-white dropdown-toggle" type="button" id="dropdownMenuDate2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                     <i class="mdi mdi-calendar"></i> <span id="currentDate"></span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuDate2">
+                      <a class="dropdown-item" onclick="changeDate(1)" th:href="@{/admin/dashboard/today}">Theo ngày </a>
+                      <a class="dropdown-item" onclick="changeDate(2)" th:href="@{/admin/dashboard/lastweek}">Theo tuần </a>
+                      <a class="dropdown-item" onclick="changeDate(3)" th:href="@{/admin/dashboard/lastmonth}">Theo tháng </a>
+                    </div>
+                  </div>
+                 </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            
+            <div class="col-md-12 grid-margin transparent">
+              <div class="row">
+                <div class="col-md-6 mb-4 stretch-card transparent">
+                  <div class="card card-tale">
+                    <div class="card-body">
+                      <p class="mb-4">Doanh thu   </p>
+                      <p class="fs-30 mb-2" th:text="${#numbers.formatDecimal(todaySales, 1, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'"></p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 mb-4 stretch-card transparent">
+                  <div class="card card-dark-blue">
+                    <div class="card-body">
+                      <p class="mb-4">Tổng đơn hàng  </p>
+                      <p class="fs-30 mb-2" th:text="${todayOrders}"></p>
+                      
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6 mb-4 mb-lg-0 stretch-card transparent">
+                  <div class="card card-light-blue">
+                    <div class="card-body">
+                      <p class="mb-4">Tổng đơn hàng thành công </p>
+                      <p class="fs-30 mb-2" th:text="${ordersCompleted}"></p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 stretch-card transparent">
+                  <div class="card card-light-danger">
+                    <div class="card-body">
+                      <p class="mb-4">Tổng đơn hàng huỷ</p>
+                      <p class="fs-30 mb-2" th:text="${ordersCanceled}"></p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <p class="card-title">Order Details</p>
+                  <div class="d-flex flex-wrap mb-5">
+                    <div class="mr-5 mt-3">
+                      <p class="text-muted">Đơn hàng giá trị lớn nhất </p>
+                      <h3 class="text-primary fs-30 font-weight-medium" th:text="${#numbers.formatDecimal(highest, 1, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'"></h3>
+                    </div>
+                    <div class="mr-5 mt-3">
+                      <p class="text-muted">Đơn hàng giá trị thấp nhất </p>
+                      <h3 class="text-primary fs-30 font-weight-medium" th:text="${#numbers.formatDecimal(lowest, 1, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'"></h3>
+                    </div>
+                  </div>
+                  <canvas id="order-chart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-12 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <p class="card-title mb-0">Top món bán chạy </p>
+                  <div class="table-responsive">
+                    <table class="table table-striped table-borderless">
+                      <thead>
+                        <tr>
+                          <th>Tên món </th>
+                          <th>Số lượng đã bán </th>
+                          <th>Tổng doanh thu </th>
+                        </tr>  
+                      </thead>
+                      <tbody>
+                        <tr th:each="item : ${bestSellers}">
+                          <td th:text="${item.name}"></td>
+                          <td class="font-weight-bold" th:text="${item.amountSales}"></td>
+                          <td class="font-weight-medium"><div class="badge badge-success" th:text="${#numbers.formatDecimal(item.totalSales, 1, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'"></div></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+      </div>
+      <!-- main-panel ends -->
+    </div>   
+    <!-- page-body-wrapper ends -->
+  </div>
+  <!-- container-scroller -->
+
+
+  <!-- plugins:js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+  <script th:src="@{/assets/admin/vendors/js/vendor.bundle.base.js}"></script>
+  <!-- endinject -->
+  <!-- Plugin js for this page -->
+  <script th:src="@{/assets/admin/vendors/chart.js/Chart.min.js}"></script>
+  <script th:src="@{/assets/admin/vendors/datatables.net/jquery.dataTables.js}"></script>
+  <script th:src="@{/assets/admin/vendors/datatables.net-bs4/dataTables.bootstrap4.js}"></script>
+  <script th:src="@{/assets/admin/js/dataTables.select.min.js}"></script>
+
+  <!-- End plugin js for this page -->
+  <!-- inject:js -->
+  <script th:src="@{/assets/admin/js/off-canvas.js}"></script>
+  <script th:src="@{/assets/admin/js/hoverable-collapse.js}"></script>
+  <script th:src="@{/assets/admin/js/template.js}"></script>
+  <script th:src="@{/assets/admin/js/settings.js}"></script>
+  <script th:src="@{/assets/admin/js/todolist.js}"></script>
+  <!-- endinject -->
+  <!-- Custom js for this page-->
+  <script th:src="@{/assets/admin/js/dashboard.js}"></script>
+    <script th:src="@{/assets/admin/js/script-admin-side.js}"></script>
+  <script th:src="@{/assets/admin/js/Chart.roundedBarCharts.js}"></script>
+  <!-- End custom js for this page-->
+  
+  <script>
+  	const currentDate = document.getElementById('currentDate');
+  	const today = new Date();
+  	const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  	const formattedDate = today.toLocaleDateString(undefined, options);
+  	
+  	
+  	var hash = window.location.href;
+		var time = "";
+	    // Get the updated hash value from the URL
+	    if (hash.indexOf("today") !== -1) {
+		    currentDate.innerText = 'Hôm nay (' + formattedDate + ')';
+		} else if (hash.indexOf("lastweek") !== -1) {
+		    const lastWeek = new Date();
+		    lastWeek.setDate(lastWeek.getDate() - 7);
+		    const formattedDateStart = lastWeek.toLocaleDateString(undefined, options);
+		    currentDate.innerText = formattedDateStart + ' - ' + formattedDate;
+		} else if (hash.indexOf("lastmonth") !== -1) {
+		    const lastMonth = new Date();
+		    lastMonth.setDate(lastMonth.getDate() - 30);
+		    const formattedDateStart = lastMonth.toLocaleDateString(undefined, options);
+		    currentDate.innerText = formattedDateStart + ' - ' + formattedDate;
+		} else {
+		    currentDate.innerText = 'Hôm nay (' + formattedDate + ')';
+		}
+  	
+  	const changeDate = (choice) => {
+  		if (choice === 1) {
+  			currentDate.innerText = 'Hôm nay (' + formattedDate + ')';
+  		} else if (choice === 2) {
+  		    const lastWeek = new Date();
+		    lastWeek.setDate(lastWeek.getDate() - 7);
+		    const formattedDateStart = lastWeek.toLocaleDateString(undefined, options);
+		    currentDate.innerText = formattedDateStart + ' - ' + formattedDate;
+  		} else if (choice === 3) {
+  			const lastMonth = new Date();
+		    lastMonth.setDate(lastMonth.getDate() - 30);
+		    const formattedDateStart = lastMonth.toLocaleDateString(undefined, options);
+		    currentDate.innerText = formattedDateStart + ' - ' + formattedDate;
+  		}
+  	};
+</script>
+</body>
+
+</html>
+

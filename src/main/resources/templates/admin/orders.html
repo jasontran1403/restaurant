@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link href="assets/images/favicon/favicon.png" rel="icon">
+  <title>LisaBB Admin</title>
+  <!-- plugins:css -->
+  <!-- plugins:css -->
+    <link rel="stylesheet" th:href="@{/assets/admin/vendors/feather/feather.css}">
+  <link rel="stylesheet" th:href="@{/assets/admin/vendors/ti-icons/css/themify-icons.css}">
+  <link rel="stylesheet" th:href="@{/assets/admin/vendors/css/vendor.bundle.base.css}">
+  <!-- endinject -->
+  <!-- Plugin css for this page -->
+  <link rel="stylesheet" th:href="@{/assets/admin/vendors/datatables.net-bs4/dataTables.bootstrap4.css}">
+  <link rel="stylesheet" th:href="@{/assets/admin/vendors/ti-icons/css/themify-icons.css}">
+  <link rel="stylesheet" type="text/css" th:href="@{/assets/admin/js/select.dataTables.min.css}">
+  <!-- End plugin css for this page -->
+  <!-- inject:css -->
+  <link rel="stylesheet" th:href="@{/assets/admin/css/vertical-layout-light/style.css}">
+  <!-- endinject -->
+  <link rel="shortcut icon" th:href="@{/assets/images/logo/logo-xl.png}" />
+  <link rel="stylesheet" th:href="@{/assets/admin/css/toastStyle.css}" />
+</head>
+
+<body>
+
+  <div class="container-scroller">
+  	<div id="toast" class="hidden">
+      <div id="toast-list" class="toast-list"></div>
+    </div>
+    <!-- partial:../../partials/_navbar.html -->
+    <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+      <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+        <a class="navbar-brand brand-logo mr-5" href="/admin/dashboard"><img th:src="@{/assets/images/logo/logo-dark.png}" class="mr-2" alt="logo"/></a>
+        <a class="navbar-brand brand-logo-mini" href="/admin/dashboard"><img th:src="@{/assets/images/logo/logo-dark.png}" alt="logo"/></a>
+      </div>
+      <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
+        <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+          <span class="icon-menu"></span>
+        </button>
+        <ul class="navbar-nav navbar-nav-right">
+          <li class="nav-item dropdown">
+            <a class="nav-link count-indicator dropdown-toggle" id="notificationDropdown" href="#" data-toggle="dropdown">
+              <i class="icon-bell mx-0"></i>
+              <span class="count"></span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list" aria-labelledby="notificationDropdown">
+              <p class="mb-0 font-weight-normal float-left dropdown-header">Notifications</p>
+              <a class="dropdown-item preview-item">
+                <div class="preview-thumbnail">
+                  <div class="preview-icon bg-success">
+                    <i class="ti-info-alt mx-0"></i>
+                  </div>
+                </div>
+                <div class="preview-item-content">
+                  <h6 class="preview-subject font-weight-normal">Application Error</h6>
+                  <p class="font-weight-light small-text mb-0 text-muted">
+                    Just now
+                  </p>
+                </div>
+              </a>
+              <a class="dropdown-item preview-item">
+                <div class="preview-thumbnail">
+                  <div class="preview-icon bg-warning">
+                    <i class="ti-settings mx-0"></i>
+                  </div>
+                </div>
+                <div class="preview-item-content">
+                  <h6 class="preview-subject font-weight-normal">Settings</h6>
+                  <p class="font-weight-light small-text mb-0 text-muted">
+                    Private message
+                  </p>
+                </div>
+              </a>
+              <a class="dropdown-item preview-item">
+                <div class="preview-thumbnail">
+                  <div class="preview-icon bg-info">
+                    <i class="ti-user mx-0"></i>
+                  </div>
+                </div>
+                <div class="preview-item-content">
+                  <h6 class="preview-subject font-weight-normal">New user registration</h6>
+                  <p class="font-weight-light small-text mb-0 text-muted">
+                    2 days ago
+                  </p>
+                </div>
+              </a>
+            </div>
+          </li>
+          <li class="nav-item nav-profile dropdown">
+            <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" id="profileDropdown">
+              <img th:src="@{/assets/admin/images/faces/face28.jpg}" alt="profile"/>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
+              <a class="dropdown-item">
+                <i class="ti-settings text-primary"></i>
+                Settings
+              </a>
+              <a class="dropdown-item">
+                <i class="ti-power-off text-primary"></i>
+                Logout
+              </a>
+            </div>
+          </li>
+        </ul>
+        <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas">
+          <span class="icon-menu"></span>
+        </button>
+      </div>
+    </nav>
+    
+    
+    <!-- partial -->
+    <div class="container-fluid page-body-wrapper">
+      <!-- partial:../../partials/_settings-panel.html -->
+      
+      <!-- partial -->
+      <!-- partial:../../partials/_sidebar.html -->
+      <nav class="sidebar sidebar-offcanvas" id="sidebar">
+        <ul class="nav">
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/dashboard">
+              <i class="icon-grid menu-icon"></i>
+              <span class="menu-title">Tổng quan</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/orders">
+              <i class="icon-grid menu-icon"></i>
+              <span class="menu-title">Quản lý đơn đặt hàng</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/foods">
+              <i class="icon-grid menu-icon"></i>
+              <span class="menu-title">Quản lý món ăn</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/cates">
+              <i class="icon-grid menu-icon"></i>
+              <span class="menu-title">Quản lý danh mục</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin/coupons">
+              <i class="icon-grid menu-icon"></i>
+              <span class="menu-title">Quản lý mã giảm</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+      
+      
+      <!-- partial -->
+      <div class="main-panel">
+        <div class="content-wrapper">
+          <div class="row">
+            <div class="col-lg-12 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Danh sách đơn đặt hàng</h4>
+                  
+                  <div class="form-group">
+		                <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm theo tên người nhận...">
+		            </div>
+                  <div class="table-responsive">
+                    <table class="table table-hover">
+                      <thead>
+                        <tr>
+                          <th>STT </th>
+                          <th>Thời gian đặt hàng </th>
+                          <th>Tên người nhận </th>
+                          <th>SĐT người nhận</th>
+                          <th>Địa chỉ người nhận</th>
+                          <th>Tổng tiền </th>
+                          <th>Chi tiết </th>
+                          <th>Trạng thái </th>
+                          <th>Hành động </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr th:each="order : ${orderPage}">
+                          <td><p th:text="${order.id}"></p></td>
+                          <td><p th:text="${#dates.format(order.time*1000, 'HH:mm:ss dd/MM/yyyy')}"></p></td>
+                          <td><p th:text="${order.name}"></p></td>
+                          <td><p th:text="${order.phone}"></p></td>
+                          <td><p th:text="${order.address}"></p></td>
+                          <td><p th:text="${#numbers.formatDecimal(order.total, 1, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'"></p></td>
+                          <td>
+							<p data-toggle="modal" data-target="#exampleModal" class="btn btn-info" th:attr="data-order-id=${order.id}, data-order-message=${order.message}" onclick="showDetail(this.getAttribute('data-order-id'), this.getAttribute('data-order-message'))">Chi tiết đơn hàng
+						  </td>
+                          <td>
+						    <p th:class="${order.status == 0 ? 'btn btn-info' : 
+						                   order.status == 1 ? 'btn btn-warning' : 
+						                   order.status == 2 ? 'btn btn-success' : 
+						                   order.status == 3 ? 'btn btn-danger' : 'btn btn-default'}"
+						       th:text="${order.status == 0 ? 'Đơn mới đặt' : 
+						                order.status == 1 ? 'Đơn đang giao' : 
+						                order.status == 2 ? 'Đơn hoàn thành' : 'Đơn đã huỷ'}">
+						    </p>
+						</td>
+
+                          <td><p class="btn btn-success"><a style="color: white;text-decoration: none;" th:href="@{/admin/toggle-order/{orderId}(orderId=${order.id})}">Chuyển trạng thái</a></p>
+                          <p class="btn btn-danger"><a style="color: white;text-decoration: none;" th:href="@{/admin/cancel-order/{orderId}(orderId=${order.id})}">Huỷ đơn hàng</a></p></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    
+                    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+					  <div class="modal-dialog" role="document">
+					    <div class="modal-content">
+					      <div class="modal-header">
+					        <h5 class="modal-title" id="exampleModalLabel">Chi tiết đơn hàng</h5>
+					        <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+					          <span aria-hidden="true">&times;</span>
+					        </button>
+					      </div>
+					      <div class="modal-body">
+					      
+					      </div>
+					      <div class="modal-footer">
+					      
+					      </div>
+					    </div>
+					  </div>
+					</div>
+                    
+                    <div th:if="${orderPage.totalPages > 1}" style="display: flex; justify-content: space-around">
+					    <ul class="pagination">
+					        <li th:class="${orderPage.first ? 'page-item disabled' : 'page-item'}">
+					            <a th:href="@{/admin/orders(page=${orderPage.number - 1})}" class="page-link"><</a>
+					        </li>
+					        <li th:class="${orderPage.last ? 'page-item disabled' : 'page-item'}">
+					            <a th:href="@{/admin/orders(page=${orderPage.number + 1})}" class="page-link">></a>
+					        </li>
+					    </ul>
+					</div>
+					
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            
+            
+          </div>
+        </div>
+      </div>
+      
+    </div>
+      <!-- main-panel ends -->
+    </div>
+    <!-- page-body-wrapper ends -->
+  </div>
+  <!-- container-scroller -->
+  <!-- plugins:js -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+  <script th:src="@{/assets/admin/vendors/js/vendor.bundle.base.js}"></script>
+  <!-- endinject -->
+  <!-- Plugin js for this page -->
+  <script th:src="@{/assets/admin/vendors/chart.js/Chart.min.js}"></script>
+  <script th:src="@{/assets/admin/vendors/datatables.net/jquery.dataTables.js}"></script>
+  <script th:src="@{/assets/admin/vendors/datatables.net-bs4/dataTables.bootstrap4.js}"></script>
+  <script th:src="@{/assets/admin/js/dataTables.select.min.js}"></script>
+
+  <!-- End plugin js for this page -->
+  <!-- inject:js -->
+  <script th:src="@{/assets/admin/js/off-canvas.js}"></script>
+  <script th:src="@{/assets/admin/js/hoverable-collapse.js}"></script>
+  <script th:src="@{/assets/admin/js/template.js}"></script>
+  <script th:src="@{/assets/admin/js/settings.js}"></script>
+  <script th:src="@{/assets/admin/js/todolist.js}"></script>
+  <!-- endinject -->
+  <!-- Custom js for this page-->
+  <script th:src="@{/assets/admin/js/dashboard.js}"></script>
+  <script th:src="@{/assets/admin/js/Chart.roundedBarCharts.js}"></script>
+  <script th:src="@{/assets/admin/js/script-admin-side.js}"></script>
+    <script>
+    $(document).ready(function() {
+        $('#searchInput').on('keyup', function() {
+            var searchText = $(this).val().toLowerCase();
+            $('table tbody tr').each(function() {
+                var orderInfoName = $(this).find('td:nth-child(3)').text().toLowerCase();
+                var orderInfoPhone = $(this).find('td:nth-child(4)').text().toLowerCase();
+                var orderInfoStatus = $(this).find('td:nth-child(6)').text().toLowerCase();
+                if (orderInfoName.indexOf(searchText) === -1 && orderInfoPhone.indexOf(searchText) === -1 && orderInfoStatus.indexOf(searchText) === -1) {
+                    $(this).hide();
+                } else {
+                    $(this).show();
+                }
+            });
+        });
+    });
+</script>
+
+<script>
+	function showDetail(id, message) {
+		var modalBody = document.querySelector('.modal-body');
+		var modalFooter = document.querySelector('.modal-footer'); 
+		    
+		// Xóa tất cả nội dung hiện có trong modal-body
+		modalBody.innerHTML = '';
+		modalFooter.innerHTML = ''; // Sửa từ innterHTML thành innerHTML
+		
+		var requestOptions = {
+		  method: 'GET',
+		  redirect: 'follow'
+		};
+		
+		fetch("/api/v1/auth/order-detail/" + id, requestOptions)
+		  .then(response => response.json())
+		  .then(result => {
+		    modalFooter.innerHTML = ''; // Xóa nội dung modalFooter
+			
+		    result.forEach(item => {
+		      // Tạo các phần tử HTML để hiển thị thông tin từ kết quả API
+		      var itemDiv = document.createElement('div');
+		      itemDiv.classList.add('item'); // Tùy chỉnh lớp CSS cần thiết
+		      
+		      var itemName = document.createElement('p');
+		      itemName.textContent = "Tên món: " + item.name;
+		
+		      var itemDescription = document.createElement('p');
+		      itemDescription.textContent = "Số lượng: " + item.quantity;
+		
+		      // Thêm các phần tử vào modal-body
+		      itemDiv.appendChild(itemName);
+		      itemDiv.appendChild(itemDescription);
+		      modalBody.appendChild(itemDiv);
+		    });
+		    var messageDiv = document.createElement('div');
+		    messageDiv.classList.add('order-message');
+	        messageDiv.textContent = `Lời nhắn: ${message}`;
+	
+	        modalFooter.appendChild(messageDiv);
+		  })
+		  .catch(error => console.log('error', error));
+	}
+</script>
+
+</body>
+
+</html>

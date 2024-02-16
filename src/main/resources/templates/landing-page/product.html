@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <meta name="description" content="Babette">
+  <link href="assets/images/favicon/favicon.png" rel="icon">
+  <title>LisaBB</title>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css?family=Rubik:400,500,700%7cShadows+Into+Light&display=swap">
+  <link rel="stylesheet" th:href="@{/assets/css/libraries.css}" />
+  <link rel="stylesheet" th:href="@{/assets/css/style.css}">
+        <link rel="stylesheet" th:href="@{/assets/admin/css/toastStyle.css}" />
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link rel="stylesheet" th:href="@{/assets/admin/vendors/ti-icons/css/themify-icons.css}">
+</head>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+
+<body>
+  <div class="wrapper">
+      <div id="toast" class="hidden">
+      <div id="toast-list" class="toast-list"></div>
+    </div>
+    <!-- =========================
+        Header
+    =========================== -->
+    <header id="header" class="header header-transparent header-layout1">
+      <nav class="navbar navbar-expand-lg sticky-navbar">
+        <div class="container">
+          <a class="navbar-brand" href="/">
+            <img th:src="@{/assets/images/logo/logo-light.png}" class="logo-light" alt="logo">
+
+            <img th:src="@{/assets/images/logo/logo-dark.png}" class="logo-dark" alt="logo">
+          </a>
+          <button class="navbar-toggler" type="button">
+            <span class="menu-lines"><span></span></span>
+          </button>
+
+          <div class="collapse navbar-collapse" id="mainNavigation">
+            <ul class="navbar-nav ml-auto">
+              <li class="nav__item with-dropdown">
+                <a href="/" class="dropdown-toggle nav__item-link active" >Trang chủ</a>
+              </li><!-- /.nav-item -->
+              <li class="nav__item with-dropdown">
+                <a href="#" data-toggle="dropdown" class="dropdown-toggle nav__item-link ">Thông tin</a>
+                <ul class="dropdown-menu">
+                  <li class="nav__item"><a href="/story" class="nav__item-link">Về chúng tôi</a></li>
+                  <!-- /.nav-item -->
+                  <li class="nav__item"><a href="/chefs" class="nav__item-link">Đầu bếp</a></li>
+                  <!-- /.nav-item -->
+                  <li class="nav__item"><a href="/guest-book" class="nav__item-link">Sổ tay khách hàng</a></li>
+                  <!-- /.nav-item -->
+                  <li class="nav__item"><a href="/contacts" class="nav__item-link">Liên hệ</a></li>
+                  <!-- /.nav-item -->
+                  <li class="nav__item"><a href="/events" class="nav__item-link">Sự kiện</a></li>
+                  <!-- /.nav-item -->
+                  <li class="nav__item"><a href="/detail-event" class="nav__item-link">Sự kiện đặc biệt</a></li>
+                  <!-- /.nav-item -->
+                  <li class="nav__item"><a href="/faqs" class="nav__item-link">Hỏi đáp </a></li> <!-- /.nav-item -->
+                </ul><!-- /.dropdown-menu -->
+              </li><!-- /.nav-item -->
+              <li class="nav__item with-dropdown">
+                <a href="/menu" class="dropdown-toggle nav__item-link ">Thực đơn </a>
+              </li><!-- /.nav-item -->
+              <li class="nav__item with-dropdown">
+                <a href="/blog" class="dropdown-toggle nav__item-link ">Bài viết </a>
+              </li><!-- /.nav-item -->
+              <!-- /.nav-item -->
+            </ul><!-- /.navbar-nav -->
+          </div><!-- /.navbar-collapse -->
+
+          <div class="navbar-actions-wrap">
+            <div class="navbar-actions d-flex align-items-center">
+              <a href="#" class="navbar__action-btn search-popup-trigger"><i class="fa fa-search"></i></a>
+              <a href="#" class="navbar__action-btn navbar__action-btn-cart">
+                <i class="icon-cart"></i><span class="cart__label">3</span>
+              </a>
+              
+              <div class="cart-popup">
+			    <ul class="list-unstyled" id="cart-items">
+			        <!-- JavaScript sẽ thêm các mục giỏ hàng vào đây -->
+			    </ul>
+			    <div class="cart-subtotal">
+			        <span>Tổng tiền:</span>
+			        <span class="color-theme" id="subtotal"></span>
+			    </div><!-- /.cart-subtotal -->
+                
+                <div class="cart-action d-flex justify-content-center">
+                  <a href="/cart" class="btn btn__primary btn__hover2">Xem giỏ hàng </a>
+                </div><!-- /.cart-action -->
+              </div><!-- /.cart-popup -->
+            </div><!-- /.navbar-actions -->
+          </div><!-- /.navbar-actions-wrap -->
+        </div><!-- /.container -->
+      </nav><!-- /.navabr -->
+    </header><!-- /.Header -->
+
+    <!-- ========================
+       page title 
+    =========================== -->
+    <section id="page-title" class="page-title page-title-layout14 bg-overlay bg-overlay-2">
+      <div class="bg-img"><img th:src="@{/assets/images/backgrounds/3.jpg}" alt="background"></div>
+      <div class="container">
+        <div class="row">
+          <div class="col-sm-12 col-md-12 col-lg-12">
+          </div><!-- /.col-lg-12 -->
+        </div><!-- /.row -->
+      </div><!-- /.container -->
+    </section><!-- /.page-title -->
+
+    <!-- ========================
+       product single
+    =========================== -->
+    <section id="productSingle" class="shop product-single pb-0">
+      <div class="container">
+        <div class="row">
+          <div class="col-sm-12 col-md-6 col-lg-6">
+            <div class="product__single-img">
+              <img th:src="@{${food.image}}" class="zoomin" alt="product">
+            </div><!-- /.product-img -->
+          </div><!-- /.col-lg-6 -->
+          <div class="col-sm-12 col-md-6 col-lg-6">
+            <h4 class="product__title">[[${food.name}]]</h4>
+            <span th:text="${#numbers.formatDecimal(food.price, 1, 'DEFAULT', 0, 'DEFAULT')}"></span> VNĐ
+            <hr class="hr-dashed mt-30 mb-30">
+            <div class="product__form-wrap mb-30">
+			    <div class="product__quantity d-flex">
+			        <div class="quantity__input-wrap mr-20">
+			            <i class="decrease-qty"></i>
+			            <input type="number" value="1" class="qty-input">
+			            <i class="increase-qty"></i>
+			        </div>
+			        <button class="btn btn__primary" th:text="'thêm vào giỏ'" 
+        th:attr="data-food-id=${food.id}, data-food-name=${food.name}, data-food-price=${food.price}, data-food-image=${food.image}" 
+        onclick="addToCart(parseInt(this.getAttribute('data-food-id')), 
+                           this.getAttribute('data-food-name'), 
+                           parseFloat(this.getAttribute('data-food-price')), 
+                           parseInt(document.querySelector('.qty-input').value),
+                           this.getAttribute('data-food-image'));">
+    add to cart
+</button>
+			    </div><!-- /.product-quantity -->
+			</div>
+
+            <div class="product__meta">
+              <div class="product__meta-cat">
+                <span class="product__meta-title">Danh mục: [[${food.categories}]]</span>
+              </div><!-- /.product__meta-cat -->
+            </div><!-- /.product__meta -->
+            <hr class="hr-dashed mt-30 mb-30">
+          </div><!-- /.col-lg-6 -->
+        </div><!-- /.row -->
+        <div class="row" id="info-section">
+          <div class="col-sm-12 col-md-12 col-lg-10 offset-lg-1">
+            <div class="product__tabs mt-90">
+              <nav class="nav nav-tabs justify-content-center">
+                <a class="nav__link active" data-toggle="tab" href="#Description">Mô tả món ăn</a>
+                <a class="nav__link" data-toggle="tab" id="review-tab" href="#Details">Các đánh giá của khách ([[${reviewPage.totalElements}]])</a>
+                <a class="nav__link" data-toggle="tab" href="#Reviews">Viết đánh giá</a>
+              </nav>
+              <div class="tab-content" id="nav-tabContent">
+                <div class="tab-pane fade show active" id="Description">
+                  <p>[[${food.description}]]</p>
+                </div><!-- /.desc-tab -->
+                <div class="tab-pane fade" id="Details">
+                  <div class="row">
+                  	<div class="card" th:each="review : ${reviewPage.content}">
+					  <img class="card-img-top" th:src="${review.image}" alt="Card image cap" style="width: 18rem; height: 18rem;">
+					  <div class="card-body">
+					    <h5 class="card-title" th:text="${review.name}"></h5>
+					    <h5 class="card-title" th:text="${review.phone}"></h5>
+					    <p class="card-text" th:text="${review.review}"></p>
+					  </div>
+					</div>
+                  </div>
+                  
+                  <div th:if="${reviewPage.totalPages > 0}" style="display: flex; justify-content: space-around">
+					    <ul class="pagination">
+					        <li th:class="${reviewPage.first ? 'page-item disabled' : 'page-item'}">
+					            <a th:href="@{(${reviewPage.number == 0}? '/product/' + ${review.foodId} : '/product/' + ${review.foodId} + '?page=' + ${reviewPage.number-1})}" class="page-link"><</a>
+					        </li>
+					        <li th:class="${reviewPage.last ? 'page-item disabled' : 'page-item'}">
+					            <a th:href="@{(${reviewPage.number == 1}? '/product/' + ${review.foodId} : '/product/' + ${review.foodId} + '?page=' + ${reviewPage.number+1})}" class="page-link">></a>
+					        </li>
+					    </ul>
+					</div>
+                </div><!-- /.details-tab -->
+                <div class="tab-pane fade" id="Reviews">
+                  <form th:action="@{/add-review}" method="POST" enctype="multipart/form-data" th:object="${review}" class="row reviews__form">
+                  <div class="col-sm-6 form-group"  style="display: none">
+                      <label for="foodId">ID</label>
+                      <input id="foodId" name="foodId" type="text" th:field="*{foodId}" class="form-control" placeholder="ID món ăn" required readonly>
+                    </div><!-- /.form-group -->
+                    <div class="col-sm-6 form-group">
+                      <label for="name">Họ và tên</label>
+                      <input id="name" name="name" type="text" th:field="*{name}" class="form-control" placeholder="Họ và tên" required>
+                    </div><!-- /.form-group -->
+                    <div class="col-sm-6 form-group">
+                      <label for="phone">Số điện thoại</label>
+                      <input id="phone" name="phone" type="text" th:field="*{phone}" class="form-control" placeholder="Số điện thoại" required>
+                    </div><!-- /.form-group -->
+                    <div class="col-sm-12 form-group">
+                      <label for="review">Đánh giá</label>
+                      <textarea id="review" name="review" class="form-control" th:field="*{review}" placeholder="Nội dung đánh giá" required></textarea>
+                    </div><!-- /.form-group -->
+                    <div class="col-sm-12 form-group">
+						<label for="image">Hình ảnh món ăn </label>
+						<div class="input-group col-xs-12">
+						     <input type="file" name="image" id="image" class="form-control file-upload-info" placeholder="Hình ảnh món ăn" th:field="*{image}" required/>
+						 </div>
+					</div>
+                    <div class="col-sm-12">
+                      <button type="submit" class="btn btn__primary">Đăng bài</button>
+                    </div>
+                  </form>
+                </div><!-- /.reviews-tab -->
+              </div>
+            </div><!-- /.product-tabs -->
+          </div><!-- /.col-lg-12 -->
+        </div><!-- /.row -->
+      </div><!-- /.container -->
+    </section><!-- /.product single -->
+
+    <!-- ========================
+      Related products
+    =========================== -->
+    <section id="related-products" class="relted-products text-center pt-80 pb-40">
+      <div class="container">
+        <div class="row">
+          <div class="col-sm-12 col-md-12 col-lg-12">
+            <h6 class="related__products-title font-weight-bold mb-30">Các món bán chạy</h6>
+          </div><!-- /.col-lg-12 -->
+        </div><!-- /.row -->
+        <div class="row">
+        
+          <!-- Product item #1 -->
+          <div class="col-sm-6 col-md-6 col-lg-4" th:each="food : ${topSellers}">
+            <div class="product-item">
+              <div class="product__img">
+                <img th:src="@{${food.image}}" alt="Product" style="width: 360px;height: 280px;">
+                <div class="product__hover">
+                  <div class="product__action">
+                    <p th:attr="data-food-id=${food.id}, data-food-name=${food.name}, data-food-price=${food.price}, data-food-image=${food.image}" 
+					        onclick="addToCart(parseInt(this.getAttribute('data-food-id')), 
+					                           this.getAttribute('data-food-name'), 
+					                           parseFloat(this.getAttribute('data-food-price')),
+					                           this.getAttribute('data-food-image'));" class="btn btn__primary btn__hover2">thêm vào giỏ</p>
+                  </div><!-- /.product__action -->
+                </div><!-- /.product__hover-->
+              </div><!-- /.product-img -->
+              <div class="product__content">
+                <div class="product__cat">
+                </div>
+                <h4 class="product__title"><a th:href="'/product/' + ${food.id}">[[${food.name}]]</a></h4>
+                <span class="product__price" th:text="${#numbers.formatDecimal(food.price, 1, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'"></span>
+              </div><!-- /.product-content -->
+            </div><!-- /.product-item -->
+          </div><!-- /.col-lg-4 -->
+          
+        </div><!-- /.row -->
+      </div><!-- /.container -->
+    </section><!-- /.related-products -->
+
+    <!-- ========================
+      Footer
+    ========================== -->
+    <footer id="footer" class="footer footer-layout1 text-center bg-dark">
+      <div class="footer-inner">
+        <div class="container">
+          <div class="footer-top">
+            <div class="row">
+              <div class="col-sm-12 col-md-12 col-lg-12 position-static">
+                <svg class="footer__divider-shape" xmlns="http://www.w3.org/2000/svg" width="22" height="61"
+                  viewBox="0 0 22 61">
+                  <path
+                    d="M799,769h2v61h-2V769Zm8,24.8a0.969,0.969,0,0,0-1.911,0,3.012,3.012,0,0,1-.883,2.16,4.486,4.486,0,0,0,0,6.136,3.083,3.083,0,0,1,0,4.32,4.486,4.486,0,0,0,0,6.136,3.088,3.088,0,0,1,0,4.325,4.5,4.5,0,0,0,0,6.142,3.014,3.014,0,0,1,.884,2.163,0.969,0.969,0,0,0,1.911,0,4.414,4.414,0,0,0-1.213-3.07,3.091,3.091,0,0,1,0-4.328,4.491,4.491,0,0,0,0-6.14,3.08,3.08,0,0,1,0-4.319,4.488,4.488,0,0,0,0-6.137,3.081,3.081,0,0,1,0-4.32A4.407,4.407,0,0,0,807,793.8Zm0-20a0.969,0.969,0,0,0-1.911,0,3.014,3.014,0,0,1-.883,2.16,4.486,4.486,0,0,0,0,6.136,3.083,3.083,0,0,1,0,4.32,4.488,4.488,0,0,0,0,6.137,3.087,3.087,0,0,1,0,4.324,4.5,4.5,0,0,0,0,6.142,3.014,3.014,0,0,1,.884,2.163,0.969,0.969,0,0,0,1.911,0,4.414,4.414,0,0,0-1.213-3.07,3.089,3.089,0,0,1,0-4.327,4.491,4.491,0,0,0,0-6.14,3.081,3.081,0,0,1,0-4.32,4.488,4.488,0,0,0,0-6.137,3.081,3.081,0,0,1,0-4.32A4.409,4.409,0,0,0,807,773.8ZM793,793.8a0.969,0.969,0,0,1,1.911,0,3.012,3.012,0,0,0,.883,2.16,4.486,4.486,0,0,1,0,6.136,3.083,3.083,0,0,0,0,4.32,4.486,4.486,0,0,1,0,6.136,3.088,3.088,0,0,0,0,4.325,4.5,4.5,0,0,1,0,6.142,3.014,3.014,0,0,0-.884,2.163,0.969,0.969,0,0,1-1.911,0,4.414,4.414,0,0,1,1.213-3.07,3.091,3.091,0,0,0,0-4.328,4.491,4.491,0,0,1,0-6.14,3.08,3.08,0,0,0,0-4.319,4.488,4.488,0,0,1,0-6.137,3.081,3.081,0,0,0,0-4.32A4.407,4.407,0,0,1,793,793.8Zm0-20a0.969,0.969,0,0,1,1.911,0,3.014,3.014,0,0,0,.883,2.16,4.486,4.486,0,0,1,0,6.136,3.083,3.083,0,0,0,0,4.32,4.488,4.488,0,0,1,0,6.137,3.087,3.087,0,0,0,0,4.324,4.5,4.5,0,0,1,0,6.142,3.014,3.014,0,0,0-.884,2.163,0.969,0.969,0,0,1-1.911,0,4.414,4.414,0,0,1,1.213-3.07,3.089,3.089,0,0,0,0-4.327,4.491,4.491,0,0,1,0-6.14,3.081,3.081,0,0,0,0-4.32,4.488,4.488,0,0,1,0-6.137,3.081,3.081,0,0,0,0-4.32A4.409,4.409,0,0,1,793,773.8Zm-4,5.2h2v41h-2V779Zm20,0h2v41h-2V779Z"
+                    transform="translate(-789 -769)"></path>
+                </svg>
+              </div><!-- /.col-lg-12 -->
+              <div class="col-sm-12 col-md-12 col-lg-4">
+                <div class="contact-box">
+                  <h6 class="contact__box-title">Địa chỉ </h6>
+                  <ul class="contact__box-list list-unstyled">
+                    <li>KDC CityLand Phan Văn Trị, Phường 11, Quận Gò Vấp, TP. HCM </li>
+                  </ul>
+                </div><!-- /.contact-box -->
+              </div><!-- /.col-lg-4 -->
+              <div class="col-sm-12 col-md-12 col-lg-4">
+                <div class="contact-box">
+                  <h6 class="contact__box-title">Giờ mở cửa </h6>
+                  <ul class="contact__box-list list-unstyled">
+                    <li>Thứ 2 - Thứ 6: 10:00 - 18:00 </li>
+                  </ul>
+                </div><!-- /.contact-box -->
+              </div><!-- /.col-lg-4 -->
+              <div class="col-sm-12 col-md-12 col-lg-4">
+                <div class="contact-box">
+                  <h6 class="contact__box-title">Liên hệ đặt bàn </h6>
+                  <ul class="contact__box-list list-unstyled">
+                    <li><span>Email: </span>optikes@7oroof.com</li>
+                    <li><span>Số điện thoại: </span>01234567890</li>
+                  </ul>
+                </div><!-- /.contact-box -->
+              </div><!-- /.col-lg-4 -->
+            </div><!-- /.row -->
+          </div><!-- /.footer-top -->
+          <div class="footer-middle">
+            <div class="row">
+              <div class="col-sm-12 col-md-12 col-lg-12 position-static">
+                <div class="footer__logo-wrap text-center">
+                  <img th:src="@{/assets/images/logo/footer-logo.png}" alt="logo" class="footer__logo">
+                </div>
+              </div><!-- /.col-lg-12 -->
+            </div><!-- /.row -->
+            <div class="row">
+              <div class="col-sm-12 col-md-12 col-lg-6 offset-lg-3">
+                <p class="mb-20">Chúng tôi mong muốn phục vụ và hỗ trợ bạn bằng tất cả sự tận tâm.
+                </p>
+                <a href="shop.html" class="btn btn__primary btn__bordered btn__lg">Order Now</a>
+
+              </div><!-- /.col-lg-6 -->
+            </div><!-- /.row -->
+          </div><!-- /.footer-middle -->
+        </div><!-- /.container -->
+        <div class="footer-bottom">
+          <div class="container">
+            <div class="row">
+              <div class="col-sm-12 col-md-12 col-lg-12">
+                <div class="footer__copyright mb-30">
+                  <span>&copy; Optikey, With Love by </span>
+                  <a href="http://themeforest.net/user/7oroof" class="color-theme">Optikey</a>
+                </div>
+                <ul class="social__icons social__icons-white justify-content-center">
+                  <li><a href="#"><i class="fa fa-instagram"></i></a></li>
+                  <li><a href="#"><i class="fa fa-tripadvisor"></i></a></li>
+                  <li><a href="#"><i class="fa fa-twitter"></i></a></li>
+                </ul><!-- /.social__icons -->
+              </div>
+            </div><!-- /.row -->
+          </div><!-- /.container -->
+          <svg class="footer__divider-shape-bottom" xmlns="http://www.w3.org/2000/svg" width="142" height="17"
+            viewBox="0 0 142 17">
+            <path
+              d="M800,600V583c8.782,15.985,46.811,11.315,56,12a35.721,35.721,0,0,1,15,5m-71,0V583c-8.782,15.985-46.811,11.315-56,12a35.717,35.717,0,0,0-15,5"
+              transform="translate(-729 -583)"></path>
+          </svg>
+        </div><!-- /.Footer-bottom -->
+      </div><!-- /.Footer-inner -->
+    </footer><!-- /.Footer -->
+    <button id="scrollTopBtn"><i class="fa fa-angle-up"></i></button>
+
+    <div class="search-popup">
+      <i class="fa fa-times close-search"></i>
+      <form class="module__search-form" action="/search" method="get">
+	    <input type="text" class="search__input" name="query" placeholder="Tìm kiếm món ăn theo tên">
+	    <button class="module__search-btn" type="submit"><i class="fa fa-search"></i></button>
+	</form>
+    </div><!-- /.search-popup -->
+
+  </div>
+  <!-- /.wrapper -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+  <script th:src="@{/assets/js/jquery-3.3.1.min.js}"></script>
+  <script th:src="@{/assets/js/plugins.js}"></script>
+  <script th:src="@{/assets/js/main.js}"></script>
+  <script th:src="@{/assets/js/product.js}"></script>
+ 	<script>
+		const url = window.location.href;
+		const reviewTab = document.getElementById('review-tab');
+		const section = document.getElementById('info-section');
+		if (url.indexOf("?page=") !== -1) {
+			reviewTab.click();
+			section.scrollIntoView({
+			  behavior: "smooth", // Để có hiệu ứng cuộn mượt
+			  block: "end",     // Cuộn đến phần đầu của thẻ (bạn có thể chọn "center" hoặc "end" tùy ý)
+			});
+		}
+	</script>
+</body>
+
+</html>
