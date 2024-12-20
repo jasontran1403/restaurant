@@ -22,6 +22,7 @@ public class OrderDetail {
 	private long id;
 
     private long order_id;
+    private String name;
 
     private long food_id;
     

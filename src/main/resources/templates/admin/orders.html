@@ -6,7 +6,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link href="assets/images/favicon/favicon.png" rel="icon">
-  <title>LisaBB Admin</title>
+  <title>Admin</title>
   <!-- plugins:css -->
   <!-- plugins:css -->
     <link rel="stylesheet" th:href="@{/assets/admin/vendors/feather/feather.css}">
@@ -202,10 +202,47 @@
 						                order.status == 1 ? 'Đơn đang giao' : 
 						                order.status == 2 ? 'Đơn hoàn thành' : 'Đơn đã huỷ'}">
 						    </p>
-						</td>
+						  </td>
 
                           <td><p class="btn btn-success"><a style="color: white;text-decoration: none;" th:href="@{/admin/toggle-order/{orderId}(orderId=${order.id})}">Chuyển trạng thái</a></p>
-                          <p class="btn btn-danger"><a style="color: white;text-decoration: none;" th:href="@{/admin/cancel-order/{orderId}(orderId=${order.id})}">Huỷ đơn hàng</a></p></td>
+                          <p class="btn btn-danger"><a style="color: white;text-decoration: none;" th:href="@{/admin/cancel-order/{orderId}(orderId=${order.id})}">Huỷ đơn hàng</a></p>
+                            <p class="btn btn-info" th:attr="onclick=|invoice(${order.id})|" >Xuất Invoice PDF</p>
+                            <script>
+                              const invoice = (orderId) => {
+                                const requestOptions = {
+                                  method: "GET",
+                                  redirect: "follow"
+                                };
+
+                                // Fetch PDF file from server
+                                fetch(`/api/v1/demo-controller/generate-invoice/${orderId}`, requestOptions)
+                                        .then((response) => {
+                                          if (!response.ok) {
+                                            throw new Error("Error fetching the invoice file");
+                                          }
+                                          return response.blob(); // Convert response to Blob
+                                        })
+                                        .then((blob) => {
+                                          // Create a temporary URL for the file
+                                          const url = window.URL.createObjectURL(blob);
+                                          const a = document.createElement("a");
+                                          a.href = url;
+
+                                          // Set the filename dynamically
+                                          a.download = `Invoice_Order_${orderId}.pdf`;
+                                          document.body.appendChild(a);
+                                          a.click();
+
+                                          // Clean up
+                                          window.URL.revokeObjectURL(url);
+                                          document.body.removeChild(a);
+                                        })
+                                        .catch((error) => {
+                                          console.error("Error:", error);
+                                        });
+                              };
+                            </script>
+                          </td>
                         </tr>
                       </tbody>
                     </table>

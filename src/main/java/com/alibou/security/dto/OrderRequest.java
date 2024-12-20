@@ -20,4 +20,5 @@ public class OrderRequest {
 	private String message;
 	private double rate;
 	private String code;
+	private String agency;
 }

@@ -3,6 +3,8 @@ package com.alibou.security.auth;
 import java.io.IOException;
 import java.util.List;
 
+import com.alibou.security.dto.*;
+import com.alibou.security.repository.AgencyRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,10 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.alibou.security.dto.OrderDetailResponse;
-import com.alibou.security.dto.OrderRequest;
-import com.alibou.security.dto.OrderResponse;
-import com.alibou.security.dto.StatResponse;
 import com.alibou.security.entity.Food;
 import com.alibou.security.service.CouponService;
 import com.alibou.security.service.FoodService;
@@ -35,6 +33,26 @@ public class AuthenticationController {
 	private final OrderDetailService orderDetailService;
 	private final FoodService foodService;
 	private final CouponService coupService;
+	private final AgencyRepository agencyRepository;
+
+	@PostMapping("/login")
+	public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
+		LoginResponse response = authenticate(loginRequest);
+		return ResponseEntity.ok(response);
+	}
+
+	public LoginResponse authenticate(LoginRequest loginRequest) {
+		// Thực hiện logic xác thực, ví dụ kiểm tra trong cơ sở dữ liệu
+		var user = agencyRepository.findByUsername(loginRequest.getUsername());
+		if (user.isEmpty()) return new LoginResponse("Agency is not found!");
+		if (user.get().getPassword().equals(loginRequest.getPassword())) {
+			// Simulate generating a token
+			String message = loginRequest.getUsername();
+			return new LoginResponse(message);
+		} else {
+			return new LoginResponse("Invalid username or password");
+		}
+	}
 	
 	@GetMapping("/order-detail/{id}")
 	public List<OrderDetailResponse> orderDetail(@PathVariable Long id) {
@@ -50,12 +68,13 @@ public class AuthenticationController {
 	
 	@PostMapping("/check-cart")
 	public ResponseEntity<String> checkCart(@RequestBody OrderRequest orderRequest) {
+		var agency = agencyRepository.findByUsername(orderRequest.getAgency());
+		if (agency.isEmpty()) return ResponseEntity.ok("Agency không tồn tại!");
 		OrderResponse result = orderService.checkCart(orderRequest);
-		if (result.getMessage1().equals("") && result.getMessage2().equals("")) {
+		if (result.getMessage1().isEmpty() && result.getMessage2().isEmpty()) {
 			return ResponseEntity.ok("Đặt thành công!");
 		} else {
-			if (result.getMessage1().equals("")) {
-				
+			if (result.getMessage1().isEmpty()) {
 				return ResponseEntity.ok(result.getMessage2() + "giá thay đổi!");
 			} else {
 				return ResponseEntity.ok(result.getMessage1() + "đã hết!");

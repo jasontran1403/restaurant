@@ -258,3 +258,134 @@ $(function () {
         }
     });
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    var loginLink = document.getElementById("login-link");
+    var userNameSpan = document.getElementById("user-name");
+
+    // Kiểm tra xem trong localStorage có thông tin user không
+    var user = localStorage.getItem("user");
+
+    if (user) {
+        // Nếu có user, hiển thị tên người dùng và ẩn liên kết "Đăng nhập"
+        userNameSpan.style.display = "inline";
+        userNameSpan.textContent = user;  // Hiển thị tên người dùng
+        loginLink.style.display = "none"; // Ẩn nút Đăng nhập
+
+        // Thêm sự kiện cho tên người dùng (khi click sẽ đăng xuất)
+        userNameSpan.addEventListener("click", function() {
+            // Xóa toàn bộ localStorage khi click vào tên người dùng
+            localStorage.clear(); // Xóa tất cả dữ liệu trong localStorage
+            location.reload(); // Tải lại trang để cập nhật giao diện
+        });
+
+    } else {
+        // Nếu không có user, hiển thị nút Đăng nhập và ẩn tên người dùng
+        userNameSpan.style.display = "none";
+        loginLink.style.display = "inline"; // Hiển thị nút Đăng nhập
+    }
+
+    // Sự kiện khi nhấn vào link Đăng nhập (hiển thị modal đăng nhập)
+    loginLink.addEventListener('click', function() {
+        document.getElementById("loginModal").style.display = "block";
+    });
+
+    const loginModal = document.getElementById('loginModal');
+    const showLoginModalBtn = document.querySelector('.js-show-login-modal');
+    const closeLoginModalBtn = document.getElementById('closeLoginModal');
+
+    // Hiển thị modal
+    showLoginModalBtn.addEventListener('click', () => {
+        loginModal.style.display = 'flex';
+    });
+
+    // Ẩn modal
+    closeLoginModalBtn.addEventListener('click', () => {
+        loginModal.style.display = 'none';
+    });
+
+    // Đóng modal khi nhấn ra ngoài modal container
+    loginModal.addEventListener('click', (e) => {
+        if (e.target === loginModal) {
+            loginModal.style.display = 'none';
+        }
+    });
+
+    // Xử lý form đăng nhập
+    const loginForm = document.getElementById('btn-login');
+    loginForm.addEventListener('click', (e) => {
+        e.preventDefault(); // Ngăn hành động mặc định
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        const myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
+
+        const raw = JSON.stringify({
+            "username": username,
+            "password": password
+        });
+
+        const requestOptions = {
+            method: "POST",
+            headers: myHeaders,
+            body: raw,
+            redirect: "follow"
+        };
+
+        fetch("/api/v1/auth/login", requestOptions)
+            .then((response) => response.json())
+            .then((result) => {
+                console.log(result)
+                if (result.message === "Agency is not found!" || result.message === "Invalid username or password") {
+                    displayToast(result.message, "error");
+                } else {
+                    displayToast("Đăng nhập thành công!", "success");
+                    localStorage.setItem("user", result.message);
+                    loginModal.style.display = 'none';
+                }
+            })
+            .catch((error) => console.error(error));
+    });
+
+    function displayToast(message, type) {
+        const main = document.getElementById("toast-list");
+        if (main) {
+
+            const toastElement = document.createElement("div");
+
+            const title = "Notification!";
+
+            const icon = "fas fa-check-circle";
+
+            toastElement.classList.add("toast", `toast--${type}`);
+            toastElement.style.animation = `slideInLeft ease .3s forwards`;
+
+            const autoRemoveId = setTimeout(function () {
+                if (type === "success") window.location.reload();
+                main.removeChild(toastElement);
+            }, 1500);
+
+            // Remove toast when clicked
+            toastElement.onclick = function (e) {
+                main.removeChild(toastElement);
+            };
+
+            toastElement.innerHTML = `
+            <div class="toast__icon">
+                <i class="${icon}"></i>
+            </div>
+            <div class="toast__body">
+                <h3 class="toast__title">${title}</h3>
+                <p class="toast__msg">${message}</p>
+            </div>
+            <div class="toast__close">
+                <i class="fas fa-times"></i>
+            </div>
+        `;
+            main.appendChild(toastElement);
+        }
+    }
+
+});

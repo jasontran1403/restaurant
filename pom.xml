@@ -21,7 +21,13 @@
 	            <groupId>org.springframework.boot</groupId>
 	            <artifactId>spring-boot-starter-thymeleaf</artifactId>
 	        </dependency>
-	        <dependency>
+			<dependency>
+				<groupId>com.itextpdf</groupId>
+				<artifactId>html2pdf</artifactId>
+				<version>4.0.2</version> <!-- Sử dụng phiên bản mới nhất nếu có -->
+			</dependency>
+
+			<dependency>
 	            <groupId>org.thymeleaf.extras</groupId>
 	            <artifactId>thymeleaf-extras-springsecurity6</artifactId>
 	        </dependency>

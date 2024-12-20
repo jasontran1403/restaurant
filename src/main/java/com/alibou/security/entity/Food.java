@@ -34,6 +34,7 @@ public class Food {
 	private int status;
 	@Column(columnDefinition = "TEXT")
 	private String image;
+	private String quantity;
     private List<String> categories;
     @OneToMany(mappedBy = "food")
     @JsonIgnore

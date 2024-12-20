@@ -8,7 +8,7 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge" />
   <meta name="description" content="Babette">
   <link href="assets/images/favicon/favicon.png" rel="icon">
-  <title>LisaBB</title>
+  <title>Sausage</title>
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css?family=Rubik:400,500,700%7cShadows+Into+Light&display=swap">
   <link rel="stylesheet" th:href="@{/assets/css/libraries.css}" />
@@ -72,13 +72,11 @@
 				      <td colspan="4">
 				        <div class="row">
 				          <div class="col-sm-12 col-md-12 col-lg-12 cart__product-action-content">
-				            <div class="d-flex flex-wrap">
-				              <input type="text" class="form-control mb-10 mr-10" id="coupon-code" placeholder="Mã giảm giá">
-				              <button type="submit" class="btn btn__primary mb-10" onclick="checkCoupon();">Áp dụng mã giảm </button>
+				            <div class="d-flex flex-wrap coupon">
+				              <input type="text" class="form-control mb-10" id="coupon-code" placeholder="Mã giảm giá">
+				              <button type="submit" class="btn btn__primary" onclick="checkCoupon();">Áp dụng mã giảm </button>
 				            </div>
-				            <div>
-				              <a class="btn btn__primary" href="#" onclick="checkout()">Đặt hàng </a>
-				            </div>
+
 				          </div>
 				        </div>
 				      </td>
@@ -118,6 +116,9 @@
               </ul>
             </div><!-- /.cart__total-amount -->
           </div><!-- /.col-lg-6 -->
+          <div style="width: 100%; display: flex; justify-content: center; align-items: center; margin-bottom: 50px;">
+            <a class="btn btn__primary" href="#" onclick="checkout()">Đặt hàng </a>
+          </div>
         </div><!-- /.row -->
       </div><!-- /.container -->
     </section><!-- /.shopping-cart -->
@@ -236,11 +237,8 @@
        <div class="footer">
        	<span>Bộ phận CSKH sẽ liên hệ với bạn sớm!</span>
        </div>
-      <div class = "modal-close"> Tiếp tục mua hàng </div>
-
-      
+      <div class="modal-close"> Tự động về trang chủ sau 5 giây </div>
     </div>
-
   </div>
   <!-- /.wrapper -->
 

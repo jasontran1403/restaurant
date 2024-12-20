@@ -1,6 +1,7 @@
 package com.alibou.security.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +18,7 @@ public interface OrderService {
 	OrderResponse placeOrder(OrderRequest request);
 	OrderResponse checkCart(OrderRequest request);
 	Order getOrderById(long id);
+	Optional<Order> findOrderById(long id);
 	List<Order> getAllOrders();
 	List<Order> getAllOrdersByStatus(int status);
 	void toggleStatus(long orderId);

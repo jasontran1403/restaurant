@@ -1,13 +1,20 @@
 package com.alibou.security.controller;
 
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
+import com.alibou.security.dto.*;
+import com.alibou.security.repository.AgencyRepository;
+import com.alibou.security.user.UserRepository;
+import com.alibou.security.utils.HtmlToPDF;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,16 +26,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.alibou.security.dto.AddCateRequest;
-import com.alibou.security.dto.AddFoodRequest;
-import com.alibou.security.dto.AddReviewRequest;
-import com.alibou.security.dto.BestSellerDto;
-import com.alibou.security.dto.CouponRequest;
-import com.alibou.security.dto.OrderRequest;
-import com.alibou.security.dto.OrderResponse;
-import com.alibou.security.dto.UpdateCateRequest;
-import com.alibou.security.dto.UpdateCouponRequest;
-import com.alibou.security.dto.UpdateFoodRequest;
 import com.alibou.security.entity.Category;
 import com.alibou.security.entity.Coupon;
 import com.alibou.security.entity.Food;
@@ -60,73 +57,22 @@ public class HomeController {
 	
 	@Autowired
 	ReviewService reviewService;
-
-	@GetMapping("/")
-	public String index() {
-		return "landing-page/index";
-	}
-
-	@GetMapping("/blog")
-	public String blog() {
-		return "landing-page/blog";
-	}
-
-	@GetMapping("/events")
-	public String events() {
-		return "landing-page/events";
-	}
-
-	@GetMapping("/contacts")
-	public String contacts() {
-		return "landing-page/contacts";
-	}
-
-	@GetMapping("/detail-event")
-	public String detailEvent() {
-		return "landing-page/detail-event";
-	}
-
-	@GetMapping("/story")
-	public String story() {
-		return "landing-page/story";
-	}
-
-	@GetMapping("/chefs")
-	public String chefs() {
-		return "landing-page/chefs";
-	}
-
-	@GetMapping("/faqs")
-	public String faqs() {
-		return "landing-page/faqs";
-	}
-
-	@GetMapping("/galery")
-	public String galery() {
-		return "landing-page/galery";
-	}
-
-	@GetMapping("/menu-board")
-	public String menuboard() {
-		return "landing-page/menu-board";
-	}
-
-	@GetMapping("/guest-book")
-	public String guestBook() {
-		return "landing-page/guest-book";
-	}
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private AgencyRepository agencyRepository;
 
 	@GetMapping("/cart")
 	public String cart() {
 		return "landing-page/cart";
 	}
 
-	@GetMapping("/menu")
+	@GetMapping({"/menu", "/"})
 	public String menu(Model model, @RequestParam(name = "page", defaultValue = "0") int page) {
 		int pageSize = 6;
 		Page<Food> foods = foodService.getPaginatedFoodsShow(PageRequest.of(page, pageSize));
 		model.addAttribute("foodPage", foods);
-		
+
 		List<Category> cates = cateService.getAllCates();
 		
 		model.addAttribute("cates", cates);
@@ -216,12 +162,13 @@ public class HomeController {
 	    model.addAttribute("bestSellers", bestSellers);
 	}
 
-
 	@PostMapping("/place-order")
 	public String placeOrder(@RequestBody OrderRequest orderRequest) {
 		OrderResponse result = orderService.placeOrder(orderRequest);
 		return "redirect:/cart";
 	}
+
+
 
 	@GetMapping("/admin/toggle-order/{id}")
 	public String toggleOrder(@PathVariable Long id) {

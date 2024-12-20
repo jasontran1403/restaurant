@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
 
+import com.alibou.security.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,10 +28,6 @@ import com.alibou.security.entity.Food;
 import com.alibou.security.entity.Order;
 import com.alibou.security.entity.OrderDetail;
 import com.alibou.security.exception.NotFoundException;
-import com.alibou.security.repository.CouponRepository;
-import com.alibou.security.repository.FoodRepository;
-import com.alibou.security.repository.OrderDetailRepository;
-import com.alibou.security.repository.OrderRepository;
 import com.alibou.security.service.OrderService;
 import com.alibou.security.service.RealtimeService;
 
@@ -51,10 +48,22 @@ public class OrderServiceImpl implements OrderService {
 	@Autowired
 	RealtimeService realtimeService;
 
+	@Autowired
+	AgencyRepository agencyRepo;
+
 	@Override
 	public OrderResponse placeOrder(OrderRequest request) {
 		// TODO Auto-generated method stub
+		var agency = agencyRepo.findByUsername(request.getAgency());
+
+		if (agency.isEmpty()) {
+			OrderResponse response = new OrderResponse();
+			response.setMessage1("Agency không tồn tại!");
+			return response;
+		}
+
 		StringBuilder sb = new StringBuilder();
+
 		double total = 0;
 		List<OrderDetail> orderDetails = new ArrayList<>();
 		List<Food> foods = new ArrayList<>();
@@ -78,6 +87,7 @@ public class OrderServiceImpl implements OrderService {
 					OrderDetail orderDetail = new OrderDetail();
 					orderDetail.setFood_id(foodId);
 					orderDetail.setQuantity(quantity);
+					orderDetail.setName(food.get().getName());
 					Optional<Coupon> coupon = coupRepo.getByCode(request.getCode());
 					if (coupon.isPresent()) {
 						double rate = request.getRate();
@@ -163,6 +173,11 @@ public class OrderServiceImpl implements OrderService {
 	public Order getOrderById(long id) {
 		// TODO Auto-generated method stub
 		return orderRepo.getById(id);
+	}
+
+	@Override
+	public Optional<Order> findOrderById(long id) {
+		return orderRepo.findById(id);
 	}
 
 	@Override

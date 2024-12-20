@@ -8,7 +8,7 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge" />
   <meta name="description" content="Babette">
   <link href="assets/images/favicon/favicon.png" rel="icon">
-  <title>LisaBB</title>
+  <title>Sausage</title>
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css?family=Rubik:400,500,700%7cShadows+Into+Light&display=swap">
   <link rel="stylesheet" th:href="@{/assets/css/libraries.css}" />
@@ -47,30 +47,35 @@
               <li class="nav__item with-dropdown">
                 <a href="/" class="dropdown-toggle nav__item-link active" >Trang chủ</a>
               </li><!-- /.nav-item -->
-              <li class="nav__item with-dropdown">
-                <a href="#" data-toggle="dropdown" class="dropdown-toggle nav__item-link ">Thông tin</a>
-                <ul class="dropdown-menu">
-                  <li class="nav__item"><a href="/story" class="nav__item-link">Về chúng tôi</a></li>
-                  <!-- /.nav-item -->
-                  <li class="nav__item"><a href="/chefs" class="nav__item-link">Đầu bếp</a></li>
-                  <!-- /.nav-item -->
-                  <li class="nav__item"><a href="/guest-book" class="nav__item-link">Sổ tay khách hàng</a></li>
-                  <!-- /.nav-item -->
-                  <li class="nav__item"><a href="/contacts" class="nav__item-link">Liên hệ</a></li>
-                  <!-- /.nav-item -->
-                  <li class="nav__item"><a href="/events" class="nav__item-link">Sự kiện</a></li>
-                  <!-- /.nav-item -->
-                  <li class="nav__item"><a href="/detail-event" class="nav__item-link">Sự kiện đặc biệt</a></li>
-                  <!-- /.nav-item -->
-                  <li class="nav__item"><a href="/faqs" class="nav__item-link">Hỏi đáp </a></li> <!-- /.nav-item -->
-                </ul><!-- /.dropdown-menu -->
-              </li><!-- /.nav-item -->
+
               <li class="nav__item with-dropdown">
                 <a href="/menu" class="dropdown-toggle nav__item-link ">Thực đơn </a>
               </li><!-- /.nav-item -->
               <li class="nav__item with-dropdown">
-                <a href="/blog" class="dropdown-toggle nav__item-link ">Bài viết </a>
-              </li><!-- /.nav-item -->
+                <a href="javascript:void(0);" class="dropdown-toggle nav__item-link js-show-login-modal" id="login-link">Đăng nhập</a>
+                <span id="user-name" class="dropdown-toggle nav__item-link" style="display:none;"></span> <!-- Tên người dùng sẽ được hiển thị ở đây nếu có -->
+              </li>
+
+              <!-- Modal Đăng Nhập -->
+              <div class="login-modal" id="loginModal">
+                <div class="login-modal-container">
+                  <header class="login-modal-header">
+                    <h4>Đăng nhập</h4>
+                    <button class="close-btn" id="closeLoginModal">&times;</button>
+                  </header>
+                  <div class="login-modal-body">
+                    <div id="loginForm">
+                      <label for="username">Tên đăng nhập:</label>
+                      <input type="text" id="username" name="username" required>
+
+                      <label for="password">Mật khẩu:</label>
+                      <input type="password" id="password" name="password" required>
+
+                      <button id="btn-login" type="submit">Đăng nhập</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <!-- /.nav-item -->
             </ul><!-- /.navbar-nav -->
           </div><!-- /.navbar-collapse -->
@@ -128,6 +133,8 @@
           <div class="col-sm-12 col-md-6 col-lg-6">
             <h4 class="product__title">[[${food.name}]]</h4>
             <span th:text="${#numbers.formatDecimal(food.price, 1, 'DEFAULT', 0, 'DEFAULT')}"></span> VNĐ
+            <br>
+            <span th:text="${food.quantity}"></span>
             <hr class="hr-dashed mt-30 mb-30">
             <div class="product__form-wrap mb-30">
 			    <div class="product__quantity d-flex">
