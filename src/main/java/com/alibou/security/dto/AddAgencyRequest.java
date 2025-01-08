@@ -9,9 +9,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UpdateCouponRequest {
-	private long id;
-	private String code;
-	private double rate;
-	private int count;
+public class AddAgencyRequest {
+	private String username;
+	private String password;
+	private String phone;
+	private String email;
 }

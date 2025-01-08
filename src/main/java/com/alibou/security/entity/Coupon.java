@@ -22,5 +22,6 @@ public class Coupon {
 	private long id;
 	private String code;
 	private double rate;
+	private int count;
 	private int status;
 }

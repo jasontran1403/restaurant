@@ -15,11 +15,9 @@ import lombok.NoArgsConstructor;
 public class Customer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+
+    @Column(unique = true, nullable = false)
     private String phone;
-    @OneToOne
-    @JoinColumn(name = "f_1_id")
-    private Agency f1;
-    @OneToOne
-    @JoinColumn(name = "f_2_id")
-    private Agency f2;
+    private String f1;
 }

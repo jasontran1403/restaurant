@@ -12,21 +12,16 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
 
+import com.alibou.security.dto.*;
+import com.alibou.security.entity.*;
 import com.alibou.security.repository.*;
+import com.alibou.security.service.StocksService;
+import com.alibou.security.utils.TelegramService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.alibou.security.dto.BestSellerDto;
-import com.alibou.security.dto.OrderRequest;
-import com.alibou.security.dto.OrderResponse;
-import com.alibou.security.dto.StatResponse;
-import com.alibou.security.dto.ToggleOrderRequest;
-import com.alibou.security.entity.Coupon;
-import com.alibou.security.entity.Food;
-import com.alibou.security.entity.Order;
-import com.alibou.security.entity.OrderDetail;
 import com.alibou.security.exception.NotFoundException;
 import com.alibou.security.service.OrderService;
 import com.alibou.security.service.RealtimeService;
@@ -51,6 +46,18 @@ public class OrderServiceImpl implements OrderService {
 	@Autowired
 	AgencyRepository agencyRepo;
 
+    @Autowired
+    private CustomerRepository customerRepository;
+
+    @Autowired
+    private CommissionHistoryRepository commissionHistoryRepository;
+
+	@Autowired
+	TelegramService telegramService;
+
+	@Autowired
+	StocksService stocksService;
+
 	@Override
 	public OrderResponse placeOrder(OrderRequest request) {
 		// TODO Auto-generated method stub
@@ -68,48 +75,66 @@ public class OrderServiceImpl implements OrderService {
 		List<OrderDetail> orderDetails = new ArrayList<>();
 		List<Food> foods = new ArrayList<>();
 		String messageNotAvailable = "";
-		String messagePriceDiff = "";
-		
+		StringBuilder messagePriceDiff = new StringBuilder();
+
+		double code = 0;
+		double amountBefore = 0;
+		List<FoodsDTO> foodsDTOs = new ArrayList<>();
 		for (String phrase : request.getFood()) {
 			String[] item = phrase.split("-");
 			long foodId = Long.parseLong(item[0]);
 			int quantity = Integer.parseInt(item[1]);
 			long price = Long.parseLong(item[2]);
+			code += price * quantity;
 			Optional<Food> food = foodRepo.getFoodById(foodId);
 			if (food.isEmpty()) {
 				throw new NotFoundException("Món ăn không tồn tại!");
 			} else if (food.get().getStatus() != 0) {
-				sb.append(food.get().getName() + " + ");
+				sb.append(food.get().getName()).append(" + ");
 			} else {
 				if (price != food.get().getPrice()) {
-					messagePriceDiff += food.get().getId() + "-" + food.get().getName() + "---";
+					messagePriceDiff.append(food.get().getId()).append("-").append(food.get().getName()).append("---");
 				} else {
+					FoodsDTO itemFoodsDTO = new FoodsDTO();
+					itemFoodsDTO.setQuantity(quantity);
+					itemFoodsDTO.setId(food.get().getId());
+					itemFoodsDTO.setName(food.get().getName());
+					itemFoodsDTO.setFoodCate(food.get().getCategories().get(0));
+					foodsDTOs.add(itemFoodsDTO);
 					OrderDetail orderDetail = new OrderDetail();
 					orderDetail.setFood_id(foodId);
 					orderDetail.setQuantity(quantity);
 					orderDetail.setName(food.get().getName());
 					Optional<Coupon> coupon = coupRepo.getByCode(request.getCode());
-					if (coupon.isPresent()) {
+					if (coupon.isPresent() && coupon.get().getStatus() == 0 && coupon.get().getCount() >= 1) {
 						double rate = request.getRate();
 						orderDetail.setRate(rate);
 						total += (food.get().getPrice() - food.get().getPrice()*rate/100) * quantity;
+						coupon.get().setCount(coupon.get().getCount() - 1);
+						coupRepo.save(coupon.get());
 					} else {
 						orderDetail.setRate(0);
 						total += (food.get().getPrice()) * quantity;
 					}
+
 					orderDetail.setPrice(food.get().getPrice());
 					orderDetails.add(orderDetail);
 					
 					foods.add(food.get());
+
+					food.get().setStocks(food.get().getStocks() - quantity);
+					foodRepo.save(food.get());
+					stocksService.updateStocks((int)foodId, quantity, 0, "Out");
 				}
 			}
 		}
-		
+
 		if (sb.toString().contains(" + ")) {
-			messageNotAvailable = sb.toString().substring(0, sb.toString().length() - 2) + "hết món!";
+			messageNotAvailable = sb.substring(0, sb.toString().length() - 2) + "hết món!";
 		}
 
-		if (messageNotAvailable.equals("") && messagePriceDiff.equals("")) {
+		double amountAfter = 0;
+		if (messageNotAvailable.isEmpty() && (messagePriceDiff.isEmpty())) {
 			Order order = new Order();
 			order.setStatus(0);
 			order.setTime(System.currentTimeMillis() / 1000);
@@ -118,6 +143,9 @@ public class OrderServiceImpl implements OrderService {
 			order.setAddress(request.getAddress());
 			order.setMessage(request.getMessage());
 			order.setTotal(total);
+			order.setActual(code);
+			amountBefore = code;
+			amountAfter = total;
 
 			Order savedOrder = orderRepo.save(order);
 
@@ -127,17 +155,97 @@ public class OrderServiceImpl implements OrderService {
 				orderDetail.setRate(request.getRate());
 				orderDetailRepo.save(orderDetail);
 			}
+
+			String message = "[Đơn hàng mới]\nNgười nhận: " + request.getName() + "\nSĐT: " + request.getPhone() + "\nAgency: " + request.getAgency();
+			telegramService.sendMessageToGroup(message);
+
+			var customerExisted = customerRepository.findByUsername(request.getPhone());
+
+			int countIndexType1 = 0;
+			int countIndexType2 = 0;
+
+			for (FoodsDTO food : foodsDTOs) {
+				if (food.getFoodCate().equalsIgnoreCase("Sausage")) {
+					countIndexType1 += food.getQuantity();
+				}
+				if (food.getFoodCate().equalsIgnoreCase("Saurce") && food.getId() == 6) {
+					countIndexType2 += food.getQuantity();
+				}
+			}
+
+			double amount = countIndexType1 * 30_000 + countIndexType2 * 5_000;
+
+			double amountCommission = 0;
+
+			if (amountBefore == amountAfter) {
+				// Không sử dụng mã giảm giá
+				amountCommission = amount;
+			} else {
+				// Sử dụng mã giảm giá, tính phần chênh lệch
+				double discountAmount = amountBefore - amountAfter; // Phần giá giảm
+
+				if (amount > discountAmount) {
+					// Hoa hồng lớn hơn phần giá giảm, hoa hồng = Số tiền hoa hồng thực tế - số tiền giảm
+					amountCommission = amount - discountAmount;
+				} else {
+					// Hoa hồng nhỏ hơn phần giá giảm, không nhận được hoa hồng
+					amountCommission = 0;
+				}
+			}
+
+			if (customerExisted.isEmpty()) {
+				Customer customer = new Customer();
+				customer.setPhone(request.getPhone());
+				customer.setF1(agency.get().getUsername());
+
+				Customer resultSave = customerRepository.save(customer);
+
+				CommissionHistory commissionHistory = new CommissionHistory();
+				commissionHistory.setFromOrder(savedOrder.getId());
+				commissionHistory.setFromCustomer(resultSave.getPhone());
+				commissionHistory.setReceiveF1(agency.get().getUsername());
+				commissionHistory.setStatus(0);
+				commissionHistory.setDate(System.currentTimeMillis()/1000);
+				double actualAmountCommission = amountCommission * 1;
+				commissionHistory.setAmount(actualAmountCommission);
+				commissionHistoryRepository.save(commissionHistory);
+			} else {
+				double actualAmountCommission = 0;
+				if (customerExisted.get().getF1().equalsIgnoreCase(request.getAgency())) {
+					actualAmountCommission = amountCommission;
+					CommissionHistory commissionHistory = new CommissionHistory();
+					commissionHistory.setFromOrder(savedOrder.getId());
+					commissionHistory.setFromCustomer(customerExisted.get().getPhone());
+					commissionHistory.setReceiveF1(agency.get().getUsername());
+					commissionHistory.setStatus(0);
+					commissionHistory.setDate(System.currentTimeMillis()/1000);
+					commissionHistory.setAmount(actualAmountCommission);
+					commissionHistoryRepository.save(commissionHistory);
+				} else {
+					actualAmountCommission = amountCommission / 2;
+					CommissionHistory commissionHistory = new CommissionHistory();
+					commissionHistory.setFromOrder(savedOrder.getId());
+					commissionHistory.setFromCustomer(customerExisted.get().getPhone());
+					commissionHistory.setReceiveF1(customerExisted.get().getF1());
+					commissionHistory.setReceiveF2(request.getAgency());
+					commissionHistory.setStatus(0);
+					commissionHistory.setDate(System.currentTimeMillis()/1000);
+					commissionHistory.setAmount(actualAmountCommission);
+					commissionHistoryRepository.save(commissionHistory);
+				}
+			}
 		}
+
 
 		OrderResponse response = new OrderResponse();
 		response.setMessage1(messageNotAvailable);
-		response.setMessage2(messagePriceDiff);
+		response.setMessage2(messagePriceDiff.toString());
 
 		return response;
 	}
 
 	@Override
-	public void toggleStatus(long orderId) {
+	public Order toggleStatus(long orderId) {
 		Order order = orderRepo.getById(orderId);
 		int status = order.getStatus();
 		int statusNext = status + 1;
@@ -145,7 +253,7 @@ public class OrderServiceImpl implements OrderService {
 			statusNext = 2;
 		}
 		order.setStatus(statusNext);
-		orderRepo.save(order);
+		return orderRepo.save(order);
 	}
 
 	@Override

@@ -15,5 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 public class OrderPDFDTO {
     Order order;
+    String name;
+    long date;
     List<OrderDetail> orderDetails;
 }

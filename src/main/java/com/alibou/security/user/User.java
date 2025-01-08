@@ -21,11 +21,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter  // Lombok annotation to generate getter methods
+@Setter  // Lombok annotation to generate setter methods
 @Entity
 @Table(name = "_user")
 public class User implements UserDetails {

@@ -52,7 +52,7 @@ public class FoodServiceImpl implements FoodService{
 		food.setStatus(request.getStatus());
 		food.setImage("");
 		food.setCategories(cates);
-		
+		food.setStocks(0);
 		Food result = foodRepo.save(food);
 		
 		String fileName = "restaurant/restaurant_food_id_" + food.getId();

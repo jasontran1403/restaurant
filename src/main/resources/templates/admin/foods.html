@@ -150,6 +150,24 @@
               <span class="menu-title">Quản lý mã giảm</span>
             </a>
           </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/users">
+                    <i class="icon-grid menu-icon"></i>
+                    <span class="menu-title">Quản lý agency</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/commissions">
+                    <i class="icon-grid menu-icon"></i>
+                    <span class="menu-title">Danh sách commission</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/stocks">
+                    <i class="icon-grid menu-icon"></i>
+                    <span class="menu-title">Quản lý kho</span>
+                </a>
+            </li>
         </ul>
       </nav>
       
@@ -225,90 +243,33 @@
                     <table class="table table-hover">
                       <thead>
                         <tr>
-                          <th>STT</th>
                           <th>Tên món </th>
-                          <th>Mô tả </th>
                           <th>Giá </th>
-                          <th>Danh mục </th>
-                          <th>Hành động</th>
+                          <th>Tồn kho</th>
                           <th>Chức năng</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr th:each="food : ${foodPage.content}">
-                          <td><p th:text="${food.id}"></p></td>
-                          <td><p th:text="${food.name}"></p></td>
-                          <td><p style="text-wrap: wrap" th:text="${food.description}"></p></td>
+                          <td><p>Tên: <span th:text="${food.name}"></span></p>
+                              <p>Danh mục: <span th:text="${food.categories}"></span></p></td>
                           <td><p th:text="${#numbers.formatDecimal(food.price, 1, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'"></p></td>
-                          <td><p th:text="${food.categories}"></p></td>
-                          <td><p th:class="${food.status eq 0 ? 'btn btn-danger' : 'btn btn-success'}"><a style="color: white;text-decoration: none;" th:href="@{/admin/toggle-food/{foodId}(foodId=${food.id})}" th:text="${food.status eq 0 ? 'Ẩn' : 'Hiện'}"></a></p></td>
-                          <td><p id="update" class="btn btn-info" data-toggle="modal" data-target="#exampleModalCenter2"
-                          	th:attr="data-food-id=${food.id}, data-food-name=${food.name}, data-food-price=${food.price}, data-food-categories=${food.categories}, data-food-image=${food.image}, data-food-status=${food.status}, data-food-description=${food.description}" 
-                           	onclick="editFood(this.getAttribute('data-food-id'),
+                          <td><p th:text="${food.stocks}"></p></td>
+                          <td>
+                              <div class="row-container"><p th:class="${food.status eq 0 ? 'btn btn-danger' : 'btn btn-success'}"><a style="color: white;text-decoration: none;" th:href="@{/admin/toggle-food/{foodId}(foodId=${food.id})}" th:text="${food.status eq 0 ? 'Ẩn' : 'Hiện'}"></a></p>
+                                  <p id="update" class="btn btn-info" data-toggle="modal" data-target="#exampleModalCenter2"
+                                     th:attr="data-food-id=${food.id}, data-food-name=${food.name}, data-food-price=${food.price}, data-food-categories=${food.categories}, data-food-image=${food.image}, data-food-status=${food.status}, data-food-description=${food.description}"
+                                     onclick="editFood(this.getAttribute('data-food-id'),
                            	this.getAttribute('data-food-name'),
                            	this.getAttribute('data-food-description'),
                            	this.getAttribute('data-food-price'),
                            	this.getAttribute('data-food-categories'),
                            	this.getAttribute('data-food-image'),
                            	this.getAttribute('data-food-status'));"
-                           >
-                           Cập nhật</p></td>
+                                  >
+                                      Cập nhật</p></div></td>
                           
-                          <div class="modal fade" id="exampleModalCenter2" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-							  <div class="modal-dialog modal-dialog-centered" role="document">
-							    <div class="modal-content">
-							      <div class="modal-header">
-							        <h5 class="modal-title" id="exampleModalLongTitle">Cập nhật món ăn</h5>
-							        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-							          <span aria-hidden="true">&times;</span>
-							        </button>
-							      </div>
-							      <div class="modal-body">
-							        <form class="forms-sample" th:action="@{/admin/edit-food}" enctype="multipart/form-data" method="POST">
-							        	<div class="form-group">
-									        <label for="id">ID</label>
-									        <input type="text" class="form-control" name="id" id="id" readonly required/>
-									    </div>
-									    <div class="form-group">
-									        <label for="exampleInputName1">Tên món </label>
-									        <input type="text" class="form-control" name="name" id="name" required/>
-									    </div>
-									    <div class="form-group">
-									        <label for="exampleTextarea1">Mô tả </label>
-									        <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
-									    </div>
-									    <div class="form-group">
-									        <label for="exampleInputCity1">Giá </label>
-									        <input type="number" min="1" class="form-control" name="price" id="price" required/>
-									    </div>
-									    <div class="form-group">
-										    <label>Danh mục</label>
-										    <div th:each="cate : ${cates}" style="margin-left: 30px;">
-										        <div class="form-check">
-										            <input type="radio" name="categories" class="form-check-input" th:id="'category_' + ${cate.id}" th:name="categories" th:value="${cate.id}" required />
-										            <label class="form-check-label" th:for="'category_' + ${cate.id}" th:text="${cate.cateName}"></label>
-										        </div>
-										    </div>
-										</div>
-									    <div class="form-group">
-									        <label>Hình ảnh món ăn </label>
-									        <div class="input-group col-xs-12">
-									            <input type="file" name="image" id="image" class="form-control file-upload-info" placeholder="Hình ảnh món ăn"/>
-									        </div>
-									    </div>
-									    <div class="form-group">
-									        <label for="exampleSelectGender">Trạng thái </label>
-									        <select class="form-control" id="status" name="status" required>
-									        	<option value="0">Hiện </option>
-									            <option value="1">Ẩn </option>
-									        </select>
-									    </div>
-									    <button type="submit" class="btn btn-primary mr-2">Cập nhật</button>
-									</form>
-							      </div>
-							    </div>
-							  </div>
-							</div>
+
 							                          
                         </tr>
                       </tbody>
@@ -330,12 +291,66 @@
                 </div>
               </div>
             </div>
-          
-          
-            
-            
-            
-            
+
+
+
+
+
+              <div class="modal fade" id="exampleModalCenter2" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered" role="document">
+                      <div class="modal-content">
+                          <div class="modal-header">
+                              <h5 class="modal-title" id="exampleModalLongTitle">Cập nhật món ăn</h5>
+                              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                  <span aria-hidden="true">&times;</span>
+                              </button>
+                          </div>
+                          <div class="modal-body">
+                              <form class="forms-sample" th:action="@{/admin/edit-food}" enctype="multipart/form-data" method="POST">
+                                  <div class="form-group" style="display: none;">
+                                      <label for="id">ID</label>
+                                      <input type="text" class="form-control" name="id" id="id" readonly required/>
+                                  </div>
+                                  <div class="form-group">
+                                      <label for="exampleInputName1">Tên món </label>
+                                      <input type="text" class="form-control" name="name" id="name" required/>
+                                  </div>
+                                  <div class="form-group" style="display: none;">
+                                      <label for="exampleTextarea1">Mô tả </label>
+                                      <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+                                  </div>
+                                  <div class="form-group">
+                                      <label for="exampleInputCity1">Giá </label>
+                                      <input type="number" min="1" class="form-control" name="price" id="price" required/>
+                                  </div>
+                                  <div class="form-group">
+                                      <label>Danh mục</label>
+                                      <div th:each="cate : ${cates}" style="margin-left: 30px;">
+                                          <div class="form-check">
+                                              <input type="radio" name="categories" class="form-check-input" th:id="'category_' + ${cate.id}" th:name="categories" th:value="${cate.id}" required />
+                                              <label class="form-check-label" th:for="'category_' + ${cate.id}" th:text="${cate.cateName}"></label>
+                                          </div>
+                                      </div>
+                                  </div>
+                                  <div class="form-group" style="display: none;">
+                                      <label>Hình ảnh món ăn </label>
+                                      <div class="input-group col-xs-12">
+                                          <input type="file" name="image" id="image" class="form-control file-upload-info" placeholder="Hình ảnh món ăn"/>
+                                      </div>
+                                  </div>
+                                  <div class="form-group" style="display: none;">
+                                      <label for="exampleSelectGender">Trạng thái </label>
+                                      <select class="form-control" id="status" name="status" required>
+                                          <option value="0">Hiện </option>
+                                          <option value="1">Ẩn </option>
+                                      </select>
+                                  </div>
+                                  <button type="submit" class="btn btn-primary mr-2">Cập nhật</button>
+                              </form>
+                          </div>
+                      </div>
+                  </div>
+              </div>
           </div>
         </div>
         <!-- content-wrapper ends -->

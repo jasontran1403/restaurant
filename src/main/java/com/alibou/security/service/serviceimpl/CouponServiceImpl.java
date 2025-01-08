@@ -28,6 +28,7 @@ public class CouponServiceImpl implements CouponService {
 		Coupon newCoupon = new Coupon();
 		newCoupon.setCode(request.getCode());
 		newCoupon.setRate(request.getRate());
+		newCoupon.setCount(request.getCount());
 		newCoupon.setStatus(1);
 		return coupRepo.save(newCoupon);
 	}
@@ -41,7 +42,7 @@ public class CouponServiceImpl implements CouponService {
 			rate = 0.0;
 			return rate;
 		} else {
-			if (coupon.get().getStatus() == 1) {
+			if (coupon.get().getStatus() == 1 || coupon.get().getCount() <= 0) {
 				rate = -1;
 				return rate;
 			} else {
@@ -76,7 +77,7 @@ public class CouponServiceImpl implements CouponService {
 		Coupon coupon = coupRepo.getById(request.getId());
 		coupon.setCode(request.getCode());
 		coupon.setRate(request.getRate());
-		coupon.setStatus(request.getStatus());
+		coupon.setCount(request.getCount());
 		coupRepo.save(coupon);
 	}
 

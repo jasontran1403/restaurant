@@ -149,6 +149,24 @@
               <span class="menu-title">Quản lý mã giảm</span>
             </a>
           </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/users">
+                    <i class="icon-grid menu-icon"></i>
+                    <span class="menu-title">Quản lý agency</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/commissions">
+                    <i class="icon-grid menu-icon"></i>
+                    <span class="menu-title">Danh sách commission</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/stocks">
+                    <i class="icon-grid menu-icon"></i>
+                    <span class="menu-title">Quản lý kho</span>
+                </a>
+            </li>
         </ul>
       </nav>
       
@@ -176,9 +194,13 @@
 						        <input type="text" class="form-control" id="exampleInputName1" placeholder="Mã giảm " th:field="*{code}" required/>
 						    </div>
 						    <div class="form-group">
-						        <label for="exampleInputName1">Tỷ lệ giảm </label>
-						        <input style="" type="number" min="1" max="100" class="form-control" oninput="this.value = this.value.replace(/[^0-9]/g, '');" id="exampleInputName1" placeholder="Tỷ lệ giảm " th:field="*{rate}" required/>
+						        <label for="exampleInputName2">Tỷ lệ giảm </label>
+						        <input style="" type="number" min="1" max="100" class="form-control" oninput="this.value = this.value.replace(/[^0-9]/g, '');" id="exampleInputName2" placeholder="Tỷ lệ giảm " th:field="*{rate}" required/>
 						    </div>
+                              <div class="form-group">
+                                  <label for="exampleInputName3">Số lượng </label>
+                                  <input style="" type="number" min="1" max="100" class="form-control" oninput="this.value = this.value.replace(/[^0-9]/g, '');" id="exampleInputName3" placeholder="Số lượng " th:field="*{count}" required/>
+                              </div>
 						    <button type="submit" class="btn btn-primary mr-2">Thêm </button>
 						</form>
 				      </div>
@@ -196,74 +218,39 @@
                     <table class="table table-hover">
                       <thead>
                         <tr>
-                          <th>STT </th>
                           <th>Mã giảm</th>
                           <th>Tỷ lệ giảm </th>
-                          <th>Hành động</th>
+                          <th>Số lượng </th>
                           <th>Chức năng</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr th:each="coupon : ${couponPage.content}">
-                          <td><p th:text="${coupon.id}"></p></td>
                           <td><p th:text="${coupon.code}"></p></td>
                           <td><p th:text="${#numbers.formatDecimal(coupon.rate, 1, 'DEFAULT', 0, 'DEFAULT')} + '%'"></p></td>
-                          <td><p th:class="${coupon.status eq 0 ? 'btn btn-danger' : 'btn btn-success'}"><a style="color: white;text-decoration: none;" th:href="@{/admin/toggle-coupon/{couponId}(couponId=${coupon.id})}" th:text="${coupon.status eq 0 ? 'Dừng' : 'Chạy'}"></a></p></td>
-                        	<td><p id="update" class="btn btn-info" data-toggle="modal" data-target="#exampleModalCenter2"
-                          	th:attr="data-coupon-id=${coupon.id}, data-coupon-code=${coupon.code}, data-coupon-rate=${coupon.rate}, data-coupon-status=${coupon.status}" 
-                           	onclick="editCoupon(this.getAttribute('data-coupon-id'),
+                            <td><p th:text="${coupon.count}"></p></td>
+                        	<td>
+                                <div class="row-container"><p th:class="${coupon.status eq 0 ? 'btn btn-danger' : 'btn btn-success'}"><a style="color: white;text-decoration: none;" th:href="@{/admin/toggle-coupon/{couponId}(couponId=${coupon.id})}" th:text="${coupon.status eq 0 ? 'Dừng' : 'Chạy'}"></a></p>
+                                    <p id="update" class="btn btn-info" data-toggle="modal" data-target="#exampleModalCenter2"
+                                       th:attr="data-coupon-id=${coupon.id}, data-coupon-code=${coupon.code}, data-coupon-rate=${coupon.rate}, data-coupon-status=${coupon.status}"
+                                       onclick="editCoupon(this.getAttribute('data-coupon-id'),
                            	this.getAttribute('data-coupon-code'),
                            	this.getAttribute('data-coupon-rate'),
                            	this.getAttribute('data-coupon-status'));"
-                           >
-                           Cập nhật</p></td>
+                                    >
+                                        Cập nhật</p></div></td>
                         </tr>
                       </tbody>
-                      <div class="modal fade" id="exampleModalCenter2" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-							  <div class="modal-dialog modal-dialog-centered" role="document">
-							    <div class="modal-content">
-							      <div class="modal-header">
-							        <h5 class="modal-title" id="exampleModalLongTitle">Cập nhật mã giảm giá</h5>
-							        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-							          <span aria-hidden="true">&times;</span>
-							        </button>
-							      </div>
-							      <div class="modal-body">
-							        <form class="forms-sample" th:action="@{/admin/edit-coupon}" enctype="multipart/form-data" method="POST">
-							        	<div class="form-group">
-									        <label for="id">ID</label>
-									        <input type="text" class="form-control" name="id" id="id" readonly required/>
-									    </div>
-									    <div class="form-group">
-									        <label for="exampleInputName1">Mã giảm giá</label>
-									        <input type="text" class="form-control" name="code" id="code" required/>
-									    </div>
-									    <div class="form-group">
-									        <label for="exampleSelectGender">Tỷ lệ giảm giá</label>
-									        <input type="number" oninput="this.value = this.value.replace(/[^0-9]/g, '');" class="form-control" name="rate" id="rate" required/>
-									    </div>
-									    <div class="form-group">
-									        <label for="exampleSelectGender">Trạng thái </label>
-									        <select class="form-control" id="status" name="status" required>
-									        	<option value="0">Hiện </option>
-									            <option value="1">Ẩn </option>
-									        </select>
-									    </div>
-									    <button type="submit" class="btn btn-primary mr-2">Cập nhật</button>
-									</form>
-							      </div>
-							    </div>
-							  </div>
-							</div>
+
                     </table>
                     
                     <div th:if="${couponPage.totalPages > 1}" style="display: flex; justify-content: space-around">
 					    <ul class="pagination">
 					        <li th:class="${couponPage.first ? 'page-item disabled' : 'page-item'}">
-					            <a th:href="@{/admin/coupons(page=${couponPage.number - 1})}" class="page-link"><</a>
+					            <a th:href="@{/admin/coupons(page=${couponPage.number - 1})}" class="page-link">Previous</a>
 					        </li>
 					        <li th:class="${couponPage.last ? 'page-item disabled' : 'page-item'}">
-					            <a th:href="@{/admin/coupons(page=${couponPage.number + 1})}" class="page-link">></a>
+					            <a th:href="@{/admin/coupons(page=${couponPage.number + 1})}" class="page-link">Next</a>
 					        </li>
 					    </ul>
 					</div>
@@ -276,6 +263,39 @@
           </div>
         </div>
       </div>
+        <div class="modal fade" id="exampleModalCenter2" tabindex="-2" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLongTitle">Cập nhật mã giảm giá</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form class="forms-sample" th:action="@{/admin/edit-coupon}" enctype="multipart/form-data" method="POST">
+                            <div class="form-group" style="display: none;">
+                                <label for="id">ID</label>
+                                <input type="text" class="form-control" name="id" id="id" readonly required/>
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputName1">Mã giảm giá</label>
+                                <input type="text" class="form-control" name="code" id="code" required/>
+                            </div>
+                            <div class="form-group">
+                                <label for="rate">Tỷ lệ giảm giá</label>
+                                <input type="number" oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="Nhập tỷ lệ giảm (%)" class="form-control" name="rate" id="rate" required/>
+                            </div>
+                            <div class="form-group">
+                                <label for="count">Số lượng</label>
+                                <input type="number" oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="Nhập số lượng mã giảm" class="form-control" name="count" id="count" required/>
+                            </div>
+                            <button type="submit" class="btn btn-primary mr-2">Cập nhật</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
       <!-- main-panel ends -->
     </div>
     <!-- page-body-wrapper ends -->

@@ -9,4 +9,6 @@ import java.util.Optional;
 public interface AgencyRepository extends JpaRepository<Agency, Integer> {
     @Query(value="select * from agency where username = ?1", nativeQuery=true)
     Optional<Agency> findByUsername(String username);
+
+
 }

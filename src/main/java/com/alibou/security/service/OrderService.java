@@ -21,7 +21,7 @@ public interface OrderService {
 	Optional<Order> findOrderById(long id);
 	List<Order> getAllOrders();
 	List<Order> getAllOrdersByStatus(int status);
-	void toggleStatus(long orderId);
+	Order toggleStatus(long orderId);
 	void cancelOrder(long orderId);
 	Order toggleOrderStatus(ToggleOrderRequest request);
 	Page<Order> getPaginatedOrders(Pageable pageable);

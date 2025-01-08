@@ -5,11 +5,17 @@ import com.alibou.security.dto.LoginResponse;
 import com.alibou.security.dto.OrderPDFDTO;
 import com.alibou.security.entity.Order;
 import com.alibou.security.entity.OrderDetail;
+import com.alibou.security.entity.StocksHistory;
 import com.alibou.security.repository.AgencyRepository;
+import com.alibou.security.repository.CommissionHistoryRepository;
 import com.alibou.security.repository.OrderDetailRepository;
 import com.alibou.security.service.OrderService;
+import com.alibou.security.service.StocksService;
+import com.alibou.security.utils.ExcelExportService;
 import com.alibou.security.utils.HtmlToPDF;
+import com.alibou.security.utils.TelegramService;
 import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
@@ -28,18 +34,37 @@ import java.util.Optional;
 public class DemoController {
   @Autowired
   OrderService orderService;
-    @Autowired
-    private OrderDetailRepository orderDetailRepository;
-    @Autowired
-    private AgencyRepository agencyRepository;
+  @Autowired
+  private OrderDetailRepository orderDetailRepository;
+  @Autowired
+  private AgencyRepository agencyRepository;
+  @Autowired
+  private CommissionHistoryRepository commissionHistoryRepository;
+  @Autowired
+  TelegramService telegramService;
+  @Autowired
+  private StocksService service;
 
   @GetMapping
   public ResponseEntity<String> sayHello() {
+    String message = "[Test message]";
+    telegramService.sendMessageToGroup(message);
     return ResponseEntity.ok("Hello from secured endpoint");
+  }
+
+  @GetMapping("/export")
+  public void exportReport(HttpServletResponse response,
+                           @RequestParam long startDate,
+                           @RequestParam long endDate) throws IOException {
+    List<StocksHistory> historyList = service.getHistoryByDateRange(startDate, endDate);
+    ExcelExportService excelExportService = new ExcelExportService();
+    excelExportService.exportToExcel(response, historyList, startDate, endDate);
   }
 
   @GetMapping("/generate-invoice/{orderId}")
   public ResponseEntity<ByteArrayResource> generateInvoice(@PathVariable Long orderId) {
+    var orderHistory = commissionHistoryRepository.findCommissionHistoryByOrderId(orderId);
+    if (orderHistory.isEmpty()) return ResponseEntity.notFound().build();
     try {
       // Lấy thông tin đơn hàng từ orderId
       Optional<Order> orderOptional = orderService.findOrderById(orderId);
@@ -48,8 +73,14 @@ public class DemoController {
       }
       List<OrderDetail> orderDetails = orderDetailRepository.getOrderDetailsById(orderOptional.get().getId());
 
+      String name = orderHistory.get().getReceiveF2() != null
+              ? orderHistory.get().getReceiveF2()
+              : orderHistory.get().getReceiveF1();
+
       OrderPDFDTO requestHTMLToPDF = new OrderPDFDTO();
       requestHTMLToPDF.setOrder(orderOptional.get());
+      requestHTMLToPDF.setName(name);
+      requestHTMLToPDF.setDate(orderHistory.get().getDate());
       requestHTMLToPDF.setOrderDetails(orderDetails);
       // Tạo PDF từ đơn hàng
       byte[] pdfBytes = HtmlToPDF.GenerateInvoicePdf(requestHTMLToPDF);

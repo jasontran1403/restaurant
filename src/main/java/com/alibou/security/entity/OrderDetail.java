@@ -32,5 +32,4 @@ public class OrderDetail {
     private String code;
 
     private int quantity;
-
 }

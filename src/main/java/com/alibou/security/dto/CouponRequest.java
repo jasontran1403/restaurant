@@ -14,4 +14,5 @@ import lombok.NoArgsConstructor;
 public class CouponRequest {
 	private String code;
 	private double rate;
+	private int count;
 }

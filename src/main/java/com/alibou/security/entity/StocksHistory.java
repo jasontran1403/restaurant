@@ -11,17 +11,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "commisison_history")
-public class CommissionHistory {
+@Table(name = "stocks_history")
+public class StocksHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String fromCustomer;
-    private long fromOrder;
-    private String receiveF1;
-    private String receiveF2;
-    private double amount;
     private long date;
-    private int status;
+    private String name;
+    private double price;
+    private int quantity;
+    private String type;
+    private String note;
 }

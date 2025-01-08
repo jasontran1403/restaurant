@@ -30,4 +30,5 @@ public class Order {
 	@Column(columnDefinition = "TEXT")
 	private String message;
 	private double total;
+	private double actual;
 }
