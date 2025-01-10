@@ -337,7 +337,6 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch("/api/v1/auth/login", requestOptions)
             .then((response) => response.json())
             .then((result) => {
-                console.log(result)
                 if (result.message === "Agency is not found!" || result.message === "Invalid username or password") {
                     displayToast(result.message, "error");
                 } else {

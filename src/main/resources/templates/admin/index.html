@@ -23,6 +23,15 @@
   <link rel="shortcut icon" th:href="@{/assets/images/logo/logo-xl.png}" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" th:href="@{/assets/admin/css/toastStyle.css}" />
+  <style>
+    .sale {
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
 </head>
 <body>
   <div class="container-scroller">
@@ -201,35 +210,44 @@
                 <div class="col-md-6 mb-4 stretch-card transparent">
                   <div class="card card-tale">
                     <div class="card-body">
-                      <p class="mb-4">Doanh thu   </p>
-                      <p class="fs-30 mb-2" th:text="${#numbers.formatDecimal(todaySales, 1, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'"></p>
+                      <div class="sale">
+                        <div class="total">
+                          <p class="mb-4">Doanh thu   </p>
+                          <p class="fs-30 mb-2" th:text="${#numbers.formatDecimal(todaySales, 1, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'"></p>
+                        </div>
+                        <div class="expect">
+                          <p class="mb-4">Doanh thu dự kiến   </p>
+                          <p class="fs-30 mb-2" th:text="${#numbers.formatDecimal(expectSales, 1, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'"></p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
                 <div class="col-md-6 mb-4 stretch-card transparent">
                   <div class="card card-dark-blue">
                     <div class="card-body">
-                      <p class="mb-4">Tổng đơn hàng  </p>
-                      <p class="fs-30 mb-2" th:text="${todayOrders}"></p>
-                      
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-md-6 mb-4 mb-lg-0 stretch-card transparent">
-                  <div class="card card-light-blue">
-                    <div class="card-body">
-                      <p class="mb-4">Tổng đơn hàng thành công </p>
-                      <p class="fs-30 mb-2" th:text="${ordersCompleted}"></p>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-6 stretch-card transparent">
-                  <div class="card card-light-danger">
-                    <div class="card-body">
-                      <p class="mb-4">Tổng đơn hàng huỷ</p>
-                      <p class="fs-30 mb-2" th:text="${ordersCanceled}"></p>
+                      <div class="sale">
+                        <div class="totalOrder">
+                          <p class="mb-4">Tổng đơn hàng  </p>
+                          <p class="fs-30 mb-2" th:text="${#numbers.formatDecimal(todayOrders, 1, 'DEFAULT', 0, 'DEFAULT')}"></p>
+                        </div>
+                        <div class="newOrder">
+                          <p class="mb-4">Tổng đơn hàng mới </p>
+                          <p class="fs-30 mb-2" th:text="${#numbers.formatDecimal(newOrders, 1, 'DEFAULT', 0, 'DEFAULT')}"></p>
+                        </div>
+                        <div class="deliOrder">
+                          <p class="mb-4">Tổng đơn hàng đang giao </p>
+                          <p class="fs-30 mb-2" th:text="${#numbers.formatDecimal(deliveryOrders, 1, 'DEFAULT', 0, 'DEFAULT')}"></p>
+                        </div>
+                        <div class="successOrder">
+                          <p class="mb-4">Tổng đơn hàng thành công </p>
+                          <p class="fs-30 mb-2" th:text="${#numbers.formatDecimal(ordersCompleted, 1, 'DEFAULT', 0, 'DEFAULT')}"></p>
+                        </div>
+                        <div class="cancelOrder">
+                          <p class="mb-4">Tổng đơn hàng huỷ</p>
+                          <p class="fs-30 mb-2" th:text="${#numbers.formatDecimal(ordersCanceled, 1, 'DEFAULT', 0, 'DEFAULT')}"></p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

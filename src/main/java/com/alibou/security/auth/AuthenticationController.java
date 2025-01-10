@@ -82,9 +82,13 @@ public class AuthenticationController {
 		}
 	}
 	
-	@GetMapping("/validate-coupon/{code}")
-	public ResponseEntity<Double> validateCoupon(@PathVariable("code") String code) {
-		double rate = coupService.validateCoupon(code);
+	@PostMapping("/validate-coupon")
+	public ResponseEntity<Double> validateCoupon(@RequestBody ValidateCouponRequest request) {
+		if (!request.getUsername().equalsIgnoreCase("LP")) {
+			double result = 0;
+			return ResponseEntity.ok(result);
+		}
+		double rate = coupService.validateCoupon(request.getCouponCode());
 		return ResponseEntity.ok(rate);
 	}
 

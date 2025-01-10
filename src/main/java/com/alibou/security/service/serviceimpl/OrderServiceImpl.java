@@ -106,18 +106,31 @@ public class OrderServiceImpl implements OrderService {
 					orderDetail.setQuantity(quantity);
 					orderDetail.setName(food.get().getName());
 					Optional<Coupon> coupon = coupRepo.getByCode(request.getCode());
+
 					if (coupon.isPresent() && coupon.get().getStatus() == 0 && coupon.get().getCount() >= 1) {
-						double rate = request.getRate();
-						orderDetail.setRate(rate);
-						total += (food.get().getPrice() - food.get().getPrice()*rate/100) * quantity;
-						coupon.get().setCount(coupon.get().getCount() - 1);
-						coupRepo.save(coupon.get());
+						if (coupon.get().getCode().equalsIgnoreCase("LPMARKETING")) {
+							total += food.get().getDefaultPrice() * quantity;
+							coupon.get().setCount(coupon.get().getCount() - 1);
+							coupRepo.save(coupon.get());
+
+							orderDetail.setPrice(food.get().getDefaultPrice());
+						} else {
+							double rate = request.getRate();
+							orderDetail.setRate(rate);
+							total += (food.get().getPrice() - food.get().getPrice()*rate/100) * quantity;
+							coupon.get().setCount(coupon.get().getCount() - 1);
+							coupRepo.save(coupon.get());
+
+							orderDetail.setPrice(food.get().getPrice() - food.get().getPrice()*rate/100);
+						}
+
 					} else {
 						orderDetail.setRate(0);
 						total += (food.get().getPrice()) * quantity;
+						orderDetail.setPrice(food.get().getPrice());
 					}
 
-					orderDetail.setPrice(food.get().getPrice());
+
 					orderDetails.add(orderDetail);
 					
 					foods.add(food.get());
@@ -303,30 +316,39 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Override
-	public List<Integer> getTodayReport(long timeFrom, long timeTo) {
+	public List<Double> getTodayReport(long timeFrom, long timeTo) {
 		// TODO Auto-generated method stub
 		List<Order> orders = orderRepo.getOrderByTimeRange(timeFrom, timeTo+86400);
-		List<Integer> result = new ArrayList<>();
-		int amountOfCompletedOrders = 0, amountOfCanceledOrders = 0, totalSales = 0;
+		List<Double> result = new ArrayList<>();
+		double expectedSales = 0;
+		double amountOfNewOrders = 0, amountOfDeliOrders = 0, amountOfCompletedOrders = 0, amountOfCanceledOrders = 0, totalSales = 0;
+		double totalOrders = 0;
 
 		for (Order order : orders) {
-			if (order.getStatus() == 2) {
+			if (order.getStatus() == 0) {
+				amountOfNewOrders++;
+				totalOrders += 1;
+			}else if (order.getStatus() == 1) {
+				amountOfDeliOrders++;
+				totalOrders += 1;
+			}else if (order.getStatus() == 2) {
 				amountOfCompletedOrders++;
-			}
-			if (order.getStatus() == 3) {
+				totalOrders += 1;
+				totalSales += order.getTotal();
+			}else {
 				amountOfCanceledOrders++;
 			}
-			List<OrderDetail> orderDetails = orderDetailRepo.getOrderDetailsById(order.getId());
-			for (OrderDetail orderDetail : orderDetails) {
-				totalSales += (orderDetail.getPrice() - orderDetail.getPrice() * orderDetail.getRate()/100)
-						* orderDetail.getQuantity();
-			}
+
+			expectedSales += order.getTotal();
 		}
 
 		result.add(totalSales);
-		result.add(orders.size());
+		result.add(totalOrders);
 		result.add(amountOfCompletedOrders);
 		result.add(amountOfCanceledOrders);
+		result.add(expectedSales);
+		result.add(amountOfNewOrders);
+		result.add(amountOfDeliOrders);
 		return result;
 	}
 
@@ -355,19 +377,13 @@ public class OrderServiceImpl implements OrderService {
 	public double getLowestOrder(long timeFrom, long timeTo) {
 		// TODO Auto-generated method stub
 		List<Order> orders = orderRepo.getOrderByTimeRange(timeFrom, timeTo);
-		int lowestOrderAmount = Integer.MAX_VALUE;
-
+		double lowestOrderAmount = Double.MAX_VALUE;
 		for (Order order : orders) {
-			int totalAmount = 0;
-			List<OrderDetail> orderDetails = orderDetailRepo.getOrderDetailsById(order.getId());
-			for (OrderDetail orderDetail : orderDetails) {
-				totalAmount += (orderDetail.getPrice() - orderDetail.getPrice() * orderDetail.getRate()/100)
-						* orderDetail.getQuantity();
-			}
+			double totalAmount = order.getTotal();
 			lowestOrderAmount = Math.min(lowestOrderAmount, totalAmount);
 		}
 
-		return lowestOrderAmount == Integer.MAX_VALUE ? 0 : lowestOrderAmount;
+		return lowestOrderAmount == Double.MAX_VALUE ? 0 : lowestOrderAmount;
 	}
 
 	@Override
@@ -399,7 +415,7 @@ public class OrderServiceImpl implements OrderService {
 			Food food = foodRepo.findFoodById(key);
 			double subTotal = 0;
 			for (OrderDetail item : orderDetails) {
-				subTotal += (item.getPrice() - item.getPrice() * item.getRate()/100) * item.getQuantity();
+				subTotal += item.getPrice() * item.getQuantity();
 			}
 			bestSeller.setName(food.getName());
 			bestSeller.setPrice(food.getPrice());

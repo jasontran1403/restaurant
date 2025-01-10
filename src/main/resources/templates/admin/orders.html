@@ -220,8 +220,14 @@
 						  </td>
 
                           <td>
-                            <div class="row-container"><p class="btn btn-success"><a style="color: white;text-decoration: none;" th:href="@{/admin/toggle-order/{orderId}(orderId=${order.id})}">Chuyển TT</a></p>
-                              <p class="btn btn-danger"><a style="color: white;text-decoration: none;" th:href="@{/admin/cancel-order/{orderId}(orderId=${order.id})}">Huỷ ĐH</a></p>
+                            <div class="row-container">
+                              <p class="btn btn-success">
+                                <a style="color: white; text-decoration: none;"
+                                   th:href="@{/admin/toggle-order/{orderId}(orderId=${order.id}, page=${currentPage})}">
+                                  Chuyển TT
+                                </a>
+                              </p>
+                              <p class="btn btn-danger"><a style="color: white;text-decoration: none;" th:href="@{/admin/cancel-order/{orderId}(orderId=${order.id}, page=${currentPage})}">Huỷ ĐH</a></p>
                               <p class="btn btn-info" th:attr="onclick=|invoice(${order.id})|" >Invoice</p></div>
                             <script>
                               const invoice = (orderId) => {
@@ -262,20 +268,40 @@
                         </tr>
                       </tbody>
                     </table>
-                    
 
-                    
-                    <div th:if="${orderPage.totalPages > 1}" style="display: flex; justify-content: space-around">
-					    <ul class="pagination">
-					        <li th:class="${orderPage.first ? 'page-item disabled' : 'page-item'}">
-					            <a th:href="@{/admin/orders(page=${orderPage.number - 1})}" class="page-link">Previous</a>
-					        </li>
-					        <li th:class="${orderPage.last ? 'page-item disabled' : 'page-item'}">
-					            <a th:href="@{/admin/orders(page=${orderPage.number + 1})}" class="page-link">Next</a>
-					        </li>
-					    </ul>
-					</div>
-					
+
+
+                    <div th:if="${orderPage.totalPages > 1}" style="display: flex; justify-content: center; align-items: center;">
+                      <ul class="pagination">
+                        <!-- Nút First -->
+                        <li th:class="${orderPage.number == 0 ? 'page-item disabled' : 'page-item'}">
+                          <a th:href="@{/admin/orders(page=0)}" class="page-link">First</a>
+                        </li>
+                        <!-- Nút Prev -->
+                        <li th:class="${orderPage.first ? 'page-item disabled' : 'page-item'}">
+                          <a th:href="@{/admin/orders(page=${orderPage.number - 1})}" class="page-link">Prev</a>
+                        </li>
+
+                        <li th:each="i : ${#numbers.sequence(
+                orderPage.number - 2 > 0 ? orderPage.number - 2 : 0,
+                orderPage.number + 2 < orderPage.totalPages ? orderPage.number + 2 : orderPage.totalPages - 1
+            )}"
+                            th:class="${i == orderPage.number ? 'page-item active' : 'page-item'}">
+                          <a th:href="@{/admin/orders(page=${i})}" class="page-link" th:text="${i + 1}"></a>
+                        </li>
+
+                        <!-- Nút Next -->
+                        <li th:class="${orderPage.last ? 'page-item disabled' : 'page-item'}">
+                          <a th:href="@{/admin/orders(page=${orderPage.number + 1})}" class="page-link">Next</a>
+                        </li>
+                        <!-- Nút Last -->
+                        <li th:class="${orderPage.number == orderPage.totalPages - 1 ? 'page-item disabled' : 'page-item'}">
+                          <a th:href="@{/admin/orders(page=${orderPage.totalPages - 1})}" class="page-link">Last</a>
+                        </li>
+                      </ul>
+                    </div>
+
+
                   </div>
                 </div>
               </div>

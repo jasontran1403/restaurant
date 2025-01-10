@@ -36,6 +36,7 @@ public class Food {
 	private String image;
 	private String quantity;
 	private int stocks;
+	private double defaultPrice;
     private List<String> categories;
     @OneToMany(mappedBy = "food")
     @JsonIgnore

@@ -6916,7 +6916,7 @@
 
 .row-container {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     width: fit-content;
 }
 

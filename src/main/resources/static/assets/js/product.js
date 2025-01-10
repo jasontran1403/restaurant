@@ -13,7 +13,6 @@ function addToCart(id, name, price, quantity, image) {
         // Nếu sản phẩm đã tồn tại, cập nhật số lượng
         cartItems[existingItemIndex].quantity += quantity;
     } else {
-        console.log(price);
         // Nếu sản phẩm chưa tồn tại, thêm mới vào giỏ hàng
         cartItems.push({
             id: id,

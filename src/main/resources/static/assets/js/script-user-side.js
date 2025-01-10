@@ -520,20 +520,33 @@ function displayToast(message, type) {
 var isCouponApplied = false;
 
 function checkCoupon() {
+    if (localStorage.getItem("user") == null) {
+        return;
+    }
     var code = document.getElementById('coupon-code');
     if (code.value === "") {
         alert("Vui lòng nhập mã giảm giá!");
         return;
     }
 
+    var data = {
+        username: localStorage.getItem("user"),
+        couponCode: code.value
+    };
+
     var requestOptions = {
-        method: 'GET',
+        method: 'POST', // Change to 'POST' or another method that supports body
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data),
         redirect: 'follow'
     };
 
-    fetch("/api/v1/auth/validate-coupon/" + code.value, requestOptions)
+    fetch("/api/v1/auth/validate-coupon", requestOptions)
         .then(response => response.text())
         .then(result => {
+            console.log(result);
             if (result === '0.0') {
                 // Handle invalid coupon
                 displayToast("Mã giảm giá không hợp lệ!", "error");
@@ -557,9 +570,14 @@ function checkCoupon() {
                     displayToast("Áp dụng mã giảm giá thành công!", "success");
                     var discountPercentage = parseFloat(result);
                     applyDiscount(discountPercentage);
+                    if (code.value === "LPMARKETING") {
+                        applyDiscountDefaultPrice(discountPercentage);
+                    } else {
+                        applyDiscount(discountPercentage);
+                    }
+                    rate = result;
                     isCouponApplied = true;
                     check = true;
-                    rate = result;
                     codeCoupon = code.value;
                 }
             }
@@ -579,6 +597,20 @@ function applyDiscount(discountPercentage) {
 
     // Update discount display
     document.getElementById('discount').innerText = `${discountPercentage}%`;
+}
+
+function applyDiscountDefaultPrice(discountPercentage) {
+    var totalElement = document.getElementById('total');
+    var subtotalElement = document.getElementById('subtotal');
+
+    var total = parseFloat(subtotalElement.innerText.replace(/[^0-9.-]+/g, ''));
+    var discountedTotal = total - (total * discountPercentage / 100);
+
+    // Update UI with discounted total
+    totalElement.innerText = `${formatPrice(discountedTotal)} VNĐ`;
+
+    // Update discount display
+    document.getElementById('discount').innerText = `Mã giảm giá gốc`;
 }
 
 function resetCoupon() {

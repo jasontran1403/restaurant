@@ -152,13 +152,16 @@ public class HomeController {
     }
 
     private void processDashboard(Model model, long timeFrom, long timeTo) {
-        List<Integer> statistics = orderService.getTodayReport(timeFrom, timeTo);
+        List<Double> statistics = orderService.getTodayReport(timeFrom, timeTo);
         List<BestSellerDto> bestSellers = orderService.getBestSellerStat();
 
         model.addAttribute("todaySales", statistics.get(0));
         model.addAttribute("todayOrders", statistics.get(1));
         model.addAttribute("ordersCompleted", statistics.get(2));
         model.addAttribute("ordersCanceled", statistics.get(3));
+        model.addAttribute("expectSales", statistics.get(4));
+        model.addAttribute("newOrders", statistics.get(5));
+        model.addAttribute("deliveryOrders", statistics.get(6));
         model.addAttribute("highest", orderService.getHighestOrder(timeFrom, timeTo));
         model.addAttribute("lowest", orderService.getLowestOrder(timeFrom, timeTo));
         model.addAttribute("bestSellers", bestSellers);
@@ -171,7 +174,7 @@ public class HomeController {
     }
 
     @GetMapping("/admin/toggle-order/{id}")
-    public String toggleOrder(@PathVariable Long id) {
+    public String toggleOrder(@PathVariable Long id, @RequestParam(required = false, defaultValue = "0") int page) {
         Order order = orderService.toggleStatus(id);
         String orderStatus = "";
 
@@ -200,13 +203,14 @@ public class HomeController {
                 commissionHistory.get().setStatus(0);
                 commissionHistoryRepository.save(commissionHistory.get());
             }
-
         }
-        return "redirect:/admin/orders";
+
+        // Redirect về trang hiện tại
+        return "redirect:/admin/orders?page=" + page;
     }
 
     @GetMapping("/admin/cancel-order/{id}")
-    public String cencelOrder(@PathVariable Long id) {
+    public String cencelOrder(@PathVariable Long id, @RequestParam(required = false, defaultValue = "0") int page) {
         Order order = orderService.findOrderById(id).get();
         if (order.getStatus() < 3) {
             orderService.cancelOrder(id);
@@ -219,15 +223,16 @@ public class HomeController {
                 commissionHistoryRepository.save(commissionHistory.get());
             }
         }
-        return "redirect:/admin/orders";
+        return "redirect:/admin/orders?page=" + page;
 
     }
 
     @GetMapping("/admin/orders")
     public String orders(Model model, @RequestParam(name = "page", defaultValue = "0") int page) {
-        int pageSize = 4;
+        int pageSize = 10;
         Page<Order> orders = orderService.getPaginatedOrders(PageRequest.of(page, pageSize));
         model.addAttribute("orderPage", orders);
+        model.addAttribute("currentPage", page); // Truyền page hiện tại vào Model
 
         return "admin/orders";
     }
@@ -365,7 +370,6 @@ public class HomeController {
     @PostMapping("/admin/edit-stocks")
     public String editStocks(@ModelAttribute EditStocksRequest request, RedirectAttributes redirectAttributes) {
         // Tiếp tục xử lý và lưu thông tin thực phẩm
-        System.out.println(request.getNewId() + " " + request.getNewQuantity() + " " + request.getNewPrice() + " " + request.getNewType());
 //        stocksService.editStocks(request.getNewId(), request.getNewQuantity(), request.getNewPrice(), request.getNewType());
         redirectAttributes.addFlashAttribute("msgSuccess", "Điều chỉnh tồn kho thành công");
 
