@@ -23,4 +23,5 @@ public class Agency {
     private String email;
     private String role;
     private String phone;
+    private double total;
 }

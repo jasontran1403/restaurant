@@ -399,9 +399,14 @@
                           <p th:text="${stockItem.type}"
                              th:classappend="${stockItem.type == 'In' ? 'text-green' : (stockItem.type == 'Out' ? 'text-red' : 'text-yellow')}">
                           </p>
-                        </td>
+                          <p style="font-style: italic" th:if="${not #strings.isEmpty(stockItem.note)}" th:text="${stockItem.note}"></p>                        </td>
                         <td>
-                          <button th:data-id="${stockItem.id}" type="button" class="btn btn-primary" data-toggle="modal" data-target="#example2ModalCenter">
+                          <button
+                                  th:data-id="${stockItem.id}"
+                                  th:data-quantity="${stockItem.quantity}"
+                                  th:data-price="${stockItem.price}"
+                                  th:data-type="${stockItem.type}"
+                                  type="button" class="btn btn-primary" data-toggle="modal" data-target="#example2ModalCenter">
                             Điều chỉnh
                           </button>
 
@@ -479,9 +484,16 @@
       var button = $(event.relatedTarget);
       // Lấy id từ thuộc tính data-id
       var stockId = button.data('id');
+      var stockQuantity = button.data('quantity');
+      var stockPrice = button.data('price');
+      var stockType = button.data('type');
+
       // Gán id vào input
       var modal = $(this);
       modal.find('#exampleSelectProduct5').val(stockId);
+      modal.find('#exampleInputName4').val(stockQuantity);
+      modal.find('#exampleInputName5').val(stockPrice);
+      modal.find("#exampleSelectProduct6").val(stockType).change();
     });
   </script>
 </body>

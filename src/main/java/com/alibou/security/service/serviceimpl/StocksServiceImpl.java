@@ -21,6 +21,7 @@ public class StocksServiceImpl implements StocksService {
     public void updateStocks(int productId, int quantity, double price, String type) {
         var food = foodRepository.findFoodById(productId);
         food.setStocks(food.getStocks() + quantity);
+        food.setDefaultPrice(price);
         foodRepository.save(food);
 
         StocksHistory stocksHistory = new StocksHistory();
@@ -46,6 +47,10 @@ public class StocksServiceImpl implements StocksService {
     public void editStocks(int stockId, int newQuantity, double newPrice, String newType) {
         var stocksHistory = stocksHistoryRepository.findById(stockId);
         if (stocksHistory.isPresent()) {
+            var food = foodRepository.findFoodByName(stocksHistory.get().getName());
+            food.setDefaultPrice(newPrice);
+            foodRepository.save(food);
+
             stocksHistory.get().setQuantity(newQuantity);
             stocksHistory.get().setPrice(newPrice);
             stocksHistory.get().setType(newType);

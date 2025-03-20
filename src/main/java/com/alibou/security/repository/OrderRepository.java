@@ -12,6 +12,9 @@ import com.alibou.security.entity.Order;
 public interface OrderRepository extends JpaRepository<Order, Long>{
 	@Query(value="select * from orders where status = ?1", nativeQuery=true)
 	List<Order> findOrderByStatus(int status);
+
+	@Query(value="select * from orders where staff = ?1 order by id desc", nativeQuery=true)
+	List<Order> findOrdersByStaff(String staff);
 	
 	@Query(value="select * from orders order by time DESC", nativeQuery=true)
 	Page<Order> findAllPagable(Pageable pageable);

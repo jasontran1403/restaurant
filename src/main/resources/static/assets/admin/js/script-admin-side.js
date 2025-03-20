@@ -127,31 +127,44 @@ function showNextToast() {
     }
 }
 
-function editFood(id, name, description, price, categories, image, status) {
-	document.getElementById('id').value = id;
-	document.getElementById('name').value = name;
-	document.getElementById('description').innerText = description;
-	document.getElementById('price').value = price;
-	categories = categories.replace("[", "").replace("]", "");
-	
-	var categoryNames = categories.split(',').map(function(cate) {
-        return cate.trim();
-    });
-    
-    var checkboxes = document.querySelectorAll('input[type="checkbox"]');
-    for (var i = 0; i < checkboxes.length; i++) {
-        var checkbox = checkboxes[i];
-        var label = document.querySelector('label[for="' + checkbox.id + '"]');
-        var labelText = label.innerText.trim();
-
-        // Kiểm tra xem tên danh mục có trong danh sách categoryNames không
-        if (categoryNames.indexOf(labelText) !== -1) {
-            checkbox.checked = true; // Đánh dấu checkbox nếu tên danh mục tương ứng được tìm thấy
-        } else {
-            checkbox.checked = false; // Bỏ đánh dấu checkbox nếu không tìm thấy
-        }
-    }
+function fetchData(username) {
+    console.log(username);
 }
+
+function editFood(id, name, description, price, categories, image, status) {
+    document.getElementById('id').value = id;
+    document.getElementById('name').value = name;
+    document.getElementById('description').innerText = description;
+    document.getElementById('price').value = price;
+
+    // Xử lý danh mục: Bỏ dấu ngoặc vuông và tách thành mảng
+    categories = categories.replace("[", "").replace("]", "");
+    var categoryMapping = {
+        "Sausage": 1,
+        "Saurce": 2
+    };
+
+    var categoryIds = categories.split(',').map(function(cate) {
+        var trimmedCate = cate.trim(); // Loại bỏ khoảng trắng
+        return categoryMapping[trimmedCate] || 3; // Nếu không có trong mapping, trả về 3
+    });
+
+    // Lấy tất cả radio button của danh mục
+    var radioButtons = document.querySelectorAll('input[type="radio"][name="categories"]');
+    radioButtons.forEach(function(radio) {
+        console.log(categoryIds.includes(radio.value) + " " + categoryIds + " " + radio.value);
+
+        if (categoryIds == radio.value) {
+            radio.checked = true; // Đánh dấu radio button đúng
+        } else {
+            radio.checked = false;
+        }
+    });
+
+    // Set trạng thái món ăn
+    document.getElementById('status').value = status;
+}
+
 
 function editCate(id, cateName, status) {
 	document.getElementById('id').value = id;

@@ -200,7 +200,7 @@
                           <td><p>Từ Order: <span th:text="${commission.fromOrder}"></span></p>
                             <p>Từ Customer: <span th:text="${commission.fromCustomer}"></span></p>
                           </td>
-                          <td><p th:text="${commission.amount}"></p></td>
+                          <td><p th:text="${#numbers.formatDecimal(commission.amount, 1, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'"></p></td>
                           <td>
                             <p>F1: <span th:text="${commission.receiveF1}"></span></p>
                             <p>F2: <span th:text="${commission.receiveF2}"></span></p>

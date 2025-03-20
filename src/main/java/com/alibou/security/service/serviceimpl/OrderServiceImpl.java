@@ -17,6 +17,7 @@ import com.alibou.security.entity.*;
 import com.alibou.security.repository.*;
 import com.alibou.security.service.StocksService;
 import com.alibou.security.utils.TelegramService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -264,6 +265,7 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Override
+	@Transactional
 	public Order toggleStatus(long orderId) {
 		Order order = orderRepo.getById(orderId);
 		int status = order.getStatus();
@@ -271,7 +273,23 @@ public class OrderServiceImpl implements OrderService {
 		if (statusNext > 2) {
 			statusNext = 2;
 		}
+
 		order.setStatus(statusNext);
+		if (status != 2 && statusNext == 2) {
+			List<OrderDetail> orderDetail = orderDetailRepo.getOrderDetailsById(orderId);
+
+			List<Food> listFoodUpdate = new ArrayList<>();
+			for (OrderDetail item : orderDetail) {
+				Food food = foodRepo.findFoodById(item.getFood_id());
+				food.setStocks(food.getStocks() - item.getQuantity());
+
+				listFoodUpdate.add(food);
+			}
+
+			if (!listFoodUpdate.isEmpty()) {
+				foodRepo.saveAll(listFoodUpdate);
+			}
+		}
 		return orderRepo.save(order);
 	}
 
@@ -279,6 +297,11 @@ public class OrderServiceImpl implements OrderService {
 	public List<Order> getAllOrders() {
 		// TODO Auto-generated method stub
 		return orderRepo.findAll();
+	}
+
+	@Override
+	public List<Order> findOrderByStaff(String staffId) {
+		return orderRepo.findOrdersByStaff(staffId);
 	}
 
 	@Override
@@ -314,9 +337,26 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Override
+	@Transactional
 	public void cancelOrder(long orderId) {
 		// TODO Auto-generated method stub
 		Order order = orderRepo.getById(orderId);
+		if (order.getStatus() == 2) {
+			List<OrderDetail> orderDetail = orderDetailRepo.getOrderDetailsById(orderId);
+
+			List<Food> listFoodUpdate = new ArrayList<>();
+			for (OrderDetail item : orderDetail) {
+				Food food = foodRepo.findFoodById(item.getFood_id());
+				food.setStocks(food.getStocks() + item.getQuantity());
+
+				listFoodUpdate.add(food);
+			}
+
+			if (!listFoodUpdate.isEmpty()) {
+				foodRepo.saveAll(listFoodUpdate);
+			}
+		}
+
 		order.setStatus(3);
 		orderRepo.save(order);
 	}

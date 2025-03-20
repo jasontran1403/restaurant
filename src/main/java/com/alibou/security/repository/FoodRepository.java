@@ -12,6 +12,9 @@ import com.alibou.security.entity.Food;
 public interface FoodRepository extends JpaRepository<Food, Long>{
 	@Query(value="select * from food where id = ?1", nativeQuery = true)
 	Food findFoodById(long id);
+
+	@Query(value="select * from food where name = ?1", nativeQuery = true)
+	Food findFoodByName(String name);
 	
 	@Query(value="select * from food where id = ?1", nativeQuery = true)
 	Optional<Food> getFoodById(long id);

@@ -1,6 +1,7 @@
 package com.alibou.security.controller;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import com.alibou.security.dto.*;
@@ -18,6 +19,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -81,8 +83,44 @@ public class HomeController {
             return "redirect:/login";
         }
 
+        List<Order> listOrders = orderService.findOrderByStaff(loggedInUser);
+
+        List<OrderDetailDTO> listOrdersDetail = new ArrayList<>();
+
+        for (Order order : listOrders) {
+            var commissionHistory = commissionHistoryRepository.findCommissionHistoryByOrderId(order.getId());
+            OrderDetailDTO item = new OrderDetailDTO();
+            if (commissionHistory.isPresent()) {
+                item.setCommission(commissionHistory.get().getAmount());
+            } else {
+                item.setCommission(0);
+            }
+            item.setId(order.getId());
+            item.setName(order.getName());
+            item.setPhone(order.getPhone());
+            item.setAddress(order.getAddress());
+            item.setTime(convertUnixToDateTime(order.getTime()));
+            item.setTotal(order.getTotal());
+            item.setActual(order.getActual());
+            item.setStatus(order.getStatus());
+            listOrdersDetail.add(item);
+        }
+
+        System.out.println(listOrdersDetail);
+        model.addAttribute("listOrders", listOrdersDetail);
+
         return "landing-page/staff";
     }
+
+    public static String convertUnixToDateTime(long timeUnix) {
+        // Định dạng thời gian mong muốn
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd/MM/yyyy");
+        // Set múi giờ GMT+7
+        sdf.setTimeZone(TimeZone.getTimeZone("GMT+7"));
+        // Chuyển đổi từ Unix timestamp sang định dạng chuỗi
+        return sdf.format(new Date(timeUnix * 1000)); // Nhân 1000 vì Unix timestamp tính bằng giây
+    }
+
 
     @GetMapping("/logout")
     public String logout(HttpSession session, RedirectAttributes redirectAttributes) {
@@ -273,7 +311,11 @@ public class HomeController {
 
     @GetMapping("/admin/toggle-order/{id}")
     public String toggleOrder(@PathVariable Long id, @RequestParam(required = false, defaultValue = "0") int page) {
+        int oldOrderStatus = orderService.getOrderById(id).getStatus();
+
         Order order = orderService.toggleStatus(id);
+        int newOrderStatus = order.getStatus();
+
         String orderStatus = "";
 
         if (order.getStatus() == 0) {
@@ -290,16 +332,43 @@ public class HomeController {
         telegramService.sendMessageToGroup(message);
 
         var commissionHistory = commissionHistoryRepository.findCommissionHistoryByOrderId(id);
+
         if (commissionHistory.isPresent()) {
+            var agencyF1 = agencyRepository.findByUsername(commissionHistory.get().getReceiveF1());
+            var agencyF2 = agencyRepository.findByUsername(commissionHistory.get().getReceiveF2());
+
             if (order.getStatus() == 2) {
                 commissionHistory.get().setStatus(1);
-                commissionHistoryRepository.save(commissionHistory.get());
             } else if (order.getStatus() == 3) {
                 commissionHistory.get().setStatus(2);
-                commissionHistoryRepository.save(commissionHistory.get());
             } else {
                 commissionHistory.get().setStatus(0);
-                commissionHistoryRepository.save(commissionHistory.get());
+            }
+
+            commissionHistoryRepository.save(commissionHistory.get());
+
+            if (oldOrderStatus != 2 && newOrderStatus == 2) {
+                if (commissionHistory.get().getAmount() > 0) {
+                    agencyF1.ifPresent(agency -> {
+                        agency.setTotal(agency.getTotal() + commissionHistory.get().getAmount());
+                        agencyRepository.save(agency);
+                    });
+                    agencyF2.ifPresent(agency -> {
+                        agency.setTotal(agency.getTotal() + commissionHistory.get().getAmount());
+                        agencyRepository.save(agency);
+                    });
+                }
+            } else if (oldOrderStatus == 2 && newOrderStatus != 2) {
+                if (commissionHistory.get().getAmount() > 0) {
+                    agencyF1.ifPresent(agency -> {
+                        agency.setTotal(agency.getTotal() - commissionHistory.get().getAmount());
+                        agencyRepository.save(agency);
+                    });
+                    agencyF2.ifPresent(agency -> {
+                        agency.setTotal(agency.getTotal() - commissionHistory.get().getAmount());
+                        agencyRepository.save(agency);
+                    });
+                }
             }
         }
 
@@ -317,8 +386,22 @@ public class HomeController {
 
             var commissionHistory = commissionHistoryRepository.findCommissionHistoryByOrderId(id);
             if (commissionHistory.isPresent()) {
+                var agencyF1 = agencyRepository.findByUsername(commissionHistory.get().getReceiveF1());
+                var agencyF2 = agencyRepository.findByUsername(commissionHistory.get().getReceiveF2());
+
                 commissionHistory.get().setStatus(2);
                 commissionHistoryRepository.save(commissionHistory.get());
+
+                if (commissionHistory.get().getAmount() > 0) {
+                    agencyF1.ifPresent(agency -> {
+                        agency.setTotal(agency.getTotal() - commissionHistory.get().getAmount());
+                        agencyRepository.save(agency);
+                    });
+                    agencyF2.ifPresent(agency -> {
+                        agency.setTotal(agency.getTotal() - commissionHistory.get().getAmount());
+                        agencyRepository.save(agency);
+                    });
+                }
             }
         }
         return "redirect:/admin/orders?page=" + page;
@@ -375,11 +458,14 @@ public class HomeController {
     @GetMapping("/admin/commissions")
     public String commissions(Model model, @RequestParam(name = "page", defaultValue = "0") int page) {
         int pageSize = 4;
-        Page<CommissionHistory> commissionHistory = commissionHistoryRepository.findAll(PageRequest.of(page, pageSize));
+        Page<CommissionHistory> commissionHistory = commissionHistoryRepository.findAll(
+                PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "id"))
+        );
         model.addAttribute("commissionPage", commissionHistory);
 
         return "admin/commission";
     }
+
 
     @PostMapping("/admin/add-cate")
     public String addCate(AddCateRequest request) {
@@ -448,7 +534,6 @@ public class HomeController {
         List<String> listType = new ArrayList<>();
         listType.add("In");
         listType.add("Out");
-//        listType.add("Adjustment");
         model.addAttribute("listType", listType);
 
         return "admin/stocks";
@@ -468,7 +553,7 @@ public class HomeController {
     @PostMapping("/admin/edit-stocks")
     public String editStocks(@ModelAttribute EditStocksRequest request, RedirectAttributes redirectAttributes) {
         // Tiếp tục xử lý và lưu thông tin thực phẩm
-//        stocksService.editStocks(request.getNewId(), request.getNewQuantity(), request.getNewPrice(), request.getNewType());
+        stocksService.editStocks(request.getNewId(), request.getNewQuantity(), request.getNewPrice(), request.getNewType());
         redirectAttributes.addFlashAttribute("msgSuccess", "Điều chỉnh tồn kho thành công");
 
         return "redirect:/admin/stocks";

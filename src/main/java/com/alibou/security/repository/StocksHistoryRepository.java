@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface StocksHistoryRepository extends JpaRepository<StocksHistory, Integer> {
-    @Query(value="select * from stocks_history order by id", nativeQuery = true)
+    @Query(value="select * from stocks_history order by id desc", nativeQuery = true)
     Page<StocksHistory> getAllStocksHistory(Pageable pageable);
 
     List<StocksHistory> findAllByDateBetween(long startDate, long endDate);

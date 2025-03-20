@@ -20,6 +20,7 @@ public interface OrderService {
 	Order getOrderById(long id);
 	Optional<Order> findOrderById(long id);
 	List<Order> getAllOrders();
+	List<Order> findOrderByStaff(String staffId);
 	List<Order> getAllOrdersByStatus(int status);
 	Order toggleStatus(long orderId);
 	void cancelOrder(long orderId);
