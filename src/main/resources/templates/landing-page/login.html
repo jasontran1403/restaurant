@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <meta name="description" content="Babette">
+  <link href="assets/images/favicon/favicon.png" rel="icon">
+  <title>Sausage</title>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css?family=Rubik:400,500,700%7cShadows+Into+Light&display=swap">
+  <link rel="stylesheet" th:href="@{/assets/css/libraries.css}" />
+  <link rel="stylesheet" th:href="@{/assets/css/style.css}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" type="text/css" th:href="@{/assets/login/vendor/bootstrap/css/bootstrap.min.css}">
+  <link rel="stylesheet" type="text/css" th:href="@{/assets/login/fonts/font-awesome-4.7.0/css/font-awesome.min.css}">
+  <link rel="stylesheet" type="text/css" th:href="@{/assets/login/fonts/iconic/css/material-design-iconic-font.min.css}">
+  <link rel="stylesheet" type="text/css" th:href="@{/assets/login/vendor/animate/animate.css}">
+  <link rel="stylesheet" type="text/css" th:href="@{/assets/login/vendor/css-hamburgers/hamburgers.min.css}">
+  <link rel="stylesheet" type="text/css" th:href="@{/assets/login/vendor/animsition/css/animsition.min.css}">
+  <link rel="stylesheet" type="text/css" th:href="@{/assets/login/vendor/select2/select2.min.css}">
+  <link rel="stylesheet" type="text/css" th:href="@{/assets/login/vendor/daterangepicker/daterangepicker.css}">
+  <link rel="stylesheet" type="text/css" th:href="@{/assets/login/css/util.css}">
+  <link rel="stylesheet" type="text/css" th:href="@{/assets/login/css/main.css}">
+</head>
+
+<body>
+  <div class="wrapper">
+  <div id="toast" class="hidden">
+      <div id="toast-list" class="toast-list"></div>
+    </div>
+    <!-- =========================
+        Header
+    =========================== -->
+<!--    <header id="header" class="header header-transparent header-layout1">-->
+<!--      <nav class="navbar navbar-expand-lg sticky-navbar">-->
+<!--        <div class="container">-->
+<!--          <a class="navbar-brand" href="/">-->
+<!--            <img th:src="@{/assets/images/logo/logo-light.png}" class="logo-light" alt="logo">-->
+
+<!--            <img th:src="@{/assets/images/logo/logo-dark.png}" class="logo-dark" alt="logo">-->
+<!--          </a>-->
+<!--&lt;!&ndash;          <button class="navbar-toggler" type="button">&ndash;&gt;-->
+<!--&lt;!&ndash;            <span class="menu-lines"><span></span></span>&ndash;&gt;-->
+<!--&lt;!&ndash;          </button>&ndash;&gt;-->
+<!--        </div>&lt;!&ndash; /.container &ndash;&gt;-->
+<!--      </nav>&lt;!&ndash; /.navabr &ndash;&gt;-->
+<!--    </header>&lt;!&ndash; /.Header &ndash;&gt;-->
+
+
+    <!-- =====================
+       Hero Banner  
+    ======================== -->
+    <section id="heroBanner" class="hero-banner bg-overlay bg-overlay-2 py-0">
+      <div class="bg-img"><img src="assets/images/backgrounds/14.jpg" alt="background"></div>
+      <div class="container">
+        <div class="row">
+          <div class="col-sm-12 col-md-12 col-lg-12 hero__banner-inner">
+            <div class="limiter">
+              <div class="container-login100">
+                <div class="wrap-login100">
+                  <form class="login100-form validate-form" id="loginForm" method="post" action="/login">
+    <span class="login100-form-title p-b-26">
+        Welcome To Original Taste
+    </span>
+
+                    <!-- Hiển thị thông báo lỗi từ Flash Attribute -->
+
+
+
+                    <div class="wrap-input100 validate-input" data-validate="Username can not be empty">
+                      <input class="input100" type="text" name="username" id="username">
+                      <span class="focus-input100" data-placeholder="Username"></span>
+                    </div>
+
+                    <div class="wrap-input100 validate-input" data-validate="Enter password">
+        <span class="btn-show-pass">
+            <i class="zmdi zmdi-eye"></i>
+        </span>
+                      <input class="input100" type="password" name="password" id="password">
+                      <span class="focus-input100" data-placeholder="Password"></span>
+                    </div>
+
+                    <div th:if="${errorMessage}" class="notification error">
+                      <span th:text="${errorMessage}"></span>
+                    </div>
+                    <style>
+                      .notification {
+                        padding: 10px;
+                        margin-bottom: 15px;
+                        border-radius: 5px;
+                        text-align: center;
+                        font-size: 14px;
+                        font-weight: bold;
+                      }
+
+                      .error {
+                        background-color: #ff4d4d;
+                        color: white;
+                      }
+                    </style>
+
+                    <div class="container-login100-form-btn">
+                      <div class="wrap-login100-form-btn">
+                        <div class="login100-form-bgbtn"></div>
+                        <button type="submit" class="login100-form-btn">
+                          Login
+                        </button>
+                      </div>
+                    </div>
+
+
+
+                    <div class="text-center p-t-115">
+                      <span class="txt1">Don’t have an account?</span>
+                      <a class="txt2" href="#">Sign Up</a>
+                    </div>
+                  </form>
+
+
+                  <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+                      // Xử lý hiện/ẩn placeholder
+                      const inputs = document.querySelectorAll(".input100");
+                      inputs.forEach(input => {
+                        const placeholder = input.nextElementSibling;
+                        input.addEventListener("input", function() {
+                          placeholder.style.display = this.value ? "none" : "block";
+                        });
+                      });
+
+                      // Xử lý nút hiển thị mật khẩu
+                      const showPassBtn = document.querySelector(".btn-show-pass i");
+                      const passwordInput = document.getElementById("password");
+
+                      showPassBtn.addEventListener("click", function() {
+                        if (passwordInput.type === "password") {
+                          passwordInput.type = "text";
+                          showPassBtn.classList.replace("zmdi-eye", "zmdi-eye-off");
+                        } else {
+                          passwordInput.type = "password";
+                          showPassBtn.classList.replace("zmdi-eye-off", "zmdi-eye");
+                        }
+                      });
+                    });
+                  </script>
+
+
+                </div>
+              </div>
+            </div>
+          </div><!-- /.col-lg-12 -->
+        </div><!-- /.row -->
+      </div><!-- /.container -->
+      <svg class="divider-shape" xmlns="http://www.w3.org/2000/svg" width="142" height="17" viewBox="0 0 142 17">
+        <path
+          d="M800,600V583c8.782,15.985,46.811,11.315,56,12a35.721,35.721,0,0,1,15,5m-71,0V583c-8.782,15.985-46.811,11.315-56,12a35.717,35.717,0,0,0-15,5"
+          transform="translate(-729 -583)"></path>
+      </svg>
+    </section><!-- /.Hero Banner -->
+
+    <button id="scrollTopBtn"><i class="fa fa-angle-up"></i></button>
+  </div>
+  <!-- /.wrapper -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+  <script src="assets/js/jquery-3.3.1.min.js"></script>
+  <script src="assets/js/plugins.js"></script>
+  <script src="assets/js/main.js"></script>
+  
+  <script src="assets/js/script-admin-side.js"></script>
+</body>
+
+</html>

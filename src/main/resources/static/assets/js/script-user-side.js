@@ -50,18 +50,30 @@ function send(event) {
 
 var checkout = () => {
     var user = localStorage.getItem("user");
+
     if (!user) {
         displayToast("Cần phải đăng nhập để đặt đơn hàng!", "error");
         return;
     }
     var cartItems = JSON.parse(localStorage.getItem("cartItems"));
+
     if (cartItems.length === 0) {
         displayToast("Giỏ hàng trống!", "error");
         return;
     }
 
-    if (document.getElementById("name").value === "" || document.getElementById("phone").value === "" || document.getElementById("address").value === "") {
+    var name = document.getElementById("name").value.trim();
+    var phone = document.getElementById("phone").value.trim();
+    var address = document.getElementById("address").value.trim();
+    var message = document.getElementById("message").value.trim();
+
+    if (name === "" || phone === "" || address === "") {
         displayToast("Thông tin người nhận hàng trống!", "error");
+        return;
+    }
+
+    if (!isValidVietnamesePhone(phone)) {
+        displayToast("Số điện thoại không đúng định dạng!", "error");
         return;
     }
 
@@ -69,11 +81,11 @@ var checkout = () => {
     myHeaders.append("Content-Type", "application/json");
 
     var raw = JSON.stringify({
-        food: cartItems.map(item => `${item.id}-${item.quantity}-${item.price}`), // Tạo một mảng các món ăn dưới dạng 'id-quantity'
-        name: document.getElementById("name").value,
-        phone: document.getElementById("phone").value,
-        address: document.getElementById("address").value,
-        message: document.getElementById("message").value,
+        food: cartItems.map(item => `${item.id}-${item.quantity}-${item.price}`),
+        name: name,
+        phone: phone,
+        address: address,
+        message: message,
         code: check ? codeCoupon : "",
         rate: check ? rate : 0,
         agency: user
@@ -238,6 +250,28 @@ var checkout = () => {
 
 function onMessageReceived(payload) {
     var message = JSON.parse(payload.body);
+}
+
+function isValidVietnamesePhone(phone) {
+    // Xóa tất cả khoảng trắng trong số điện thoại
+    let cleanedPhone = phone.replace(/\s+/g, "");
+
+    // Biểu thức chính quy kiểm tra số điện thoại VN hợp lệ
+    const regex = /^(0\d{9}|0\d{10})$/;
+    return regex.test(cleanedPhone);
+}
+
+function formatVietnamesePhone(phone) {
+    // Xóa khoảng trắng trước khi định dạng
+    let cleanedPhone = phone.replace(/\s+/g, "");
+
+    // Kiểm tra độ dài để format chuẩn
+    if (cleanedPhone.length === 10) {
+        return cleanedPhone.replace(/(\d{4})(\d{3})(\d{3})/, "$1 $2 $3");
+    } else if (cleanedPhone.length === 11) {
+        return cleanedPhone.replace(/(\d{4})(\d{3})(\d{4})/, "$1 $2 $3");
+    }
+    return phone; // Nếu không hợp lệ, trả về nguyên gốc
 }
 
 connect();

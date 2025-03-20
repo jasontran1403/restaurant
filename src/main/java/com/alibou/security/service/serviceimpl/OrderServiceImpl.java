@@ -154,9 +154,15 @@ public class OrderServiceImpl implements OrderService {
 			order.setName(request.getName());
 			order.setPhone(request.getPhone());
 			order.setAddress(request.getAddress());
-			order.setMessage(request.getMessage());
+			if (request.getMessage().equalsIgnoreCase("")) {
+				order.setMessage("Không có");
+			} else {
+				order.setMessage(request.getMessage());
+			}
+
 			order.setTotal(total);
 			order.setActual(code);
+			order.setStaff(agency.get().getUsername().toUpperCase());
 			amountBefore = code;
 			amountAfter = total;
 

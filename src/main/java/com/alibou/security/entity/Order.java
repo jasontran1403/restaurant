@@ -31,4 +31,5 @@ public class Order {
 	private String message;
 	private double total;
 	private double actual;
+	private String staff;
 }

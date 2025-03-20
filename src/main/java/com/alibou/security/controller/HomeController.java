@@ -14,6 +14,7 @@ import com.alibou.security.utils.ExcelExportService;
 import com.alibou.security.utils.HtmlToPDF;
 import com.alibou.security.utils.TelegramService;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -63,13 +64,82 @@ public class HomeController {
     @Autowired
     TelegramService telegramService;
 
+    @Autowired
+    AgencyService agencyService;
+
+    @GetMapping("/login")
+    public String login() {
+        return "landing-page/login";
+    }
+
+    @GetMapping("/sales")
+    public String staff(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        String loggedInUser = (String) session.getAttribute("loggedInUser");
+
+        if (loggedInUser == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Bạn cần đăng nhập tài khoản để theo dõi doanh thu cá nhân!");
+            return "redirect:/login";
+        }
+
+        return "landing-page/staff";
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session, RedirectAttributes redirectAttributes) {
+        session.invalidate(); // Xoá toàn bộ session
+        redirectAttributes.addFlashAttribute("successMessage", "Bạn đã đăng xuất thành công!");
+        return "redirect:/login";
+    }
+
+    @PostMapping("/login")
+    public String loginExecute(@RequestParam String username,
+                               @RequestParam String password,
+                               RedirectAttributes redirectAttributes,
+                               HttpSession session) {
+        // Kiểm tra nếu username hoặc password rỗng
+        if (username.isEmpty() || password.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Username và Password không được để trống!");
+            return "redirect:/login";
+        }
+
+        // Xác thực tài khoản
+        boolean isAuthenticated = agencyService.isAuthenticated(username, password);
+        var agency = agencyRepository.findByUsername(username);
+
+        if (isAuthenticated) {
+            session.setAttribute("loggedInUser", username);
+            if (agency.isPresent() && agency.get().getRole().equalsIgnoreCase("admin")) {
+                return "redirect:/admin";
+            } else {
+                return "redirect:/";
+            }
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Đăng nhập thất bại, vui lòng kiểm tra lại thông tin!");
+            return "redirect:/login";
+        }
+    }
+
     @GetMapping("/cart")
-    public String cart() {
+    public String cart(HttpSession session, RedirectAttributes redirectAttributes) {
+        String loggedInUser = (String) session.getAttribute("loggedInUser");
+
+        if (loggedInUser == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Bạn cần đăng nhập để thao tác đặt hàng!");
+            return "redirect:/login";
+        }
+
         return "landing-page/cart";
     }
 
     @GetMapping({"/menu", "/"})
-    public String menu(Model model, @RequestParam(name = "page", defaultValue = "0") int page) {
+    public String menu(Model model, @RequestParam(name = "page", defaultValue = "0") int page, HttpSession session, RedirectAttributes redirectAttributes) {
+        String loggedInUser = (String) session.getAttribute("loggedInUser");
+
+        if (loggedInUser == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Bạn cần đăng nhập để thao tác đặt hàng!");
+            return "redirect:/login";
+        }
+
         int pageSize = 6;
         Page<Food> foods = foodService.getPaginatedFoodsShow(PageRequest.of(page, pageSize));
         model.addAttribute("foodPage", foods);
@@ -82,7 +152,13 @@ public class HomeController {
 
     @GetMapping("/search")
     public String search(@RequestParam(name = "query") String query, Model model,
-                         @RequestParam(name = "page", defaultValue = "0") int page) {
+                         @RequestParam(name = "page", defaultValue = "0") int page, HttpSession session, RedirectAttributes redirectAttributes) {
+        String loggedInUser = (String) session.getAttribute("loggedInUser");
+
+        if (loggedInUser == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Bạn cần đăng nhập để thao tác đặt hàng!");
+            return "redirect:/login";
+        }
         model.addAttribute("query", query);
         int pageSize = 6;
         Page<Food> foods = foodService.findPaginatedFoods(PageRequest.of(page, pageSize), query);
@@ -101,7 +177,14 @@ public class HomeController {
     }
 
     @GetMapping("/product/{id}")
-    public String product(Model model, @PathVariable Long id, @RequestParam(name = "page", defaultValue = "0") int page) {
+    public String product(Model model, @PathVariable Long id, @RequestParam(name = "page", defaultValue = "0") int page, HttpSession session, RedirectAttributes redirectAttributes) {
+        String loggedInUser = (String) session.getAttribute("loggedInUser");
+
+        if (loggedInUser == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Bạn cần đăng nhập để thao tác đặt hàng!");
+            return "redirect:/login";
+        }
+
         Food food = foodService.getById(id);
         model.addAttribute("food", food);
         AddReviewRequest review = new AddReviewRequest();
@@ -118,7 +201,22 @@ public class HomeController {
     }
 
     @GetMapping({"/admin/dashboard", "/admin/", "/admin", "/admin/dashboard/{date}"})
-    public String dashboard(Model model, @PathVariable(name = "date", required = false) String date) {
+    public String dashboard(Model model, @PathVariable(name = "date", required = false) String date, HttpSession session, RedirectAttributes redirectAttributes) {
+        String loggedInUser = (String) session.getAttribute("loggedInUser");
+
+        if (loggedInUser == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Bạn cần đăng nhập để thao tác đặt hàng!");
+            return "redirect:/login";
+        }
+
+        var agencyOptional = agencyRepository.findByUsername(loggedInUser);
+
+        if (agencyOptional.isPresent() && !agencyOptional.get().getRole().equalsIgnoreCase("admin")) {
+            session.invalidate(); // Xoá toàn bộ session
+            redirectAttributes.addFlashAttribute("errorMessage", "Bạn không phải là admin để truy cập tài nguyên này!");
+            return "redirect:/login";
+        }
+
         long timestamp = getTimestamp();
 
         if (date == null || date.equals("today") || date.isBlank()) {

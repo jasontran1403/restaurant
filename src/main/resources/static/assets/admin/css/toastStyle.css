@@ -19,6 +19,14 @@
   transition: all linear 0.3s;
 }
 
+.modal-footer {
+  width: 100%;
+  display: flex!important;
+  flex-direction: column!important;
+  justify-content: flex-end!important;
+  align-items: flex-end!important;
+}
+
 @keyframes slideInLeft {
   from {
     opacity: 0;

@@ -5,6 +5,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.alibou.security.auth.RegisterRequest;
+import com.alibou.security.user.User;
+import com.alibou.security.user.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -29,6 +32,9 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import static com.alibou.security.user.Role.ADMIN;
+import static com.alibou.security.user.Role.MANAGER;
+
 @SpringBootApplication
 @CrossOrigin("*")
 @EnableJpaAuditing(auditorAwareRef = "auditorAware")
@@ -40,26 +46,29 @@ public class SecurityApplication {
 	}
 
 	@Bean
-	public CommandLineRunner commandLineRunner(AuthenticationService service) {
+	public CommandLineRunner commandLineRunner(AuthenticationService service, UserRepository userRepository) {
 		return args -> {
-//			var admin = RegisterRequest.builder()
-//					.firstname("Admin")
-//					.lastname("Admin")
-//					.email("admin@gmail.com")
-//					.password("123")
-//					.role(ADMIN)
-//					.build();
-//			System.out.println("Admin token: " + service.register(admin).getAccessToken());
-//
-//			var manager = RegisterRequest.builder()
-//					.firstname("Admin")
-//					.lastname("Admin")
-//					.email("manager@mail.com")
-//					.password("password")
-//					.role(MANAGER)
-//					.build();
-//			System.out.println("Manager token: " + service.register(manager).getAccessToken());
+			List<User> user = userRepository.findAll();
 
+			if (user.isEmpty()) {
+				var admin = RegisterRequest.builder()
+						.firstname("Admin")
+						.lastname("Admin")
+						.email("admin@gmail.com")
+						.password("123")
+						.role(ADMIN)
+						.build();
+				System.out.println("Admin token: " + service.register(admin).getAccessToken());
+
+				var manager = RegisterRequest.builder()
+						.firstname("Admin")
+						.lastname("Admin")
+						.email("manager@mail.com")
+						.password("password")
+						.role(MANAGER)
+						.build();
+				System.out.println("Manager token: " + service.register(manager).getAccessToken());
+			}
 		};
 	}
 }

@@ -206,7 +206,7 @@
                           </td>
                           <td><p th:text="${#numbers.formatDecimal(order.total, 1, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'"></p></td>
                           <td>
-							<p data-toggle="modal" data-target="#exampleModal" class="btn btn-info" th:attr="data-order-id=${order.id}, data-order-message=${order.message}" onclick="showDetail(this.getAttribute('data-order-id'), this.getAttribute('data-order-message'))">Đơn hàng
+							<p data-toggle="modal" data-target="#exampleModal" class="btn btn-info" th:attr="data-order-id=${order.id}, data-order-message=${order.message}, data-staff=${order.staff}" onclick="showDetail(this.getAttribute('data-order-id'), this.getAttribute('data-order-message'), this.getAttribute('data-staff'))">Đơn hàng
 						  </td>
                           <td>
 						    <p th:class="${order.status == 0 ? 'btn btn-info' : 
@@ -378,7 +378,7 @@
 </script>
 
 <script>
-	function showDetail(id, message) {
+	function showDetail(id, message, staff) {
 		var modalBody = document.querySelector('.modal-body');
 		var modalFooter = document.querySelector('.modal-footer'); 
 		    
@@ -402,7 +402,7 @@
 		      itemDiv.classList.add('item'); // Tùy chỉnh lớp CSS cần thiết
 		      
 		      var itemName = document.createElement('p');
-		      itemName.textContent = "Tên món: " + item.name;
+		      itemName.textContent = "Tên sản phẩm: " + item.name;
 		
 		      var itemDescription = document.createElement('p');
 		      itemDescription.textContent = "Số lượng: " + item.quantity;
@@ -414,9 +414,14 @@
 		    });
 		    var messageDiv = document.createElement('div');
 		    messageDiv.classList.add('order-message');
-	        messageDiv.textContent = `Lời nhắn: ${message}`;
-	
-	        modalFooter.appendChild(messageDiv);
+            messageDiv.textContent = `Lời nhắn: ${message}`;
+            modalFooter.appendChild(messageDiv);
+
+            var staffDiv = document.createElement('div');
+            staffDiv.classList.add('order-message');
+            staffDiv.textContent = `Người đặt: ${staff}`;
+	        modalFooter.appendChild(staffDiv);
+
 		  })
 		  .catch(error => console.log('error', error));
 	}
