@@ -405,6 +405,7 @@
                           <th>Đơn giá</th>
                           <th>Số lượng</th>
                           <th>Phân loại</th>
+                          <th>Chức năng</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -428,6 +429,17 @@
                              th:classappend="${stockItem.type == 'In' ? 'text-green' : (stockItem.type == 'Out' ? 'text-red' : 'text-yellow')}">
                           </p>
                           <p style="font-style: italic" th:if="${not #strings.isEmpty(stockItem.note)}" th:text="${stockItem.note}"></p>                        </td>
+                        <td>
+                          <button
+                                  th:data-id="${stockItem.id}"
+                                  th:data-quantity="${stockItem.quantity}"
+                                  th:data-price="${stockItem.price}"
+                                  th:data-type="${stockItem.type}"
+                                  type="button" class="btn btn-primary" data-toggle="modal" data-target="#example2ModalCenter">
+                            Điều chỉnh
+                          </button>
+
+                        </td>
                       </tr>
                       </tbody>
                     </table>
