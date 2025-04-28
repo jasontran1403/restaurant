@@ -13,6 +13,7 @@ import com.alibou.security.service.*;
 import com.alibou.security.user.UserRepository;
 import com.alibou.security.utils.ExcelExportService;
 import com.alibou.security.utils.HtmlToPDF;
+import com.alibou.security.utils.StockReportService;
 import com.alibou.security.utils.TelegramService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -34,6 +35,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class HomeController {
+    @Autowired
+    private StockReportService stockReportService;
+
     @Autowired
     FoodService foodService;
 
@@ -501,8 +505,7 @@ public class HomeController {
     public void exportReport(HttpServletResponse response,
                              @RequestParam long startDate,
                              @RequestParam long endDate) throws IOException {
-        List<StocksHistory> historyList = service.getHistoryByDateRange(startDate/1000, endDate/1000);
-        excelExportService.exportToExcel(response, historyList, startDate/1000, endDate/1000);
+        stockReportService.exportStockReport(response, startDate/1000, endDate/1000);
     }
 
     @GetMapping("/admin/foods")
@@ -534,6 +537,7 @@ public class HomeController {
         List<String> listType = new ArrayList<>();
         listType.add("In");
         listType.add("Out");
+        listType.add("Adjustment");
         model.addAttribute("listType", listType);
 
         return "admin/stocks";
@@ -541,14 +545,43 @@ public class HomeController {
 
     @PostMapping("/admin/add-stocks")
     public String addStocks(@ModelAttribute AddStocksRequest request, RedirectAttributes redirectAttributes) {
-        // Tiếp tục xử lý và lưu thông tin thực phẩm
-        if (request.getQuantity() > 0) {
-            stocksService.updateStocks(request.getId(), request.getQuantity(), request.getPrice(), request.getType());
-            redirectAttributes.addFlashAttribute("msgSuccess", "Thêm tồn kho thành công");
+        String msg = "";
+
+        // Ánh xạ loại kho với thông báo tương ứng
+        Map<String, String> typeMessages = new HashMap<>();
+        typeMessages.put("in", "Nhập");
+        typeMessages.put("out", "Xuất");
+        typeMessages.put("adjustment", "Điều chỉnh");
+
+        // Kiểm tra loại kho và xử lý thông báo
+        String action = typeMessages.get(request.getType().toLowerCase());
+
+        if (action != null) {
+            if ("adjustment".equalsIgnoreCase(request.getType())) {
+                // Với loại adjustment, chỉ kiểm tra giá
+                if (request.getPrice() >= 0) {
+                    stocksService.updateStocks(request.getId(), request.getQuantity(), request.getPrice(), request.getType());
+                    msg = action + " kho " + request.getType() + " thành công";
+                } else {
+                    msg = action + " kho " + request.getType() + " thất bại, giá " + request.getPrice();
+                }
+            } else if ("in".equalsIgnoreCase(request.getType()) || "out".equalsIgnoreCase(request.getType())) {
+                // Với loại in hoặc out, kiểm tra cả số lượng và giá
+                if (request.getQuantity() > 0 && request.getPrice() >= 0) {
+                    stocksService.updateStocks(request.getId(), request.getQuantity(), request.getPrice(), request.getType());
+                    msg = action + " kho " + request.getType() + " thành công";
+                } else {
+                    msg = action + " kho " + request.getType() + " thất bại, "
+                            + (request.getQuantity() <= 0 ? "số lượng" : "giá") + " "
+                            + (request.getQuantity() <= 0 ? request.getQuantity() : request.getPrice());
+                }
+            }
+            redirectAttributes.addFlashAttribute("msg", msg); // Gửi thông báo
         }
 
         return "redirect:/admin/stocks";
     }
+
 
     @PostMapping("/admin/edit-stocks")
     public String editStocks(@ModelAttribute EditStocksRequest request, RedirectAttributes redirectAttributes) {

@@ -19,9 +19,24 @@
   <!-- End plugin css for this page -->
   <!-- inject:css -->
   <link rel="stylesheet" th:href="@{/assets/admin/css/vertical-layout-light/style.css}">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet"/>
   <!-- endinject -->
   <link rel="shortcut icon" th:href="@{/assets/images/logo/logo-xl.png}" />
   <link rel="stylesheet" th:href="@{/assets/admin/css/toastStyle.css}" />
+  <style>
+    /* Toast Success Custom */
+    .toast-success-custom {
+      background-color: #28a745;  /* Màu xanh lá */
+      color: white;
+    }
+
+    /* Toast Error Custom */
+    .toast-error-custom {
+      background-color: #dc3545;  /* Màu đỏ */
+      color: white;
+    }
+  </style>
+
 </head>
 
 <body>
@@ -290,26 +305,40 @@
                     <form class="forms-sample" th:action="@{/admin/add-stocks}" enctype="multipart/form-data" method="POST" th:object="${stockRequest}">
                       <div class="form-group">
                         <label for="exampleSelectProduct">Sản phẩm</label>
-                        <select class="form-control" id="exampleSelectProduct" th:field="*{id}" required>
+                        <select class="form-control" id="exampleSelectProduct" th:field="*{id}" required onchange="updatePrice()">
                           <option value="-1" disabled selected>Chọn sản phẩm</option>
-                          <option th:each="food : ${listFood}" th:value="${food.id}" th:text="${food.name}"></option>
+                          <option th:each="food : ${listFood}" th:value="${food.id}" th:text="${food.name}" th:data-price="${food.getDefaultPrice()}"></option>
                         </select>
+                        <script>
+                          // Hàm update giá
+                          function updatePrice() {
+                            // Lấy giá từ thuộc tính data-price của option được chọn
+                            var selectedOption = document.getElementById('exampleSelectProduct').selectedOptions[0];
+                            var price = selectedOption.getAttribute('data-price');
+
+                            // Cập nhật giá vào ô nhập liệu
+                            document.getElementById('exampleInputName3').value = price;
+                          }
+
+                          // Gọi hàm updatePrice khi trang được load
+                          window.onload = function() {
+                            updatePrice();  // Gọi hàm updatePrice ngay khi trang load
+                          }
+                        </script>
                       </div>
                       <div class="form-group">
                         <label for="exampleInputName2">Số lượng </label>
-                        <input type="number" class="form-control" min="1" id="exampleInputName2" placeholder="Số lượng " th:field="*{quantity}" required/>
+                        <input type="number" class="form-control" id="exampleInputName2" placeholder="Số lượng " th:field="*{quantity}" required/>
                       </div>
                       <div class="form-group">
                         <label for="exampleInputName3">Đơn giá nhập </label>
-                        <input type="number" class="form-control" min="1" id="exampleInputName3" placeholder="Đơn giá nhập " th:field="*{price}" required/>
+                        <input type="number" class="form-control" min="0" id="exampleInputName3" placeholder="Đơn giá nhập " th:field="*{price}" required/>
                       </div>
                       <div class="form-group">
                         <label for="exampleSelectProduct2">Loại</label>
-                        <select class="form-control" id="exampleSelectProduct2" th:field="*{type}" required>
+                        <select class="form-control" id="exampleSelectProduct2" th:field="*{type}" required onchange="checkLoai()">
                           <option value="" disabled selected>Chọn loại</option>
-                          <option th:each="typeItem : ${listType}"
-                                  th:value="${typeItem}"
-                                  th:text="${typeItem}">
+                          <option th:each="typeItem : ${listType}" th:value="${typeItem}" th:text="${typeItem}">
                           </option>
                         </select>
                       </div>
@@ -376,7 +405,6 @@
                           <th>Đơn giá</th>
                           <th>Số lượng</th>
                           <th>Phân loại</th>
-                          <th>Chức năng</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -400,17 +428,6 @@
                              th:classappend="${stockItem.type == 'In' ? 'text-green' : (stockItem.type == 'Out' ? 'text-red' : 'text-yellow')}">
                           </p>
                           <p style="font-style: italic" th:if="${not #strings.isEmpty(stockItem.note)}" th:text="${stockItem.note}"></p>                        </td>
-                        <td>
-                          <button
-                                  th:data-id="${stockItem.id}"
-                                  th:data-quantity="${stockItem.quantity}"
-                                  th:data-price="${stockItem.price}"
-                                  th:data-type="${stockItem.type}"
-                                  type="button" class="btn btn-primary" data-toggle="modal" data-target="#example2ModalCenter">
-                            Điều chỉnh
-                          </button>
-
-                        </td>
                       </tr>
                       </tbody>
                     </table>
@@ -476,6 +493,7 @@
   <script th:src="@{/assets/admin/js/dashboard.js}"></script>
   <script th:src="@{/assets/admin/js/Chart.roundedBarCharts.js}"></script>
   <script th:src="@{/assets/admin/js/script-admin-side.js}"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
   <!-- End custom js for this page-->
   <script>
     $('#example2ModalCenter').on('show.bs.modal', function (event) {
@@ -496,6 +514,31 @@
       modal.find("#exampleSelectProduct6").val(stockType).change();
     });
   </script>
+
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    var msg = /*[[${msg}]]*/ '';  // Lấy thông báo từ controller
+    if (msg) {
+      // Kiểm tra xem thông báo có chứa từ khóa thành công hay thất bại
+      if (msg.indexOf("thành công") !== -1) {
+        toastr.success(msg, "Thành công", {
+          "timeOut": "3000", // Thời gian hiển thị 3 giây
+          "closeButton": true,
+          "progressBar": true,
+          "toastClass": "toast-success-custom"  // Thêm lớp tùy chỉnh cho success
+        });
+      } else if (msg.indexOf("thất bại") !== -1) {
+        toastr.error(msg, "Lỗi", {
+          "timeOut": "3000", // Thời gian hiển thị 3 giây
+          "closeButton": true,
+          "progressBar": true,
+          "toastClass": "toast-error-custom"  // Thêm lớp tùy chỉnh cho error
+        });
+      }
+    }
+    /*]]>*/
+  </script>
+
 </body>
 
 </html>

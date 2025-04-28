@@ -82,6 +82,30 @@
     #myTable tbody td {
       text-align: left !important;
     }
+
+    #myTable_filter {
+      text-align: right !important;
+      margin-bottom: 15px;
+    }
+
+    #myTable_filter label {
+      width: 100%;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    #myTable_filter input {
+      width: 300px !important;
+      margin-left: 10px;
+      transition: all 0.3s;
+    }
+
+    @media (max-width: 768px) {
+      #myTable_filter input {
+        width: 100% !important;
+        max-width: 300px;
+      }
+    }
   </style>
 </head>
 
@@ -170,6 +194,7 @@
                   <th>Tổng Tiền</th>
                   <th>Hoa Hồng</th>
                   <th>Trạng Thái</th>
+                  <th></th>
                 </tr>
                 </thead>
                 <tbody class="table-dark text-start">
@@ -181,10 +206,17 @@
                   <td th:text="${#numbers.formatDecimal(order.total, 0, 'COMMA', 0, 'POINT')}"></td>
                   <td th:text="${#numbers.formatDecimal(order.commission, 0, 'COMMA', 0, 'POINT')}"></td>
                   <td>
-                    <span th:if="${order.status == 0}" class="badge bg-warning">Đơn mới tạo</span>
-                    <span th:if="${order.status == 1}" class="badge bg-primary">Đang giao</span>
-                    <span th:if="${order.status == 2}" class="badge bg-success">Hoàn thành</span>
-                    <span th:if="${order.status == 3}" class="badge bg-danger">Đã hủy</span>
+                    <div class="d-flex justify-content-center">
+                      <span th:if="${order.status == 0}" class="badge bg-warning">Đơn mới tạo</span>
+                      <span th:if="${order.status == 1}" class="badge bg-primary">Đang giao</span>
+                      <span th:if="${order.status == 2}" class="badge bg-success">Hoàn thành</span>
+                      <span th:if="${order.status == 3}" class="badge bg-danger">Đã hủy</span>
+                    </div>
+                  </td>
+                  <td >
+                    <div class="d-flex justify-content-center">
+                      <span class="badge bg-success" th:attr="onclick=|invoice(${order.id})|" style="cursor: pointer;">Invoice</span>
+                    </div>
                   </td>
                 </tr>
                 </tbody>
@@ -339,6 +371,41 @@
               });
     });
 
+  </script>
+  <script>
+    const invoice = (orderId) => {
+      const requestOptions = {
+        method: "GET",
+        redirect: "follow"
+      };
+
+      // Fetch PDF file from server
+      fetch(`/api/v1/demo-controller/generate-invoice/${orderId}`, requestOptions)
+              .then((response) => {
+                if (!response.ok) {
+                  throw new Error("Error fetching the invoice file");
+                }
+                return response.blob(); // Convert response to Blob
+              })
+              .then((blob) => {
+                // Create a temporary URL for the file
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+
+                // Set the filename dynamically
+                a.download = `Invoice_Order_${orderId}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+
+                // Clean up
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+              });
+    };
   </script>
 </body>
 

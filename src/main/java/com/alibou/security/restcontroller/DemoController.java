@@ -11,19 +11,19 @@ import com.alibou.security.repository.CommissionHistoryRepository;
 import com.alibou.security.repository.OrderDetailRepository;
 import com.alibou.security.service.OrderService;
 import com.alibou.security.service.StocksService;
-import com.alibou.security.utils.ExcelExportService;
-import com.alibou.security.utils.HtmlToPDF;
-import com.alibou.security.utils.TelegramService;
+import com.alibou.security.utils.*;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -44,6 +44,24 @@ public class DemoController {
   TelegramService telegramService;
   @Autowired
   private StocksService service;
+  @Autowired
+  private StockReportService stockReportService;
+
+//  @GetMapping("/export")
+//  public ResponseEntity<InputStreamResource> exportStockReport(
+//          @RequestParam long dateStart,
+//          @RequestParam long dateEnd) throws Exception {
+//
+//    ByteArrayInputStream excelStream = stockReportService.exportStockReport(dateStart, dateEnd);
+//
+//    HttpHeaders headers = new HttpHeaders();
+//    headers.add("Content-Disposition", "attachment; filename=stock_report.xlsx");
+//
+//    return ResponseEntity.ok()
+//            .headers(headers)
+//            .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+//            .body(new InputStreamResource(excelStream));
+//  }
 
   @GetMapping
   public ResponseEntity<String> sayHello() {
@@ -52,14 +70,16 @@ public class DemoController {
     return ResponseEntity.ok("Hello from secured endpoint");
   }
 
-  @GetMapping("/export")
-  public void exportReport(HttpServletResponse response,
-                           @RequestParam long startDate,
-                           @RequestParam long endDate) throws IOException {
-    List<StocksHistory> historyList = service.getHistoryByDateRange(startDate, endDate);
-    ExcelExportService excelExportService = new ExcelExportService();
-    excelExportService.exportToExcel(response, historyList, startDate, endDate);
-  }
+
+
+//  @GetMapping("/export")
+//  public void exportReport(HttpServletResponse response,
+//                           @RequestParam long startDate,
+//                           @RequestParam long endDate) throws IOException {
+//    List<StocksHistory> historyList = service.getHistoryByDateRange(startDate, endDate);
+//    ExcelExportService excelExportService = new ExcelExportService();
+//    excelExportService.exportToExcel(response, historyList, startDate, endDate);
+//  }
 
   @GetMapping("/generate-invoice/{orderId}")
   public ResponseEntity<ByteArrayResource> generateInvoice(@PathVariable Long orderId) {

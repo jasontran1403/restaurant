@@ -10,8 +10,8 @@ import org.springframework.web.client.RestTemplate;
 public class TelegramService {
     private final String TELEGRAM_API_URL = "https://api.telegram.org/bot";
     private final String BOT_TOKEN = "8143055131:AAFOOSIAlwSftJgvCrrqiO2Xo3PYP1e979c"; // Replace with your bot token
-//    private final long CHAT_ID = -4688303158L; // Define chatId as a constant
-    private final long CHAT_ID = -1002385431439L; // Define chatId as a constant
+    private final long CHAT_ID = -4688303158L; // Define chatId as a constant
+//    private final long CHAT_ID = -1002385431439L; // Define chatId as a constant
 
     public String sendMessageToGroup(String message) {
         String url = TELEGRAM_API_URL + BOT_TOKEN + "/sendMessage";
