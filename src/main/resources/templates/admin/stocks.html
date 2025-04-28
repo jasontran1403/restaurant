@@ -366,15 +366,15 @@
                       </div>
                       <div class="form-group">
                         <label for="exampleInputName2">Số lượng </label>
-                        <input type="number" class="form-control" min="1" id="exampleInputName4" placeholder="Số lượng " th:field="*{newQuantity}" required/>
+                        <input type="number" class="form-control" min="1" id="exampleInputName4" placeholder="Số lượng " th:field="*{newQuantity}" required />
                       </div>
                       <div class="form-group">
                         <label for="exampleInputName3">Đơn giá </label>
-                        <input type="number" class="form-control" min="1" id="exampleInputName5" placeholder="Đơn giá nhập " th:field="*{newPrice}" required/>
+                        <input type="number" class="form-control" min="1" id="exampleInputName5" placeholder="Đơn giá nhập " th:field="*{newPrice}" required readonly/>
                       </div>
                       <div class="form-group">
                         <label for="exampleSelectProduct2">Loại</label>
-                        <select class="form-control" id="exampleSelectProduct6" th:field="*{newType}" required>
+                        <select class="form-control" id="exampleSelectProduct6" th:field="*{newType}" required disabled>
                           <option value="" disabled selected>Chọn loại</option>
                           <option th:each="typeItem : ${listType}"
                                   th:value="${typeItem}"
@@ -439,11 +439,44 @@
                             Điều chỉnh
                           </button>
 
+                          <button
+                                  th:data-foodname="${stockItem.name}"
+                                  type="button" class="btn btn-primary" data-toggle="modal" data-target="#example3ModalCenter">
+                            Kiểm tra
+                          </button>
+
                         </td>
                       </tr>
                       </tbody>
                     </table>
-                    
+                    <div class="modal fade" id="example3ModalCenter" tabindex="-1" role="dialog" aria-labelledby="example2ModalCenterTitle" aria-hidden="true">
+                      <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h4 class="card-title">Kiểm tra kho</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                            </button>
+                          </div>
+                          <div class="modal-body">
+                            <form class="forms-sample" th:action="@{/admin/check-stocks}" enctype="multipart/form-data" method="POST">
+                              <div class="form-group">
+                                <label for="foodName">Tên sản phẩm</label>
+                                <input type="text" class="form-control" id="foodName" name="foodName" readonly />
+                              </div>
+                              <div class="form-group">
+                                <label for="realQuantity">Số lượng thực tế</label>
+                                <input type="number" class="form-control" min="1" id="realQuantity" name="realQuantity" placeholder="Số lượng thực tế" required />
+                              </div>
+                              <button type="submit" class="btn btn-primary mr-2">Kiểm tra</button>
+                            </form>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Script xử lý modal -->
+
                     <div th:if="${stocksPage.totalPages > 1}" style="display: flex; justify-content: space-around">
 					    <ul class="pagination">
 					        <li th:class="${stocksPage.first ? 'page-item disabled' : 'page-item'}">
@@ -509,7 +542,6 @@
   <!-- End custom js for this page-->
   <script>
     $('#example2ModalCenter').on('show.bs.modal', function (event) {
-      console.log("Modal open");
       // Lấy button đã kích hoạt modal
       var button = $(event.relatedTarget);
       // Lấy id từ thuộc tính data-id
@@ -524,6 +556,19 @@
       modal.find('#exampleInputName4').val(stockQuantity);
       modal.find('#exampleInputName5').val(stockPrice);
       modal.find("#exampleSelectProduct6").val(stockType).change();
+    });
+  </script>
+
+  <script>
+    $('#example3ModalCenter').on('show.bs.modal', function (event) {
+      var button = $(event.relatedTarget);
+      console.log(button);
+      var foodName = button.data('foodname');
+
+      console.log(foodName);
+      var modal = $(this);
+      modal.find('#foodName').val(foodName);
+      modal.find('#realQuantity').val(''); // Reset giá trị số lượng
     });
   </script>
 

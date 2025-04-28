@@ -202,6 +202,10 @@
 							    <label for="exampleInputCity1">Giá</label>
 							    <input type="text" class="form-control" id="exampleInputCity1" placeholder="Giá" th:field="*{price}" oninput="this.value = this.value.replace(/[^0-9]/g, '');" required/>
 							</div>
+                              <div class="form-group">
+                                  <label for="exampleInputCity1">Giá vốn</label>
+                                  <input type="text" class="form-control" id="exampleInputCity2" placeholder="Giá vốn" th:field="*{defaultPrice}" oninput="this.value = this.value.replace(/[^0-9]/g, '');" required/>
+                              </div>
 						    <div class="form-group">
 							    <label>Danh mục</label>
 							    <div th:each="cate : ${cates}" style="margin-left: 30px;">
@@ -245,6 +249,7 @@
                         <tr>
                           <th>Tên món </th>
                           <th>Giá </th>
+                          <th>Giá vốn </th>
                           <th>Tồn kho</th>
                           <th>Chức năng</th>
                         </tr>
@@ -254,6 +259,7 @@
                           <td><p>Tên: <span th:text="${food.name}"></span></p>
                               <p>Danh mục: <span th:text="${food.categories}"></span></p></td>
                           <td><p th:text="${#numbers.formatDecimal(food.price, 1, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'"></p></td>
+                            <td><p th:text="${#numbers.formatDecimal(food.defaultPrice, 1, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'"></p></td>
                           <td><p th:text="${food.stocks}"></p></td>
                           <td>
                               <div class="row-container"><p th:class="${food.status eq 0 ? 'btn btn-danger' : 'btn btn-success'}"><a style="color: white;text-decoration: none;" th:href="@{/admin/toggle-food/{foodId}(foodId=${food.id})}" th:text="${food.status eq 0 ? 'Ẩn' : 'Hiện'}"></a></p>

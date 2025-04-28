@@ -58,6 +58,8 @@ public class OrderServiceImpl implements OrderService {
 
 	@Autowired
 	StocksService stocksService;
+    @Autowired
+    private StocksHistoryRepository stocksHistoryRepository;
 
 	@Override
 	public OrderResponse placeOrder(OrderRequest request) {
@@ -136,9 +138,7 @@ public class OrderServiceImpl implements OrderService {
 					
 					foods.add(food.get());
 
-					food.get().setStocks(food.get().getStocks() - quantity);
 					foodRepo.save(food.get());
-					stocksService.updateStocks((int)foodId, quantity, 0, "Out");
 				}
 			}
 		}
@@ -174,10 +174,13 @@ public class OrderServiceImpl implements OrderService {
 				orderDetail.setCode(request.getCode());
 				orderDetail.setRate(request.getRate());
 				orderDetailRepo.save(orderDetail);
+
+				stocksService.placeOrderStocks((int)orderDetail.getFood_id(), orderDetail.getQuantity(), 0, "Out", savedOrder.getId());
 			}
 
 			String message = "[Đơn hàng mới]\nNgười nhận: " + request.getName() + "\nSĐT: " + request.getPhone() + "\nAgency: " + request.getAgency();
 			telegramService.sendMessageToGroup(message);
+
 
 			var customerExisted = customerRepository.findByUsername(request.getPhone());
 
@@ -267,29 +270,45 @@ public class OrderServiceImpl implements OrderService {
 	@Override
 	@Transactional
 	public Order toggleStatus(long orderId) {
-		Order order = orderRepo.getById(orderId);
+		Order order = orderRepo.getReferenceById(orderId);
 		int status = order.getStatus();
-		int statusNext = status + 1;
-		if (statusNext > 2) {
+
+		int statusNext;
+
+		// Nếu status hiện tại là 3, chuyển về 2
+		if (status == 3) {
 			statusNext = 2;
+		} else {
+			statusNext = status == 0 ? status + 2 : status + 1;
+		}
+
+		if (statusNext > 3) {
+			statusNext = 3;  // Không vượt quá 3
 		}
 
 		order.setStatus(statusNext);
+
+		// Nếu statusNext là 2, trừ số lượng kho
 		if (status != 2 && statusNext == 2) {
 			List<OrderDetail> orderDetail = orderDetailRepo.getOrderDetailsById(orderId);
 
 			List<Food> listFoodUpdate = new ArrayList<>();
 			for (OrderDetail item : orderDetail) {
 				Food food = foodRepo.findFoodById(item.getFood_id());
-				food.setStocks(food.getStocks() - item.getQuantity());
+				food.setStocks(food.getStocks() - item.getQuantity());  // Trừ số lượng khi statusNext là 2
 
 				listFoodUpdate.add(food);
+
+				StocksHistory stocksHistory = stocksService.getStocksHistoryByOrderId(item.getOrder_id());
+				stocksHistory.setHide(1);
+				stocksHistoryRepository.save(stocksHistory);
 			}
 
 			if (!listFoodUpdate.isEmpty()) {
 				foodRepo.saveAll(listFoodUpdate);
 			}
 		}
+
 		return orderRepo.save(order);
 	}
 
@@ -341,6 +360,8 @@ public class OrderServiceImpl implements OrderService {
 	public void cancelOrder(long orderId) {
 		// TODO Auto-generated method stub
 		Order order = orderRepo.getById(orderId);
+
+		if (order.getStatus() == 3) return;
 		if (order.getStatus() == 2) {
 			List<OrderDetail> orderDetail = orderDetailRepo.getOrderDetailsById(orderId);
 
@@ -350,6 +371,10 @@ public class OrderServiceImpl implements OrderService {
 				food.setStocks(food.getStocks() + item.getQuantity());
 
 				listFoodUpdate.add(food);
+
+				StocksHistory stocksHistory = stocksService.getStocksHistoryByOrderId(item.getOrder_id());
+				stocksHistory.setHide(0);
+				stocksHistoryRepository.save(stocksHistory);
 			}
 
 			if (!listFoodUpdate.isEmpty()) {

@@ -9,13 +9,20 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface StocksHistoryRepository extends JpaRepository<StocksHistory, Integer> {
-    @Query(value="select * from stocks_history order by id desc", nativeQuery = true)
+    @Query(value="select * from stocks_history where hide = 1 order by id desc", nativeQuery = true)
     Page<StocksHistory> getAllStocksHistory(Pageable pageable);
 
-    List<StocksHistory> findAllByDateBetween(long startDate, long endDate);
+    @Query(value="select * from stocks_history where hide = 1 order by id asc", nativeQuery = true)
+    List<StocksHistory> getAllStocksHistory();
 
-    List<StocksHistory> findByDateBetween(long dateStart, long dateEnd);
-
-    @Query(value = "select COALESCE(sum(quantity), 0) from stocks_history where name = ?1 and date < ?2 and type = ?3", nativeQuery = true)
+    @Query(value = "select COALESCE(sum(quantity), 0) from stocks_history where name = ?1 and date < ?2 and type = ?3 and hide = 1", nativeQuery = true)
     int calculateInitStockReport(String name, long startDate, String type);
+
+    @Query(value = "select COALESCE(sum(quantity), 0) from stocks_history where name = ?1 and type = ?2 and hide = 1", nativeQuery = true)
+    int calculateInitStock(String name, String type);
+
+    @Query(value="select * from stocks_history where order_id = ?1", nativeQuery = true)
+    StocksHistory findByOrderId(long orderId);
+
+
 }
