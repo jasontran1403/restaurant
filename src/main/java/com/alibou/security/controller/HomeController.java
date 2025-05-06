@@ -110,7 +110,6 @@ public class HomeController {
             listOrdersDetail.add(item);
         }
 
-        System.out.println(listOrdersDetail);
         model.addAttribute("listOrders", listOrdersDetail);
 
         return "landing-page/staff";
@@ -317,6 +316,8 @@ public class HomeController {
     public String toggleOrder(@PathVariable Long id, @RequestParam(required = false, defaultValue = "0") int page) {
         int oldOrderStatus = orderService.getOrderById(id).getStatus();
 
+        if (oldOrderStatus <= 2) return "redirect:/admin/orders?page=" + page;
+
         Order order = orderService.toggleStatus(id);
         int newOrderStatus = order.getStatus();
 
@@ -324,16 +325,16 @@ public class HomeController {
 
         if (order.getStatus() == 0) {
             orderStatus = "Đơn mới";
-        } else if (order.getStatus() == 1) {
-            orderStatus = "Đang giao";
         } else if (order.getStatus() == 2) {
             orderStatus = "Hoàn thành";
         } else if (order.getStatus() == 3) {
             orderStatus = "Đã hủy";
         }
 
-        String message = "[Cập nhật đơn hàng]\nĐơn hàng số: " + id + " đã cập nhật trạng thái thành " + orderStatus;
-        telegramService.sendMessageToGroup(message);
+        if (oldOrderStatus != newOrderStatus) {
+            String message = "[Cập nhật đơn hàng]\nĐơn hàng số: " + id + " đã cập nhật trạng thái thành " + orderStatus;
+            telegramService.sendMessageToGroup(message);
+        }
 
         var commissionHistory = commissionHistoryRepository.findCommissionHistoryByOrderId(id);
 
@@ -383,6 +384,7 @@ public class HomeController {
     @GetMapping("/admin/cancel-order/{id}")
     public String cencelOrder(@PathVariable Long id, @RequestParam(required = false, defaultValue = "0") int page) {
         Order order = orderService.findOrderById(id).get();
+
         if (order.getStatus() < 3) {
             orderService.cancelOrder(id);
             String message = "[Cập nhật đơn hàng]\nĐơn hàng số: " + id + " đã cập nhật trạng thái thành Đã hủy";
@@ -537,7 +539,7 @@ public class HomeController {
         List<String> listType = new ArrayList<>();
         listType.add("In");
         listType.add("Out");
-        listType.add("Adjustment");
+//        listType.add("Adjustment");
         model.addAttribute("listType", listType);
 
         return "admin/stocks";
@@ -587,6 +589,16 @@ public class HomeController {
     public String editStocks(@ModelAttribute EditStocksRequest request, RedirectAttributes redirectAttributes) {
         // Tiếp tục xử lý và lưu thông tin thực phẩm
         stocksService.editStocks(request.getNewId(), request.getNewQuantity(), request.getNewPrice(), request.getNewType());
+        redirectAttributes.addFlashAttribute("msgSuccess", "Điều chỉnh tồn kho thành công");
+
+        return "redirect:/admin/stocks";
+    }
+
+    @PostMapping("/admin/check-stocks")
+    public String checkStocks(@ModelAttribute CheckStocksRequest request, RedirectAttributes redirectAttributes) {
+        // Tiếp tục xử lý và lưu thông tin thực phẩm
+        System.out.println(request);
+        stocksService.checkStocks(request.getFoodName(), request.getRealQuantity());
         redirectAttributes.addFlashAttribute("msgSuccess", "Điều chỉnh tồn kho thành công");
 
         return "redirect:/admin/stocks";

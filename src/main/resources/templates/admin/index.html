@@ -211,46 +211,104 @@
                   <div class="card card-tale">
                     <div class="card-body">
                       <div class="sale">
-                        <div class="total">
-                          <p class="mb-4">Doanh thu   </p>
-                          <p class="fs-30 mb-2" th:text="${#numbers.formatDecimal(todaySales, 1, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'"></p>
+                        <!-- Desktop View (shows only above 1200px) -->
+                        <div class="d-none d-xl-flex w-100 justify-content-between align-items-start">
+                          <div class="total">
+                            <p class="mb-4">Doanh thu</p>
+                            <p class="fs-30 mb-2 d-flex flex-nowrap">
+                              <span th:text="${#numbers.formatDecimal(todaySales, 1, 'DEFAULT', 0, 'DEFAULT')}"></span>
+                              <span class="ms-1">VNĐ</span>
+                            </p>
+                          </div>
+                          <div class="expect">
+                            <p class="mb-4">Doanh thu dự kiến</p>
+                            <p class="fs-30 mb-2 d-flex flex-nowrap">
+                              <span th:text="${#numbers.formatDecimal(expectSales, 1, 'DEFAULT', 0, 'DEFAULT')}"></span>
+                              <span class="ms-1">VNĐ</span>
+                            </p>
+                          </div>
                         </div>
-                        <div class="expect">
-                          <p class="mb-4">Doanh thu dự kiến   </p>
-                          <p class="fs-30 mb-2" th:text="${#numbers.formatDecimal(expectSales, 1, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'"></p>
+
+                        <!-- Mobile View (shows below 1200px) -->
+                        <div class="d-flex flex-column d-xl-none">
+                          <div class="total mb-3">
+                            <p class="mb-4">Doanh thu</p>
+                            <p class="fs-30 mb-2 d-flex flex-nowrap">
+                              <span th:text="${#numbers.formatDecimal(todaySales, 1, 'DEFAULT', 0, 'DEFAULT')}"></span>
+                              <span class="ms-1">VNĐ</span>
+                            </p>
+                          </div>
+                          <div class="expect">
+                            <p class="mb-4">Doanh thu dự kiến</p>
+                            <p class="fs-30 mb-2 d-flex flex-nowrap">
+                              <span th:text="${#numbers.formatDecimal(expectSales, 1, 'DEFAULT', 0, 'DEFAULT')}"></span>
+                              <span class="ms-1">VNĐ</span>
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
+
                 <div class="col-md-6 mb-4 stretch-card transparent">
                   <div class="card card-dark-blue">
                     <div class="card-body">
                       <div class="sale">
-                        <div class="totalOrder">
-                          <p class="mb-4">Tổng đơn hàng  </p>
-                          <p class="fs-30 mb-2" th:text="${#numbers.formatDecimal(todayOrders, 1, 'DEFAULT', 0, 'DEFAULT')}"></p>
+                        <!-- Desktop View (original row layout) -->
+                        <div class="d-none d-md-flex flex-row w-100 justify-content-between">
+                          <div class="totalOrder">
+                            <p class="mb-4">Tổng đơn hàng</p>
+                            <p class="fs-30 mb-2" th:text="${#numbers.formatDecimal(todayOrders, 1, 'DEFAULT', 0, 'DEFAULT')}">0</p>
+                          </div>
+                          <div class="newOrder">
+                            <p class="mb-4">Đơn mới</p>
+                            <p class="fs-30 mb-2" th:text="${#numbers.formatDecimal(newOrders, 1, 'DEFAULT', 0, 'DEFAULT')}">0</p>
+                          </div>
+                          <div class="successOrder">
+                            <p class="mb-4">Đơn thành công</p>
+                            <p class="fs-30 mb-2" th:text="${#numbers.formatDecimal(ordersCompleted, 1, 'DEFAULT', 0, 'DEFAULT')}">0</p>
+                          </div>
+                          <div class="cancelOrder">
+                            <p class="mb-4">Đơn huỷ</p>
+                            <p class="fs-30 mb-2" th:text="${#numbers.formatDecimal(ordersCanceled, 1, 'DEFAULT', 0, 'DEFAULT')}">0</p>
+                          </div>
                         </div>
-                        <div class="newOrder">
-                          <p class="mb-4">Tổng đơn hàng mới </p>
-                          <p class="fs-30 mb-2" th:text="${#numbers.formatDecimal(newOrders, 1, 'DEFAULT', 0, 'DEFAULT')}"></p>
-                        </div>
-                        <div class="deliOrder">
-                          <p class="mb-4">Tổng đơn hàng đang giao </p>
-                          <p class="fs-30 mb-2" th:text="${#numbers.formatDecimal(deliveryOrders, 1, 'DEFAULT', 0, 'DEFAULT')}"></p>
-                        </div>
-                        <div class="successOrder">
-                          <p class="mb-4">Tổng đơn hàng thành công </p>
-                          <p class="fs-30 mb-2" th:text="${#numbers.formatDecimal(ordersCompleted, 1, 'DEFAULT', 0, 'DEFAULT')}"></p>
-                        </div>
-                        <div class="cancelOrder">
-                          <p class="mb-4">Tổng đơn hàng huỷ</p>
-                          <p class="fs-30 mb-2" th:text="${#numbers.formatDecimal(ordersCanceled, 1, 'DEFAULT', 0, 'DEFAULT')}"></p>
+
+                        <!-- Mobile View (2-column grid) -->
+                        <div class="d-md-none w-100">
+                          <div class="row">
+                            <div class="col-6 mb-3">
+                              <div class="totalOrder">
+                                <p class="mb-4">Tổng đơn hàng</p>
+                                <p class="fs-30 mb-2" th:text="${#numbers.formatDecimal(todayOrders, 1, 'DEFAULT', 0, 'DEFAULT')}">0</p>
+                              </div>
+                            </div>
+                            <div class="col-6 mb-3" style="text-align: end;"> <!-- Added text-end here -->
+                              <div class="newOrder">
+                                <p class="mb-4">Đơn mới</p>
+                                <p class="fs-30 mb-2" th:text="${#numbers.formatDecimal(newOrders, 1, 'DEFAULT', 0, 'DEFAULT')}">0</p>
+                              </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                              <div class="successOrder">
+                                <p class="mb-4">Đơn thành công</p>
+                                <p class="fs-30 mb-2" th:text="${#numbers.formatDecimal(ordersCompleted, 1, 'DEFAULT', 0, 'DEFAULT')}">0</p>
+                              </div>
+                            </div>
+                            <div class="col-6 mb-3" style="text-align: end;"> <!-- Added text-end here -->
+                              <div class="cancelOrder">
+                                <p class="mb-4">Đơn huỷ</p>
+                                <p class="fs-30 mb-2" th:text="${#numbers.formatDecimal(ordersCanceled, 1, 'DEFAULT', 0, 'DEFAULT')}">0</p>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
+
               </div>
             </div>
           </div>

@@ -23,4 +23,6 @@ public class StocksHistory {
     private int quantity;
     private String type;
     private String note;
+    private int hide; // 0 hide 1 show
+    private long orderId;
 }

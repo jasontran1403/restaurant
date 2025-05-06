@@ -33,7 +33,7 @@ public class StockReportService {
 
     public void exportStockReport(HttpServletResponse response, long dateStartMillis, long dateEndMillis) throws IOException {
         List<Food> foods = foodRepository.findAll();
-        List<StocksHistory> allHistories = stocksHistoryRepository.findAll();
+        List<StocksHistory> allHistories = stocksHistoryRepository.getAllStocksHistory();
 
         // Filter histories within the date range
         List<StocksHistory> relevantHistories = allHistories.stream()

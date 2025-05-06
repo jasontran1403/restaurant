@@ -8,7 +8,9 @@ import java.util.List;
 
 public interface StocksService {
     void updateStocks(int productId, int quantity, double price, String type);
+    void placeOrderStocks(int productId, int quantity, double price, String type, long orderId);
     Page<StocksHistory> getAllStocksHistory(Pageable pageable);
-    List<StocksHistory> getHistoryByDateRange(long startDate, long endDate);
+    StocksHistory getStocksHistoryByOrderId(long orderId);
     void editStocks(int stockId, int newQuantity, double newPrice, String newType);
+    void checkStocks(String foodName, int realQuantity);
 }
