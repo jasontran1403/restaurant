@@ -25,7 +25,7 @@ public interface OrderService {
 	Order toggleStatus(long orderId);
 	void cancelOrder(long orderId);
 	Order toggleOrderStatus(ToggleOrderRequest request);
-	Page<Order> getPaginatedOrders(Pageable pageable);
+	Page<Order> getPaginatedOrders(String userRole, Pageable pageable);
 	List<Double> getTodayReport(long timeFrom, long timeTo);
 	double getHighestOrder(long timeFrom, long timeTo);
 	double getLowestOrder(long timeFrom, long timeTo);

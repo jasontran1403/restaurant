@@ -72,6 +72,7 @@ public class OrderServiceImpl implements OrderService {
 			return response;
 		}
 
+		String userRole = agency.get().getRole();
 		StringBuilder sb = new StringBuilder();
 
 		double total = 0;
@@ -155,6 +156,8 @@ public class OrderServiceImpl implements OrderService {
 			order.setName(request.getName());
 			order.setPhone(request.getPhone());
 			order.setAddress(request.getAddress());
+			order.setPaid(false);
+			order.setUserRole(userRole);
 			if (request.getMessage().equalsIgnoreCase("")) {
 				order.setMessage("Không có");
 			} else {
@@ -175,12 +178,11 @@ public class OrderServiceImpl implements OrderService {
 				orderDetail.setRate(request.getRate());
 				orderDetailRepo.save(orderDetail);
 
-				stocksService.placeOrderStocks((int)orderDetail.getFood_id(), orderDetail.getQuantity(), 0, "Out", savedOrder.getId());
+				stocksService.placeOrderStocks((int)orderDetail.getFood_id(), orderDetail.getQuantity(), 0, "Out", savedOrder.getId(), userRole);
 			}
 
 			String message = "[Đơn hàng mới]\nNgười nhận: " + request.getName() + "\nSĐT: " + request.getPhone() + "\nAgency: " + request.getAgency();
 			telegramService.sendMessageToGroup(message);
-
 
 			var customerExisted = customerRepository.findByUsername(request.getPhone());
 
@@ -295,13 +297,29 @@ public class OrderServiceImpl implements OrderService {
 			List<Food> listFoodUpdate = new ArrayList<>();
 			for (OrderDetail item : orderDetail) {
 				Food food = foodRepo.findFoodById(item.getFood_id());
-				food.setStocks(food.getStocks() - item.getQuantity());  // Trừ số lượng khi statusNext là 2
 
-				listFoodUpdate.add(food);
+				if (order.getUserRole().equalsIgnoreCase("staff")) {
+					food.setStocks(food.getStocks() - item.getQuantity());  // Trừ số lượng khi statusNext là 2
 
-				StocksHistory stocksHistory = stocksService.getStocksHistoryByOrderId(item.getOrder_id());
-				stocksHistory.setHide(1);
-				stocksHistoryRepository.save(stocksHistory);
+					listFoodUpdate.add(food);
+
+					List<StocksHistory> stocksHistory = stocksService.getStocksHistoryByOrderId(item.getOrder_id());
+					for (StocksHistory itemStockHistory : stocksHistory) {
+						itemStockHistory.setHide(1);
+					}
+					stocksHistoryRepository.saveAll(stocksHistory);
+				} else if (order.getUserRole().equalsIgnoreCase("customer")) {
+					food.setStocksCustomer(food.getStocksCustomer() - item.getQuantity());  // Trừ số lượng khi statusNext là 2
+
+					listFoodUpdate.add(food);
+
+					List<StocksHistory> stocksHistory = stocksService.getStocksHistoryByOrderId(item.getOrder_id());
+					for (StocksHistory itemStockHistory : stocksHistory) {
+						itemStockHistory.setHide(1);
+					}
+					stocksHistoryRepository.saveAll(stocksHistory);
+				}
+
 			}
 
 			if (!listFoodUpdate.isEmpty()) {
@@ -350,9 +368,9 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Override
-	public Page<Order> getPaginatedOrders(Pageable pageable) {
+	public Page<Order> getPaginatedOrders(String userRole, Pageable pageable) {
 		// TODO Auto-generated method stub
-		return orderRepo.findAllPagable(pageable);
+		return orderRepo.findAllPagable(userRole, pageable);
 	}
 
 	@Override
@@ -368,13 +386,28 @@ public class OrderServiceImpl implements OrderService {
 			List<Food> listFoodUpdate = new ArrayList<>();
 			for (OrderDetail item : orderDetail) {
 				Food food = foodRepo.findFoodById(item.getFood_id());
-				food.setStocks(food.getStocks() + item.getQuantity());
+				if (order.getUserRole().equalsIgnoreCase("staff")) {
+					food.setStocks(food.getStocks() + item.getQuantity());
 
-				listFoodUpdate.add(food);
+					listFoodUpdate.add(food);
 
-				StocksHistory stocksHistory = stocksService.getStocksHistoryByOrderId(item.getOrder_id());
-				stocksHistory.setHide(0);
-				stocksHistoryRepository.save(stocksHistory);
+					List<StocksHistory> stocksHistory = stocksService.getStocksHistoryByOrderId(item.getOrder_id());
+					for (StocksHistory itemStockHistory : stocksHistory) {
+						itemStockHistory.setHide(0);
+					}
+					stocksHistoryRepository.saveAll(stocksHistory);
+				} else if (order.getUserRole().equalsIgnoreCase("customer")) {
+					food.setStocksCustomer(food.getStocksCustomer() + item.getQuantity());
+
+					listFoodUpdate.add(food);
+
+					List<StocksHistory> stocksHistory = stocksService.getStocksHistoryByOrderId(item.getOrder_id());
+					for (StocksHistory itemStockHistory : stocksHistory) {
+						itemStockHistory.setHide(0);
+					}
+					stocksHistoryRepository.saveAll(stocksHistory);
+				}
+
 			}
 
 			if (!listFoodUpdate.isEmpty()) {

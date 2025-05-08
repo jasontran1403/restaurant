@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <meta name="description" content="Babette">
+    <link href="assets/images/favicon/favicon.png" rel="icon">
+    <title>Sausage</title>
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Rubik:400,500,700%7cShadows+Into+Light&display=swap">
+    <link rel="stylesheet" th:href="@{/assets/css/libraries.css}" />
+    <link rel="stylesheet" th:href="@{/assets/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" th:href="@{/assets/login/vendor/bootstrap/css/bootstrap.min.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/assets/login/fonts/font-awesome-4.7.0/css/font-awesome.min.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/assets/login/fonts/iconic/css/material-design-iconic-font.min.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/assets/login/vendor/animate/animate.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/assets/login/vendor/css-hamburgers/hamburgers.min.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/assets/login/vendor/animsition/css/animsition.min.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/assets/login/vendor/select2/select2.min.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/assets/login/vendor/daterangepicker/daterangepicker.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/assets/login/css/util.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/assets/login/css/main.css}">
+    <style>
+        .text-danger {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
+            display: block;
+        }
+
+        #phone {
+            letter-spacing: 0.5px;
+            font-family: monospace;
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: none;
+        }
+
+        .toast-container.show {
+            display: block;
+        }
+
+        .toast-success, .toast-error {
+            padding: 15px 20px;
+            border-radius: 4px;
+            color: white;
+            margin-bottom: 10px;
+            animation: slideIn 0.5s, fadeOut 0.5s 2.5s;
+        }
+
+        .toast-success {
+            background-color: #28a745;
+        }
+
+        .toast-error {
+            background-color: #dc3545;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="wrapper">
+    <div id="toast" class="toast-container" th:classappend="${successMessage != null} ? 'show' : ''">
+        <div class="toast-success" th:if="${successMessage}">
+            <span th:text="${successMessage}"></span>
+        </div>
+        <div class="toast-error" th:if="${errorMessage}">
+            <span th:text="${errorMessage}"></span>
+        </div>
+    </div>
+
+
+
+    <section id="heroBanner" class="hero-banner bg-overlay bg-overlay-2 py-0">
+        <div class="bg-img"><img src="assets/images/backgrounds/14.jpg" alt="background"></div>
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-12 col-md-12 col-lg-12 hero__banner-inner">
+                    <div class="limiter">
+                        <div class="container-login100">
+                            <div class="wrap-login100">
+                                <form class="login100-form validate-form" th:action="@{/signup}" th:object="${user}" method="post">
+                                    <!-- Username field -->
+                                    <div class="wrap-input100 validate-input" data-validate="Username can not be empty">
+                                        <input class="input100" th:field="*{username}" type="text" id="username" />
+                                        <span class="focus-input100" data-placeholder="Username"></span>
+                                        <span class="text-danger" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></span>
+                                    </div>
+
+                                    <!-- Password field -->
+                                    <div class="wrap-input100 validate-input" data-validate="Enter password">
+        <span class="btn-show-pass">
+            <i class="zmdi zmdi-eye"></i>
+        </span>
+                                        <input class="input100" th:field="*{password}" type="password" id="password" />
+                                        <span class="focus-input100" data-placeholder="Password"></span>
+                                        <span class="text-danger" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
+                                    </div>
+
+                                    <!-- Confirm Password field -->
+                                    <div class="wrap-input100 validate-input" data-validate="Enter confirm password">
+        <span class="btn-show-pass">
+            <i class="zmdi zmdi-eye"></i>
+        </span>
+                                        <input class="input100" th:field="*{confirmPassword}" type="password" id="confirm-password" />
+                                        <span class="focus-input100" data-placeholder="Confirm Password"></span>
+                                        <span class="text-danger" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></span>
+                                    </div>
+
+                                    <!-- Email field -->
+                                    <div class="wrap-input100 validate-input" data-validate="Valid email is required: ex@abc.xyz">
+                                        <input class="input100" th:field="*{email}" type="email" id="email" />
+                                        <span class="focus-input100" data-placeholder="Email"></span>
+                                        <span class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+                                    </div>
+
+                                    <!-- Phone field -->
+                                    <div class="wrap-input100 validate-input" data-validate="Valid phone number is required (start with 0, 10-11 digits)">
+                                        <input class="input100" th:field="*{phone}" type="tel" id="phone"
+                                               pattern="^0\d{9,10}$"
+                                               title="Phone number must start with 0 and have 10-11 digits"
+                                               maxlength="11"
+                                               onblur="this.value=this.value.replace(/\s/g,'')"/>
+                                        <span class="focus-input100" data-placeholder="Phone Number"></span>
+                                        <span class="text-danger" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></span>
+                                    </div>
+
+                                    <div class="container-login100-form-btn">
+                                        <div class="wrap-login100-form-btn">
+                                            <div class="login100-form-bgbtn"></div>
+                                            <button type="submit" class="login100-form-btn">
+                                                Sign up
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                                <div class="text-center p-t-115">
+                                    <span class="txt1">Already have an account?</span>
+                                    <a class="txt2" href="/login">Sign In</a>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /.col-lg-12 -->
+            </div><!-- /.row -->
+        </div><!-- /.container -->
+        <svg class="divider-shape" xmlns="http://www.w3.org/2000/svg" width="142" height="17" viewBox="0 0 142 17">
+            <path
+                    d="M800,600V583c8.782,15.985,46.811,11.315,56,12a35.721,35.721,0,0,1,15,5m-71,0V583c-8.782,15.985-46.811,11.315-56,12a35.717,35.717,0,0,0-15,5"
+                    transform="translate(-729 -583)"></path>
+        </svg>
+    </section><!-- /.Hero Banner -->
+
+    <button id="scrollTopBtn"><i class="fa fa-angle-up"></i></button>
+</div>
+<!-- /.wrapper -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+<script src="assets/js/jquery-3.3.1.min.js"></script>
+<script src="assets/js/plugins.js"></script>
+<script src="assets/js/main.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const successMessage = document.querySelector('.toast-success');
+        const errorMessage = document.querySelector('.toast-error');
+
+        if (successMessage || errorMessage) {
+            const toastContainer = document.getElementById('toast');
+            toastContainer.classList.add('show');
+
+            // Nếu là success, chuyển hướng sau 1.5s
+            if (successMessage) {
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 2000);
+            }
+
+            // Tự động ẩn toast sau 3s
+            setTimeout(() => {
+                toastContainer.classList.remove('show');
+            }, 3000);
+        }
+
+        // Xử lý hiện/ẩn placeholder
+        const inputs = document.querySelectorAll(".input100");
+        inputs.forEach(input => {
+            const placeholder = input.nextElementSibling;
+            // Bỏ qua span chứa icon eye
+            if (!placeholder.classList.contains('btn-show-pass')) {
+                input.addEventListener("input", function() {
+                    placeholder.style.display = this.value ? "none" : "block";
+                });
+            }
+        });
+
+        // Xử lý nút hiển thị mật khẩu cho cả password và confirm password
+        const showPassBtns = document.querySelectorAll(".btn-show-pass i");
+        showPassBtns.forEach(btn => {
+            btn.addEventListener("click", function() {
+                const input = this.closest('.wrap-input100').querySelector('input');
+                if (input.type === "password") {
+                    input.type = "text";
+                    this.classList.replace("zmdi-eye", "zmdi-eye-off");
+                } else {
+                    input.type = "password";
+                    this.classList.replace("zmdi-eye-off", "zmdi-eye");
+                }
+            });
+        });
+    });
+
+    document.getElementById('phone').addEventListener('input', function(e) {
+        // Chỉ cho phép nhập số
+        this.value = this.value.replace(/[^0-9]/g, '');
+
+        // Lưu giá trị thực (không có khoảng trắng) vào data attribute
+        this.dataset.actualValue = this.value;
+
+        // Format hiển thị
+        if (this.value.length > 4) {
+            this.value = this.value.replace(/(\d{4})(\d{3})(\d{3,4})/, '$1 $2 $3');
+        } else if (this.value.length > 3) {
+            this.value = this.value.replace(/(\d{3})(\d{3})/, '$1 $2');
+        }
+    });
+
+    // Trước khi submit form, xóa khoảng trắng
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const phoneInput = document.getElementById('phone');
+        phoneInput.value = phoneInput.value.replace(/\s/g, '');
+    });
+
+</script>
+
+<script src="assets/js/script-admin-side.js"></script>
+</body>
+
+</html>

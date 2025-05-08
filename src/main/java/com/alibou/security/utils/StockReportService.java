@@ -31,9 +31,9 @@ public class StockReportService {
     private final FoodRepository foodRepository;
     private final StocksHistoryRepository stocksHistoryRepository;
 
-    public void exportStockReport(HttpServletResponse response, long dateStartMillis, long dateEndMillis) throws IOException {
+    public void exportStockReport(String type, HttpServletResponse response, long dateStartMillis, long dateEndMillis) throws IOException {
         List<Food> foods = foodRepository.findAll();
-        List<StocksHistory> allHistories = stocksHistoryRepository.getAllStocksHistory();
+        List<StocksHistory> allHistories = stocksHistoryRepository.getAllStocksHistory(type);
 
         // Filter histories within the date range
         List<StocksHistory> relevantHistories = allHistories.stream()

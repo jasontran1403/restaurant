@@ -14,4 +14,5 @@ public class AddStocksRequest {
     private double price;
     private String type;
     private int quantity;
+    private String userRole;
 }

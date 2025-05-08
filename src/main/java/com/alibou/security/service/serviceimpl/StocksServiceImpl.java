@@ -20,7 +20,7 @@ public class StocksServiceImpl implements StocksService {
     private final TelegramService telegramService;
 
     @Override
-    public void updateStocks(int productId, int quantity, double price, String type) {
+    public void updateStocks(int productId, int quantity, double price, String type, String userRole) {
         var food = foodRepository.findFoodById(productId);
 
         food.setStocks(food.getStocks() + quantity);
@@ -41,11 +41,12 @@ public class StocksServiceImpl implements StocksService {
         stocksHistory.setType(type);
         stocksHistory.setQuantity(quantity);
         stocksHistory.setHide(1);
+        stocksHistory.setUserRole(userRole);
         stocksHistoryRepository.save(stocksHistory);
     }
 
     @Override
-    public void placeOrderStocks(int productId, int quantity, double price, String type, long orderId) {
+    public void placeOrderStocks(int productId, int quantity, double price, String type, long orderId, String userRole) {
         var food = foodRepository.findFoodById(productId);
 
         StocksHistory stocksHistory = new StocksHistory();
@@ -55,16 +56,17 @@ public class StocksServiceImpl implements StocksService {
         stocksHistory.setHide(0);
         stocksHistory.setType(type);
         stocksHistory.setOrderId(orderId);
+        stocksHistory.setUserRole(userRole);
         stocksHistoryRepository.save(stocksHistory);
     }
 
     @Override
-    public Page<StocksHistory> getAllStocksHistory(Pageable pageable) {
-        return stocksHistoryRepository.getAllStocksHistory(pageable);
+    public Page<StocksHistory> getAllStocksHistory(String fetchType, Pageable pageable) {
+        return stocksHistoryRepository.getAllStocksHistory(fetchType, pageable);
     }
 
     @Override
-    public StocksHistory getStocksHistoryByOrderId(long orderId) {
+    public List<StocksHistory> getStocksHistoryByOrderId(long orderId) {
         return stocksHistoryRepository.findByOrderId(orderId);
     }
 

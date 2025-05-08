@@ -250,7 +250,8 @@
                           <th>Tên món </th>
                           <th>Giá </th>
                           <th>Giá vốn </th>
-                          <th>Tồn kho</th>
+                          <th>Tồn kho lẻ</th>
+                          <th>Tồn kho sỉ</th>
                           <th>Chức năng</th>
                         </tr>
                       </thead>
@@ -261,6 +262,7 @@
                           <td><p th:text="${#numbers.formatDecimal(food.price, 1, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'"></p></td>
                             <td><p th:text="${#numbers.formatDecimal(food.defaultPrice, 1, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'"></p></td>
                           <td><p th:text="${food.stocks}"></p></td>
+                            <td><p th:text="${food.stocksCustomer}"></p></td>
                           <td>
                               <div class="row-container"><p th:class="${food.status eq 0 ? 'btn btn-danger' : 'btn btn-success'}"><a style="color: white;text-decoration: none;" th:href="@{/admin/toggle-food/{foodId}(foodId=${food.id})}" th:text="${food.status eq 0 ? 'Ẩn' : 'Hiện'}"></a></p>
                                   <p id="update" class="btn btn-info" data-toggle="modal" data-target="#exampleModalCenter2"

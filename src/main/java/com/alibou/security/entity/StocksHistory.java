@@ -25,4 +25,5 @@ public class StocksHistory {
     private String note;
     private int hide; // 0 hide 1 show
     private long orderId;
+    private String userRole;
 }

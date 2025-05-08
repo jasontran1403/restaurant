@@ -20,6 +20,7 @@ public class Agency {
     @Column(unique = true, nullable = false)
     private String username;
     private String password;
+    @Column(unique = true, nullable = false)
     private String email;
     private String role;
     private String phone;

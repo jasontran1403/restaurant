@@ -16,8 +16,8 @@ public interface OrderRepository extends JpaRepository<Order, Long>{
 	@Query(value="select * from orders where staff = ?1 order by id desc", nativeQuery=true)
 	List<Order> findOrdersByStaff(String staff);
 	
-	@Query(value="select * from orders order by time DESC", nativeQuery=true)
-	Page<Order> findAllPagable(Pageable pageable);
+	@Query(value="select * from orders where user_role = ?1 order by time DESC", nativeQuery=true)
+	Page<Order> findAllPagable(String userRole, Pageable pageable);
 	
 	@Query(value="select * from orders where time >= ?1 and time <= ?2 order by time", nativeQuery=true)
 	List<Order> getOrderByTimeRange(long timeFrom, long timeTo);

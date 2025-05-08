@@ -10,5 +10,6 @@ public interface AgencyRepository extends JpaRepository<Agency, Integer> {
     @Query(value="select * from agency where username = ?1", nativeQuery=true)
     Optional<Agency> findByUsername(String username);
 
-
+    @Query(value="select * from agency where email = ?1", nativeQuery=true)
+    Optional<Agency> findByEmail(String email);
 }

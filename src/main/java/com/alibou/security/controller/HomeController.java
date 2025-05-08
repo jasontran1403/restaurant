@@ -17,6 +17,7 @@ import com.alibou.security.utils.StockReportService;
 import com.alibou.security.utils.TelegramService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +25,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -77,6 +79,47 @@ public class HomeController {
     public String login() {
         return "landing-page/login";
     }
+
+    @GetMapping("/signup")
+    public String showSignupForm(Model model) {
+        model.addAttribute("user", new SignupRequest()); // Đổi tên attribute thành "user"
+        return "landing-page/signup";
+    }
+
+    @PostMapping("/signup")
+    public String handleSignup(@Valid @ModelAttribute("user") SignupRequest request,
+                               BindingResult result,
+                               RedirectAttributes redirectAttributes) {
+
+        // Validate password match
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            result.rejectValue("confirmPassword", "error.user", "Passwords do not match");
+        }
+
+        if (result.hasErrors()) {
+            return "landing-page/signup";
+        }
+
+        try {
+            // Thử tạo user
+            boolean created = agencyService.createUser(request);
+
+            if (!created) {
+                // Nếu username/email đã tồn tại
+                redirectAttributes.addFlashAttribute("errorMessage", "Username or email already exists");
+                return "redirect:/signup";
+            }
+
+            // Thành công
+            redirectAttributes.addFlashAttribute("successMessage", "Signup successful! Redirecting to login...");
+            return "redirect:/signup?success";
+        } catch (Exception e) {
+            // Lỗi server/database
+            redirectAttributes.addFlashAttribute("errorMessage", "Registration failed. Please try again later.");
+            return "redirect:/signup";
+        }
+    }
+
 
     @GetMapping("/sales")
     public String staff(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
@@ -313,10 +356,9 @@ public class HomeController {
     }
 
     @GetMapping("/admin/toggle-order/{id}")
-    public String toggleOrder(@PathVariable Long id, @RequestParam(required = false, defaultValue = "0") int page) {
+    public String toggleOrder(@PathVariable Long id, @RequestParam(required = false, defaultValue = "0") int page, @RequestParam(required = false, defaultValue = "Staff") String type) {
         int oldOrderStatus = orderService.getOrderById(id).getStatus();
-
-        if (oldOrderStatus <= 2) return "redirect:/admin/orders?page=" + page;
+        if (oldOrderStatus == 2) return "redirect:/admin/orders?page=" + page + "&type=" + type;
 
         Order order = orderService.toggleStatus(id);
         int newOrderStatus = order.getStatus();
@@ -378,13 +420,12 @@ public class HomeController {
         }
 
         // Redirect về trang hiện tại
-        return "redirect:/admin/orders?page=" + page;
+        return "redirect:/admin/orders?page=" + page + "&type=" + type;
     }
 
     @GetMapping("/admin/cancel-order/{id}")
-    public String cencelOrder(@PathVariable Long id, @RequestParam(required = false, defaultValue = "0") int page) {
+    public String cencelOrder(@PathVariable Long id, @RequestParam(required = false, defaultValue = "0") int page, @RequestParam(required = false, defaultValue = "Staff") String type) {
         Order order = orderService.findOrderById(id).get();
-
         if (order.getStatus() < 3) {
             orderService.cancelOrder(id);
             String message = "[Cập nhật đơn hàng]\nĐơn hàng số: " + id + " đã cập nhật trạng thái thành Đã hủy";
@@ -410,18 +451,29 @@ public class HomeController {
                 }
             }
         }
-        return "redirect:/admin/orders?page=" + page;
+        return "redirect:/admin/orders?page=" + page + "&type=" + type;
 
     }
 
     @GetMapping("/admin/orders")
-    public String orders(Model model, @RequestParam(name = "page", defaultValue = "0") int page) {
+    public String orders(Model model,
+                         @RequestParam(name = "page", defaultValue = "0") int page,
+                         @RequestParam(name = "type", defaultValue = "Staff") String type) {
+
         int pageSize = 10;
-        Page<Order> orders = orderService.getPaginatedOrders(PageRequest.of(page, pageSize));
+        Page<Order> orders = orderService.getPaginatedOrders(type, PageRequest.of(page, pageSize));
+
         model.addAttribute("orderPage", orders);
-        model.addAttribute("currentPage", page); // Truyền page hiện tại vào Model
+        model.addAttribute("currentPage", page);
+        model.addAttribute("type", type); // Thêm fetchType vào model
 
         return "admin/orders";
+    }
+
+    @GetMapping("/admin/toglge-paid-status/{orderId}")
+    public String togglePaidOrder(@PathVariable int orderId, @RequestParam(required = false, defaultValue = "0") int page) {
+        System.out.println("Orderid: " + orderId + " page: " + page);
+        return "redirect:/admin/orders?page=" + page;
     }
 
     @GetMapping("/admin/cates")
@@ -506,8 +558,9 @@ public class HomeController {
     @GetMapping("/admin/export")
     public void exportReport(HttpServletResponse response,
                              @RequestParam long startDate,
-                             @RequestParam long endDate) throws IOException {
-        stockReportService.exportStockReport(response, startDate/1000, endDate/1000);
+                             @RequestParam long endDate,
+                             @RequestParam String type) throws IOException {
+        stockReportService.exportStockReport(type, response, startDate/1000, endDate/1000);
     }
 
     @GetMapping("/admin/foods")
@@ -524,9 +577,9 @@ public class HomeController {
     }
 
     @GetMapping("/admin/stocks")
-    public String stocks(Model model, @RequestParam(name = "page", defaultValue = "0") int page) {
+    public String stocks(Model model, @RequestParam(name = "page", defaultValue = "0") int page, @RequestParam(name = "type", defaultValue = "Staff") String fetchType) {
         int pageSize = 4;
-        Page<StocksHistory> stocksHistoryPage = stocksService.getAllStocksHistory(PageRequest.of(page, pageSize));
+        Page<StocksHistory> stocksHistoryPage = stocksService.getAllStocksHistory(fetchType, PageRequest.of(page, pageSize));
         model.addAttribute("stocksPage", stocksHistoryPage);
 
         List<Food> listFood = foodService.getAll();
@@ -534,12 +587,11 @@ public class HomeController {
         model.addAttribute("stockRequest", request);
         model.addAttribute("listFood", listFood);
         model.addAttribute("editStock", new EditStocksRequest());
-
+        model.addAttribute("type", fetchType);
 
         List<String> listType = new ArrayList<>();
         listType.add("In");
         listType.add("Out");
-//        listType.add("Adjustment");
         model.addAttribute("listType", listType);
 
         return "admin/stocks";
@@ -562,7 +614,7 @@ public class HomeController {
             if ("adjustment".equalsIgnoreCase(request.getType())) {
                 // Với loại adjustment, chỉ kiểm tra giá
                 if (request.getPrice() >= 0) {
-                    stocksService.updateStocks(request.getId(), request.getQuantity(), request.getPrice(), request.getType());
+                    stocksService.updateStocks(request.getId(), request.getQuantity(), request.getPrice(), request.getType(), request.getUserRole());
                     msg = action + " kho " + request.getType() + " thành công";
                 } else {
                     msg = action + " kho " + request.getType() + " thất bại, giá " + request.getPrice();
@@ -570,7 +622,7 @@ public class HomeController {
             } else if ("in".equalsIgnoreCase(request.getType()) || "out".equalsIgnoreCase(request.getType())) {
                 // Với loại in hoặc out, kiểm tra cả số lượng và giá
                 if (request.getQuantity() > 0 && request.getPrice() >= 0) {
-                    stocksService.updateStocks(request.getId(), request.getQuantity(), request.getPrice(), request.getType());
+                    stocksService.updateStocks(request.getId(), request.getQuantity(), request.getPrice(), request.getType(), request.getUserRole());
                     msg = action + " kho " + request.getType() + " thành công";
                 } else {
                     msg = action + " kho " + request.getType() + " thất bại, "
@@ -581,7 +633,7 @@ public class HomeController {
             redirectAttributes.addFlashAttribute("msg", msg); // Gửi thông báo
         }
 
-        return "redirect:/admin/stocks";
+        return "redirect:/admin/stocks?type=" + request.getUserRole();
     }
 
 
@@ -597,7 +649,6 @@ public class HomeController {
     @PostMapping("/admin/check-stocks")
     public String checkStocks(@ModelAttribute CheckStocksRequest request, RedirectAttributes redirectAttributes) {
         // Tiếp tục xử lý và lưu thông tin thực phẩm
-        System.out.println(request);
         stocksService.checkStocks(request.getFoodName(), request.getRealQuantity());
         redirectAttributes.addFlashAttribute("msgSuccess", "Điều chỉnh tồn kho thành công");
 

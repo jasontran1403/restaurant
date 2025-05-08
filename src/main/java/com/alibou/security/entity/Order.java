@@ -32,4 +32,6 @@ public class Order {
 	private double total;
 	private double actual;
 	private String staff;
+	private String userRole;
+	private boolean isPaid;
 }
