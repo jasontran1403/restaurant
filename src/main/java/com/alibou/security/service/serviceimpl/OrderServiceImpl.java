@@ -108,6 +108,7 @@ public class OrderServiceImpl implements OrderService {
 					OrderDetail orderDetail = new OrderDetail();
 					orderDetail.setFood_id(foodId);
 					orderDetail.setQuantity(quantity);
+					orderDetail.setUnit(food.get().getQuantity());
 					orderDetail.setName(food.get().getName());
 					Optional<Coupon> coupon = coupRepo.getByCode(request.getCode());
 
@@ -156,12 +157,21 @@ public class OrderServiceImpl implements OrderService {
 			order.setName(request.getName());
 			order.setPhone(request.getPhone());
 			order.setAddress(request.getAddress());
+
+			order.setVat(request.getVat());
 			order.setPaid(false);
 			order.setUserRole(userRole);
+
 			if (request.getMessage().equalsIgnoreCase("")) {
 				order.setMessage("Không có");
 			} else {
 				order.setMessage(request.getMessage());
+			}
+
+			if (request.getAddressReceive().equalsIgnoreCase("")) {
+				order.setAddressReceive(request.getAddress());
+			} else {
+				order.setAddressReceive(request.getAddressReceive());
 			}
 
 			order.setTotal(total);
@@ -222,6 +232,10 @@ public class OrderServiceImpl implements OrderService {
 				Customer customer = new Customer();
 				customer.setPhone(request.getPhone());
 				customer.setF1(agency.get().getUsername());
+				customer.setAddress(request.getAddress());
+				customer.setAddressReceive(request.getAddressReceive());
+				customer.setPhone(request.getPhone());
+				customer.setName(request.getName());
 
 				Customer resultSave = customerRepository.save(customer);
 

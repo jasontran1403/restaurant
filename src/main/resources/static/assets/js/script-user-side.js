@@ -6,6 +6,111 @@ function formatPrice(price) {
     return price.toLocaleString('en-US');
 }
 
+function calculateVAT() {
+    const vatSelect = document.getElementById('vat');
+    const vatRate = parseFloat(vatSelect.value);
+    const subtotalText = document.getElementById('subtotal').innerText;
+    const subtotal = parseFloat(subtotalText.replace(/[^0-9.-]+/g, ''));
+
+    // Lấy thông tin giảm giá hiện tại
+    const discountText = document.getElementById('discount').innerText;
+    let discountAmount = 0;
+    let discountRate = 0;
+
+    // Kiểm tra nếu discount là phần trăm (ví dụ: 10%)
+    if (discountText.includes('%')) {
+        const discountRateMatch = discountText.match(/\((\d+\.?\d*)\%\)/);
+        discountRate = discountRateMatch ? parseFloat(discountRateMatch[1]) : 0;
+        discountAmount = subtotal * discountRate / 100;
+    } else {
+        // Nếu discount là số tiền cố định
+        discountAmount = parseFloat(discountText.replace(/[^0-9.-]+/g, '')) || 0;
+    }
+
+    // Tính số tiền sau khi giảm giá (nếu có)
+    const discountedSubtotal = subtotal - discountAmount;
+
+    // Tính VAT dựa trên số tiền sau khi đã giảm giá
+    const vatAmount = discountedSubtotal * vatRate / 100;
+
+    // Tính tổng tiền cuối cùng (Subtotal - Discount + VAT)
+    const total = discountedSubtotal + vatAmount;
+
+    // Cập nhật UI
+    document.getElementById('vatAmount').innerText = `${formatPrice(vatAmount)} VNĐ (${vatRate}%)`;
+    document.getElementById('total').innerText = `${formatPrice(total)} VNĐ`;
+
+    // Cập nhật lại hàm updateTotal
+    updateTotal(subtotal, total, vatAmount, discountAmount);
+}
+
+function applyDiscount(discountPercentage) {
+    const subtotalText = document.getElementById('subtotal').innerText;
+    const subtotal = parseFloat(subtotalText.replace(/[^0-9.-]+/g, ''));
+    const discountAmount = subtotal * discountPercentage / 100;
+
+    // Lấy thông tin VAT hiện tại
+    const vatSelect = document.getElementById('vat');
+    const vatRate = parseFloat(vatSelect.value);
+
+    // Tính lại VAT dựa trên giá sau giảm
+    const discountedSubtotal = subtotal - discountAmount;
+    const vatAmount = discountedSubtotal * vatRate / 100;
+    const total = discountedSubtotal + vatAmount;
+
+    // Update UI
+    document.getElementById('discount').innerText =
+        `${formatPrice(discountAmount)} (${discountPercentage}%)`;
+    document.getElementById('vatAmount').innerText = `${formatPrice(vatAmount)} VNĐ (${vatRate}%)`;
+    document.getElementById('total').innerText = `${formatPrice(total)} VNĐ`;
+
+    // Cập nhật lại hàm updateTotal
+    updateTotal(subtotal, total, vatAmount, discountAmount);
+}
+
+function applyDiscountDefaultPrice(discountPercentage) {
+    const subtotalText = document.getElementById('subtotal').innerText;
+    const subtotal = parseFloat(subtotalText.replace(/[^0-9.-]+/g, ''));
+    const discountAmount = subtotal * discountPercentage / 100;
+
+    // Lấy thông tin VAT hiện tại
+    const vatSelect = document.getElementById('vat');
+    const vatRate = parseFloat(vatSelect.value);
+
+    // Tính lại VAT dựa trên giá sau giảm
+    const discountedSubtotal = subtotal - discountAmount;
+    const vatAmount = discountedSubtotal * vatRate / 100;
+    const total = discountedSubtotal + vatAmount;
+
+    // Update UI
+    document.getElementById('discount').innerText = `Mã giảm giá gốc`;
+    document.getElementById('vatAmount').innerText = `${formatPrice(vatAmount)} VNĐ (${vatRate}%)`;
+    document.getElementById('total').innerText = `${formatPrice(total)} VNĐ`;
+
+    // Cập nhật lại hàm updateTotal
+    updateTotal(subtotal, total, vatAmount, discountAmount);
+}
+
+function resetCoupon() {
+    isCouponApplied = false;
+    const subtotalText = document.getElementById('subtotal').innerText;
+    const subtotal = parseFloat(subtotalText.replace(/[^0-9.-]+/g, ''));
+
+    // Lấy thông tin VAT hiện tại
+    const vatSelect = document.getElementById('vat');
+    const vatRate = parseFloat(vatSelect.value);
+    const vatAmount = subtotal * vatRate / 100;
+    const total = subtotal + vatAmount;
+
+    // Reset UI
+    document.getElementById('discount').innerText = "0 VNĐ";
+    document.getElementById('vatAmount').innerText = `${formatPrice(vatAmount)} VNĐ (${vatRate}%)`;
+    document.getElementById('total').innerText = `${formatPrice(total)} VNĐ`;
+
+    // Cập nhật lại hàm updateTotal
+    updateTotal(subtotal, total, vatAmount, 0);
+}
+
 function connect(event) {
     var socket = new SockJS('/ws');
     stompClient = Stomp.over(socket);
@@ -66,8 +171,10 @@ var checkout = () => {
     var phone = document.getElementById("phone").value.trim();
     var address = document.getElementById("address").value.trim();
     var message = document.getElementById("message").value.trim();
+    var addressReceive = document.getElementById("addressReceive").value.trim();
+    var vat = document.getElementById("vat").value.trim();
 
-    if (name === "" || phone === "" || address === "") {
+    if (name === "" || phone === "" || address === "" || addressReceive === "") {
         displayToast("Thông tin người nhận hàng trống!", "error");
         return;
     }
@@ -85,6 +192,8 @@ var checkout = () => {
         name: name,
         phone: phone,
         address: address,
+        addressReceive: addressReceive,
+        vat: vat,
         message: message,
         code: check ? codeCoupon : "",
         rate: check ? rate : 0,
@@ -139,7 +248,7 @@ var checkout = () => {
                     nameCell.textContent = item.name;
 
                     const quantityCell = document.createElement('td');
-                    quantityCell.textContent = item.quantity;
+                    quantityCell.textContent = item.quantity + " X " + item.unit;
 
                     const priceCell = document.createElement('td');
                     priceCell.textContent = formatPrice(item.price);
@@ -185,6 +294,26 @@ var checkout = () => {
                 discountRow.appendChild(discountCell1);
                 discountRow.appendChild(discountCell2);
 
+                const vatRow = document.createElement('tr');
+                const emptyCell7 = document.createElement('td');
+                const emptyCell8 = document.createElement('td');
+                const vatCell1 = document.createElement('td');
+                vatCell1.textContent = `VAT (${vat}%): `; // Thay 10% bằng biến vat nếu cần
+
+                const subtotalValue = parseFloat(subtotal.innerText.replace(/[^0-9.-]+/g,""));
+                const discountValue = parseFloat(discount.innerText.replace(/[^0-9.-]+/g,""));
+                const vatValue = (subtotalValue - discountValue) * vat/100; // Tính VAT 10%
+
+                const vatCell2 = document.createElement('td');
+                vatCell2.textContent = formatPrice(vatValue) + " VNĐ";
+
+                vatRow.appendChild(emptyCell7);
+                vatRow.appendChild(emptyCell8);
+                vatRow.appendChild(vatCell1);
+                vatRow.appendChild(vatCell2);
+
+                const totalPaymentValue = (subtotalValue - discountValue) + vatValue;
+
                 // Add a row for total
                 const totalRow = document.createElement('tr');
                 const emptyCell5 = document.createElement('td'); // Empty cell for alignment
@@ -192,7 +321,7 @@ var checkout = () => {
                 const totalCell1 = document.createElement('td');
                 totalCell1.textContent = 'Số tiền cần thanh toán: ';
                 const totalCell2 = document.createElement('td');
-                totalCell2.textContent = total.innerText;
+                totalCell2.textContent = formatPrice(totalPaymentValue) + " VNĐ"; // Cập nhật lại tổng tiền
 
                 totalRow.appendChild(emptyCell5);
                 totalRow.appendChild(emptyCell6);
@@ -202,8 +331,8 @@ var checkout = () => {
                 // Append the rows to the table body
                 tbody.appendChild(subtotalRow);
                 tbody.appendChild(discountRow);
+                tbody.appendChild(vatRow);
                 tbody.appendChild(totalRow);
-
                 table.appendChild(tbody);
 
                 // Append the table to the bill element
@@ -232,10 +361,10 @@ var checkout = () => {
                             send();
                             localStorage.removeItem("cartItems");
 
-                            // Hiển thị thông báo và đợi 5 giây trước khi chuyển về trang chủ
+                            // Hiển thị thông báo và đợi 3 giây trước khi chuyển về trang chủ
                             setTimeout(() => {
-                                window.location.href = '/';
-                            }, 5000); // 5000ms = 5 giây
+                                window.location.href = '/menu';
+                            }, 3000);
                         }
                     })
                     .catch(error => {
@@ -280,22 +409,23 @@ connect();
 // Hàm renderCartTable để hiển thị giỏ hàng trong bảng
 function renderCartTable() {
     var cartTableBody = document.querySelector("table tbody");
-    cartTableBody.innerHTML = ''; // Xóa dữ liệu cũ trong bảng
-
+    cartTableBody.innerHTML = '';
     var cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
-
     let total = 0;
+
     cartItems.forEach(function (cartItem) {
         var row = document.createElement("tr");
         row.classList.add("cart__product");
 
+        // Hiển thị giá gốc (không nhân 1000)
         row.innerHTML = `
+      <td class="cart__product-id" style="display:none;">${cartItem.id}</td>
       <td class="cart__product-item">
         <div class="cart__product-remove">
-          <i class="fa fa-close" ></i>
+          <i class="fa fa-close"></i>
         </div>
         <div class="cart__product-img">
-          <img th:src="${cartItem.image}" alt="product" />
+          <img src="${cartItem.image}" alt="product" />
         </div>
         <div class="cart__product-title">
           <h6>${cartItem.name}</h6>
@@ -306,33 +436,22 @@ function renderCartTable() {
         <div class="product-quantity">
           <div class="quantity__input-wrap">
             <i class="fa fa-minus decrease-qty" onclick="decreaseQuantity(${cartItem.id})"></i>
-            <input type="number" value="${cartItem.quan}" class="qty-input" disabled readonly />
+            <input type="number" value="${cartItem.quantity}" class="qty-input" disabled readonly />
             <i class="fa fa-plus increase-qty" onclick="increaseQuantity(${cartItem.id})"></i>
           </div>
         </div>
       </td>
-      <td class="cart__product-total">${formatPrice(cartItem.price * cartItem.quan)} VNĐ</td>
+      <td class="cart__product-unit">${cartItem.unit}</td>
+      <td class="cart__product-total">${formatPrice(cartItem.price * cartItem.quantity)} VNĐ</td>
     `;
 
         cartTableBody.appendChild(row);
-        total += cartItem.price * cartItem.quan;
-
+        total += cartItem.price * cartItem.quantity;
     });
 
-    var cartTableActionRow = document.querySelector(".cart__product-action-content");
-    cartTableActionRow.innerHTML = `
-    <form class="d-flex flex-wrap">
-      <input type="text" class="form-control mb-10 mr-10" placeholder="Coupon Code">
-      <button type="submit" class="btn btn__primary mb-10">Apply Coupon</button>
-    </form>
-    <div>
-      <a class="btn btn__secondary mr-10" href="#" onclick="updateCart()">Update Cart</a>
-      <a class="btn btn__primary" href="#" onclick="checkout()">Checkout</a>
-    </div>
-  `;
-
+    // Cập nhật tổng tiền
     var subtotalElement = document.querySelector("#subtotal");
-    subtotalElement.textContent = `${total.toFixed(2)} VNĐ`;
+    subtotalElement.textContent = `${formatPrice(total)} VNĐ`;
 }
 
 // Hàm xóa sản phẩm khỏi giỏ hàng
@@ -414,16 +533,18 @@ function updateCart() {
 function updateQuantityAction(row, action) {
     var quantityInput = row.querySelector(".qty-input");
     var currentValue = parseInt(quantityInput.value);
+
     if (!isNaN(currentValue)) {
         let quantity = currentValue;
-
         quantityInput.value = currentValue;
 
-        var priceCell = row.querySelector(".cart__product-price");
+        var priceText = row.querySelector(".cart__product-price").textContent;
+        var price = parseFloat(priceText.replace(/[^0-9.-]+/g, ""));
+
+        // KHÔNG nhân với 1000 ở đây
         var totalPriceCell = row.querySelector(".cart__product-total");
-        var price = parseFloat(priceCell.textContent.replace("$", ""));
-        let adjustedPrice = price < 1000 ? price * 1000 : price; // Nếu price < 1000 thì nhân với 1000
-        totalPriceCell.textContent = `${formatPrice(adjustedPrice * quantity)} VNĐ`;
+        totalPriceCell.textContent = `${formatPrice(price * quantity)} VNĐ`;
+
         updateCart();
     }
 }
@@ -437,31 +558,34 @@ function removeProduct(row) {
 function updateCart() {
     var rows = document.querySelectorAll(".cart__product");
     var updatedCartItems = [];
-
     var subTotal = 0;
-    rows.forEach(function (row, index) {
 
-        var idCell = row.querySelector(".cart__product-id"); // Cột ID
+    rows.forEach(function (row, index) {
+        var idCell = row.querySelector(".cart__product-id");
         var name = row.querySelector(".cart__product-title h6").textContent;
-        var price = parseFloat(row.querySelector(".cart__product-price").textContent.replace("$", ""));
-        let adjustedPrice = price < 1000 ? price * 1000 : price; // Nếu price < 1000 thì nhân với 1000
+        var priceText = row.querySelector(".cart__product-price").textContent;
+        var price = parseFloat(priceText.replace(/[^0-9.-]+/g, ""));
+        var unit = row.querySelector(".cart__product-unit").textContent;
+
+        // KHÔNG nhân với 1000 ở đây nữa
+        let adjustedPrice = price;
+
         var quantityInput = row.querySelector(".qty-input");
         var quantity = parseInt(quantityInput.value);
         var image = row.querySelector(".cart__product-img img").src;
+
         subTotal += adjustedPrice * quantity;
-        if (!isNaN(quantity)) {
-            let adjustedPrice2 = price < 1000 ? price * 1000 : price;
-            updatedCartItems.push({
-                id: idCell.textContent, // Lấy ID từ cột ID
-                name,
-                price: adjustedPrice2,
-                quantity,
-                image
-            });
-        }
+
+        updatedCartItems.push({
+            id: idCell.textContent,
+            name,
+            price: adjustedPrice,
+            quantity,
+            unit,
+            image
+        });
     });
 
-    // Lưu dữ liệu giỏ hàng cập nhật vào Local Storage
     localStorage.setItem("cartItems", JSON.stringify(updatedCartItems));
     updateTotal(subTotal, subTotal);
 }
@@ -470,14 +594,14 @@ document.addEventListener("DOMContentLoaded", function () {
     var cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
     var cartTableBody = document.getElementById("cart-table-body");
     var subTotal = 0.0;
-    var total = 0.0;
 
     cartItems.forEach(function (item, index) {
         var row = document.createElement("tr");
         row.className = "cart__product";
-        let adjustedPrice = item.price < 1000 ? item.price * 1000 : item.price; // Nếu price < 1000 thì nhân với 1000
-        subTotal += adjustedPrice * item.quantity;
-        updateTotal(subTotal, subTotal);
+
+        // KHÔNG nhân giá với 1000 ở đây
+        subTotal += item.price * item.quantity;
+
         row.innerHTML = `
       <td class="cart__product-id" style="display:none;">${item.id}</td>
       <td class="cart__product-item">
@@ -491,7 +615,7 @@ document.addEventListener("DOMContentLoaded", function () {
           <h6>${item.name}</h6>
         </div>
       </td>
-      <td class="cart__product-price">${formatPrice(adjustedPrice)} VNĐ</td>
+      <td class="cart__product-price">${formatPrice(item.price)} VNĐ</td>
       <td class="cart__product-quantity">
         <div class="product-quantity">
           <div class="quantity__input-wrap">
@@ -501,22 +625,82 @@ document.addEventListener("DOMContentLoaded", function () {
           </div>
         </div>
       </td>
-      <td class="cart__product-total">${formatPrice(adjustedPrice * item.quantity)} VNĐ</td>
+      <td class="cart__product-unit">${item.unit}</td>
+      <td class="cart__product-total">${formatPrice(item.price * item.quantity)} VNĐ</td>
     `;
 
         cartTableBody.appendChild(row);
     });
+
+    updateTotal(subTotal, subTotal);
 });
 
-function updateTotal(subTotal, total) {
-    document.getElementById("subtotal").innerText = `${formatPrice(subTotal)} VNĐ`;
-    document.getElementById("total").innerText = `${formatPrice(total)} VNĐ`;
+function validateNameInput(nameInput) {
+    if (!nameInput.value.trim()) {
+        // Hiển thị thông báo lỗi nếu cần
+        displayToast("Vui lòng nhập tên khách hàng", "error");
+        return false; // hoặc return; nếu không cần trả về giá trị
+    }
+    return true;
 }
+
+function loadCustomer(customerId) {
+    const name = document.getElementById("name");
+    var isNameValid = validateNameInput(name);
+    if (!isNameValid) return;
+    const main = document.getElementById("toast-list");
+    if (main) {
+        const type = "success";
+        const toastElement = document.createElement("div");
+
+        const title = "Notification!";
+
+        const icon = "fas fa-check-circle";
+
+        toastElement.classList.add("toast", `toast--${type}`);
+        toastElement.style.animation = `slideInLeft ease .3s forwards`;
+
+        const autoRemoveId = setTimeout(function () {
+            main.removeChild(toastElement);
+        }, 1500);
+
+        // Remove toast when clicked
+        toastElement.onclick = function (e) {
+            main.removeChild(toastElement);
+        };
+
+        toastElement.innerHTML = `
+            <div class="toast__icon">
+                <i class="${icon}"></i>
+            </div>
+            <div class="toast__body">
+                <h3 class="toast__title">${title}</h3>
+                <p class="toast__msg">${customerId}</p>
+            </div>
+            <div class="toast__close">
+                <i class="fas fa-times"></i>
+            </div>
+        `;
+        main.appendChild(toastElement);
+    }
+}
+
+function updateTotal(subtotal, total, vatAmount = 0, discountAmount = 0) {
+    const vatRate = parseFloat(document.getElementById('vat').value);
+    document.getElementById("subtotal").innerText = `${formatPrice(subtotal)} VNĐ`;
+    document.getElementById("vatAmount").innerText = `${formatPrice(vatAmount)} VNĐ (${vatRate}%)`;
+    document.getElementById("total").innerText = `${formatPrice(total)} VNĐ`;
+
+    // Giữ nguyên cách hiển thị discount nếu đã có
+    if (!document.getElementById("discount").innerText.includes('%')) {
+        document.getElementById("discount").innerText = `${formatPrice(discountAmount)} VNĐ`;
+    }
+}
+
 
 function displayToast(message, type) {
     const main = document.getElementById("toast-list");
     if (main) {
-
         const toastElement = document.createElement("div");
 
         const title = "Notification!";
@@ -580,7 +764,6 @@ function checkCoupon() {
     fetch("/api/v1/auth/validate-coupon", requestOptions)
         .then(response => response.text())
         .then(result => {
-            console.log(result);
             if (result === '0.0') {
                 // Handle invalid coupon
                 displayToast("Mã giảm giá không hợp lệ!", "error");
@@ -617,34 +800,6 @@ function checkCoupon() {
             }
         })
         .catch(error => console.log('error', error));
-}
-
-function applyDiscount(discountPercentage) {
-    var totalElement = document.getElementById('total');
-    var subtotalElement = document.getElementById('subtotal');
-
-    var total = parseFloat(subtotalElement.innerText.replace(/[^0-9.-]+/g, ''));
-    var discountedTotal = total - (total * discountPercentage / 100);
-
-    // Update UI with discounted total
-    totalElement.innerText = `${formatPrice(discountedTotal)} VNĐ`;
-
-    // Update discount display
-    document.getElementById('discount').innerText = `${discountPercentage}%`;
-}
-
-function applyDiscountDefaultPrice(discountPercentage) {
-    var totalElement = document.getElementById('total');
-    var subtotalElement = document.getElementById('subtotal');
-
-    var total = parseFloat(subtotalElement.innerText.replace(/[^0-9.-]+/g, ''));
-    var discountedTotal = total - (total * discountPercentage / 100);
-
-    // Update UI with discounted total
-    totalElement.innerText = `${formatPrice(discountedTotal)} VNĐ`;
-
-    // Update discount display
-    document.getElementById('discount').innerText = `Mã giảm giá gốc`;
 }
 
 function resetCoupon() {

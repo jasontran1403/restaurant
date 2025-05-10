@@ -9,6 +9,7 @@ import com.alibou.security.entity.*;
 import com.alibou.security.repository.AgencyRepository;
 import com.alibou.security.repository.CommissionHistoryRepository;
 import com.alibou.security.repository.CustomerRepository;
+import com.alibou.security.repository.OrderRepository;
 import com.alibou.security.service.*;
 import com.alibou.security.user.UserRepository;
 import com.alibou.security.utils.ExcelExportService;
@@ -74,6 +75,8 @@ public class HomeController {
 
     @Autowired
     AgencyService agencyService;
+    @Autowired
+    private OrderRepository orderRepository;
 
     @GetMapping("/login")
     public String login() {
@@ -148,6 +151,7 @@ public class HomeController {
             item.setAddress(order.getAddress());
             item.setTime(convertUnixToDateTime(order.getTime()));
             item.setTotal(order.getTotal());
+            item.setVat(order.getVat());
             item.setActual(order.getActual());
             item.setStatus(order.getStatus());
             listOrdersDetail.add(item);
@@ -224,7 +228,7 @@ public class HomeController {
             return "redirect:/login";
         }
 
-        int pageSize = 6;
+        int pageSize = 100;
         Page<Food> foods = foodService.getPaginatedFoodsShow(PageRequest.of(page, pageSize));
         model.addAttribute("foodPage", foods);
 
@@ -353,6 +357,28 @@ public class HomeController {
     public String placeOrder(@RequestBody OrderRequest orderRequest) {
         OrderResponse result = orderService.placeOrder(orderRequest);
         return "redirect:/cart";
+    }
+
+    @GetMapping("/admin/toggle-paid/{id}")
+    public String togglePaidOrder(RedirectAttributes redirectAttributes, @PathVariable Long id, @RequestParam(required = false, defaultValue = "0") int page, @RequestParam(required = false, defaultValue = "Staff") String type) {
+        Order order = orderService.getOrderById(id);
+
+        if (order.getStatus() != 2) {
+            redirectAttributes.addFlashAttribute("error", "Đon hàng ở trạng thái 'Hoàn thành' mới có thể thay đổi trạng thái thanh toán.");
+            return "redirect:/admin/orders?page=" + page + "&type=" + type;
+        }
+
+        order.setPaid(!order.isPaid());
+
+        orderRepository.save(order);
+
+        String status = order.isPaid() ? " đã thanh toán." : " chưa thanh toán.";
+
+        String message = "[Cập nhật trạng thái thanh toán]\nĐơn hàng số: " + id + " đã cập nhật trạng thái thành" + status;
+        telegramService.sendMessageToGroup(message);
+
+        redirectAttributes.addFlashAttribute("success", "Cập nhật trạng thái thanh toán thành công!");
+        return "redirect:/admin/orders?page=" + page + "&type=" + type;
     }
 
     @GetMapping("/admin/toggle-order/{id}")
@@ -506,6 +532,7 @@ public class HomeController {
         }
         Agency agency = new Agency();
         agency.setEmail(request.getEmail());
+        agency.setFullname(request.getFullname());
         agency.setPassword(request.getPassword());
         agency.setPhone(request.getPhone());
         agency.setUsername(request.getUsername());
@@ -675,7 +702,9 @@ public class HomeController {
                              @RequestParam("description") String description, @RequestParam("price") double price,
                              @RequestParam(value = "categories", required = false) List<Integer> categories,
                              @RequestParam("image") MultipartFile image, @RequestParam("status") int status,
+                             @RequestParam("quantity") String quantity,
                              RedirectAttributes redirectAttributes) {
+
         UpdateFoodRequest request = new UpdateFoodRequest();
         request.setId(id);
         request.setName(name);
@@ -683,11 +712,12 @@ public class HomeController {
         request.setPrice(price);
         request.setCategories(categories);
         request.setImage(image);
+        request.setQuantity(quantity);
         request.setStatus(status);
 
         foodService.updateFood(request);
         redirectAttributes.addFlashAttribute("message", "Cập nhật món ăn thành công.");
-        return "redirect:/admin/foods"; // Chuyển hướng đến trang danh sách món ăn sau khi cập nhật
+        return "redirect:/admin/foods";
     }
 
     @GetMapping("/admin/coupons")

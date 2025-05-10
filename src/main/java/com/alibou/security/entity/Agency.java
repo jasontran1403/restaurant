@@ -22,6 +22,7 @@ public class Agency {
     private String password;
     @Column(unique = true, nullable = false)
     private String email;
+    private String fullname;
     private String role;
     private String phone;
     private double total;

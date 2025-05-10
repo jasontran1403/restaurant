@@ -203,7 +203,7 @@
                   <td th:text="${order.time}"></td>
                   <td th:text="${order.name}"></td>
                   <td th:text="${order.phone}"></td>
-                  <td th:text="${#numbers.formatDecimal(order.total, 0, 'COMMA', 0, 'POINT')}"></td>
+                  <td th:text="${#numbers.formatDecimal(order.total + (order.vat*order.total/100), 0, 'COMMA', 0, 'POINT')}"></td>
                   <td th:text="${#numbers.formatDecimal(order.commission, 0, 'COMMA', 0, 'POINT')}"></td>
                   <td>
                     <div class="d-flex justify-content-center">

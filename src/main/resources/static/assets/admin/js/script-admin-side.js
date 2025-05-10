@@ -131,10 +131,11 @@ function fetchData(username) {
     console.log(username);
 }
 
-function editFood(id, name, description, price, categories, image, status) {
+function editFood(id, name, description, price, quantity, categories, image, status) {
     document.getElementById('id').value = id;
     document.getElementById('name').value = name;
     document.getElementById('description').innerText = description;
+    document.getElementById('quantity').value = quantity;
     document.getElementById('price').value = price;
 
     // Xử lý danh mục: Bỏ dấu ngoặc vuông và tách thành mảng

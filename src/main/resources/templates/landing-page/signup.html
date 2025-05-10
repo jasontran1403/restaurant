@@ -109,9 +109,9 @@
 
                                     <!-- Password field -->
                                     <div class="wrap-input100 validate-input" data-validate="Enter password">
-        <span class="btn-show-pass">
-            <i class="zmdi zmdi-eye"></i>
-        </span>
+                                    <span class="btn-show-pass">
+                                        <i class="zmdi zmdi-eye"></i>
+                                    </span>
                                         <input class="input100" th:field="*{password}" type="password" id="password" />
                                         <span class="focus-input100" data-placeholder="Password"></span>
                                         <span class="text-danger" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
@@ -127,6 +127,11 @@
                                         <span class="text-danger" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></span>
                                     </div>
 
+                                    <div class="wrap-input100 validate-input" data-validate="Full name can not be empty">
+                                        <input class="input100" th:field="*{fullname}" type="text" id="fullname" />
+                                        <span class="focus-input100" data-placeholder="Full name"></span>
+                                        <span class="text-danger" th:if="${#fields.hasErrors('fullname')}" th:errors="*{fullname}"></span>
+                                    </div>
                                     <!-- Email field -->
                                     <div class="wrap-input100 validate-input" data-validate="Valid email is required: ex@abc.xyz">
                                         <input class="input100" th:field="*{email}" type="email" id="email" />

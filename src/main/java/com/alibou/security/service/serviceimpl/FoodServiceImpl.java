@@ -53,6 +53,11 @@ public class FoodServiceImpl implements FoodService{
 		food.setImage("");
 		food.setCategories(cates);
 		food.setStocks(0);
+		if (request.getQuantity().isEmpty()) {
+			food.setQuantity("Piece");
+		} else {
+			food.setQuantity(request.getQuantity());
+		}
 		Food result = foodRepo.save(food);
 		
 		String fileName = "restaurant/restaurant_food_id_" + food.getId();
@@ -76,6 +81,9 @@ public class FoodServiceImpl implements FoodService{
 		food.setPrice(request.getPrice());
 		food.setStatus(request.getStatus());
 		food.setCategories(cates);
+		if (!request.getQuantity().isEmpty()) {
+			food.setQuantity(request.getQuantity());
+		}
 		if (!request.getImage().isEmpty()) {
 			String fileName = "restaurant/restaurant_food_id_" + food.getId();
 			String url = uploadService.uploadImage(request.getImage(), fileName);

@@ -17,6 +17,7 @@ public class AddFoodRequest {
 	private String name;
 	private String description;
 	private double price;
+	private String quantity;
 	private int status;
 	private List<Integer> categories;
 	private MultipartFile image;

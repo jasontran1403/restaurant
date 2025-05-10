@@ -16,6 +16,11 @@
     <link rel="stylesheet" th:href="@{/assets/admin/css/toastStyle.css}" />
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         <link rel="stylesheet" th:href="@{/assets/admin/vendors/ti-icons/css/themify-icons.css}">
+  <style>
+    #nameIcon {
+      transition: color 0.3s ease;
+    }
+  </style>
 </head>
 
 <body>
@@ -61,6 +66,7 @@
 				      <th>Tên món </th>
 				      <th>Giá tiền </th>
 				      <th>Số lượng </th>
+                      <th>Đơn vị </th>
 				      <th>Tổng tiền </th>
 				    </tr>
 				  </thead>
@@ -88,9 +94,31 @@
             <div class="cart__shiping">
               <h6>Thông tin người nhận :</h6>
               <div class="row">
-                <div class="col-md-12">
-                  <input type="text" class="form-control" id="name" required placeholder="Họ và tên ">
+                <div class="col-md-12" style="position: relative;">
+                  <input type="text" class="form-control" id="name" required placeholder="Khách hàng"
+                         style="padding-right: 35px;" oninput="checkNameInput()">
+                  <i class="fa-brands fa-get-pocket" id="nameIcon" onclick="loadCustomer()"
+                     style="position: absolute; right: 30px; top: 30%; transform: translateY(-30%);
+            cursor: pointer; color: gray; z-index: 5;"></i>
                 </div>
+
+                <script>
+                  function checkNameInput() {
+                    const nameInput = document.getElementById("name");
+                    const nameIcon = document.getElementById("nameIcon");
+
+                    if (nameInput.value.trim() === "") {
+                      nameIcon.style.color = "gray"; // Màu xám khi rỗng
+                    } else {
+                      nameIcon.style.color = "green"; // Màu xanh khi có giá trị
+                    }
+                  }
+
+                  // Kiểm tra ngay khi trang load (nếu input có sẵn giá trị)
+                  document.addEventListener("DOMContentLoaded", function() {
+                    checkNameInput();
+                  });
+                </script>
                 <div class="col-md-12">
                   <input type="text" class="form-control" id="phone" required placeholder="Số điện thoại">
                   <small id="phone-error" style="color: red; display: none;">Số điện thoại không hợp lệ!</small>
@@ -138,7 +166,17 @@
                   <input type="text" class="form-control" id="address" required placeholder="Địa chỉ ">
                 </div>
                 <div class="col-md-12">
-                  <input type="text" class="form-control" id="message" required placeholder="Lời nhắn cho nhà hàng ">
+                  <input type="text" class="form-control" id="addressReceive" required placeholder="Địa chỉ nhận hàng ">
+                </div>
+                <div class="col-md-12">
+                  <select class="form-control" id="vat" required onchange="calculateVAT()">
+                    <option value="0">Miễn phí (0%)</option>
+                    <option value="8">8%</option>
+                    <option value="10">10%</option>
+                  </select>
+                </div>
+                <div class="col-md-12">
+                  <input type="text" class="form-control" id="message" required placeholder="Ghi chú ">
                 </div>
               </div>
             </div><!-- /.cart__shiping -->
@@ -148,12 +186,11 @@
               <h6>Giỏ hàng:</h6>
               <ul class="list-unstyled mb-0">
                 <li><span>Tổng tiền tạm tính:</span><span id="subtotal"></span></li>
-                <!-- <li><span>Phí Ship:</span><span>Free Shipping</span></li> -->
-                <li><span>Thuế VAT:</span><span>Free</span></li>
-                <li><span>Giảm giá:</span><span id="discount"></span></li>
+                <li><span>Giảm giá:</span><span id="discount">0 VNĐ</span></li>
+                <li><span>Thuế VAT:</span><span id="vatAmount">0 VNĐ</span></li>
                 <li><span>Tổng tiền:</span><span id="total"></span></li>
               </ul>
-            </div><!-- /.cart__total-amount -->
+            </div>
           </div><!-- /.col-lg-6 -->
           <div style="width: 100%; display: flex; justify-content: center; align-items: center; margin-bottom: 50px;">
             <a class="btn btn__primary" href="#" onclick="checkout()">Đặt hàng </a>
@@ -272,7 +309,7 @@
        <div class="footer">
        	<span>Bộ phận CSKH sẽ liên hệ với bạn sớm!</span>
        </div>
-      <div class="modal-close"> Tự động về trang chủ sau 5 giây </div>
+      <div class="modal-close"> <a href="/menu">Tự động về trang chủ sau 5 giây</a> </div>
     </div>
   </div>
   <!-- /.wrapper -->

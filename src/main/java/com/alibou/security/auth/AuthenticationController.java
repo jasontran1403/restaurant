@@ -84,7 +84,7 @@ public class AuthenticationController {
 	
 	@PostMapping("/validate-coupon")
 	public ResponseEntity<Double> validateCoupon(@RequestBody ValidateCouponRequest request) {
-		if (!request.getUsername().equalsIgnoreCase("LP")) {
+		if (request.getCouponCode().equalsIgnoreCase("MARKETING") && !request.getUsername().equalsIgnoreCase("LP")) {
 			double result = 0;
 			return ResponseEntity.ok(result);
 		}
@@ -96,7 +96,7 @@ public class AuthenticationController {
 	public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterRequest request) {
 		return ResponseEntity.ok(service.register(request));
 	}
-	
+
 	@PostMapping("/order")
 	public ResponseEntity<OrderResponse> register(@RequestBody OrderRequest request) {
 		return ResponseEntity.ok(orderService.placeOrder(request));

@@ -14,4 +14,5 @@ public class AddAgencyRequest {
 	private String password;
 	private String phone;
 	private String email;
+	private String fullname;
 }

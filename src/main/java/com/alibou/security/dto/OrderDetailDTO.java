@@ -16,6 +16,7 @@ public class OrderDetailDTO {
     private String address;
     private double total;
     private double actual;
+    private double vat;
     private String time;
     private int status;
     private double commission;

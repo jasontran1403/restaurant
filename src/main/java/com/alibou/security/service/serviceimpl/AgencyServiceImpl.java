@@ -32,6 +32,7 @@ public class AgencyServiceImpl implements AgencyService {
         agency.setEmail(request.getEmail());
         agency.setPassword(request.getPassword());
         agency.setPhone(request.getPhone());
+        agency.setFullname(request.getFullname());
         agency.setRole("Customer");
         var result = agencyRepository.save(agency);
 

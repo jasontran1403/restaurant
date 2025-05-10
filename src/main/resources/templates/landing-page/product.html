@@ -146,10 +146,11 @@
 			            <i class="increase-qty"></i>
 			        </div>
 			        <button class="btn btn__primary" th:text="'thêm vào giỏ'" 
-        th:attr="data-food-id=${food.id}, data-food-name=${food.name}, data-food-price=${food.price}, data-food-image=${food.image}" 
+        th:attr="data-food-id=${food.id}, data-food-name=${food.name}, data-food-price=${food.price}, data-food-quantity=${food.quantity}, data-food-image=${food.image}"
         onclick="addToCart(parseInt(this.getAttribute('data-food-id')), 
                            this.getAttribute('data-food-name'), 
-                           parseFloat(this.getAttribute('data-food-price')), 
+                           parseFloat(this.getAttribute('data-food-price')),
+                           this.getAttribute('data-food-quantity'),
                            parseInt(document.querySelector('.qty-input').value),
                            this.getAttribute('data-food-image'));">
     add to cart
@@ -255,10 +256,12 @@
                 <img th:src="@{${food.image}}" alt="Product" style="width: 360px;height: 280px;">
                 <div class="product__hover">
                   <div class="product__action">
-                    <p th:attr="data-food-id=${food.id}, data-food-name=${food.name}, data-food-price=${food.price}, data-food-image=${food.image}" 
-					        onclick="addToCart(parseInt(this.getAttribute('data-food-id')), 
+                    <p th:attr="data-food-id=${food.id}, data-food-name=${food.name}, data-food-price=${food.price}, data-food-quantity=${food.quantity}, data-food-image=${food.image}"
+					        onclick="addToCart(parseInt(this.getAttribute('data-food-id')),
 					                           this.getAttribute('data-food-name'), 
 					                           parseFloat(this.getAttribute('data-food-price')),
+                                               this.getAttribute('data-food-quantity'),
+                                               1,
 					                           this.getAttribute('data-food-image'));" class="btn btn__primary btn__hover2">thêm vào giỏ</p>
                   </div><!-- /.product__action -->
                 </div><!-- /.product__hover-->

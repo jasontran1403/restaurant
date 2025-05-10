@@ -20,5 +20,6 @@ public class UpdateFoodRequest {
 	private double price;
 	private List<Integer> categories;
 	private int status;
+	private String quantity;
 	private MultipartFile image;
 }

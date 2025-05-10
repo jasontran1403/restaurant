@@ -17,6 +17,8 @@ public class OrderRequest {
 	private String name;
 	private String phone;
 	private String address;
+	private String addressReceive;
+	private double vat;
 	private String message;
 	private double rate;
 	private String code;

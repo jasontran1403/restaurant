@@ -1,5 +1,6 @@
 package com.alibou.security.restcontroller;
 
+import com.alibou.security.dto.CustomerInfoResponse;
 import com.alibou.security.dto.LoginRequest;
 import com.alibou.security.dto.LoginResponse;
 import com.alibou.security.dto.OrderPDFDTO;
@@ -47,21 +48,13 @@ public class DemoController {
   @Autowired
   private StockReportService stockReportService;
 
-//  @GetMapping("/export")
-//  public ResponseEntity<InputStreamResource> exportStockReport(
-//          @RequestParam long dateStart,
-//          @RequestParam long dateEnd) throws Exception {
-//
-//    ByteArrayInputStream excelStream = stockReportService.exportStockReport(dateStart, dateEnd);
-//
-//    HttpHeaders headers = new HttpHeaders();
-//    headers.add("Content-Disposition", "attachment; filename=stock_report.xlsx");
-//
-//    return ResponseEntity.ok()
-//            .headers(headers)
-//            .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-//            .body(new InputStreamResource(excelStream));
-//  }
+  @GetMapping("/customer-info/{name}")
+  public ResponseEntity<CustomerInfoResponse> GetCustomerInfo(@PathVariable String name) {
+    CustomerInfoResponse response = new CustomerInfoResponse();
+
+    return ResponseEntity.ok(response);
+  }
+
 
   @GetMapping
   public ResponseEntity<String> sayHello() {
@@ -69,17 +62,6 @@ public class DemoController {
     telegramService.sendMessageToGroup(message);
     return ResponseEntity.ok("Hello from secured endpoint");
   }
-
-
-
-//  @GetMapping("/export")
-//  public void exportReport(HttpServletResponse response,
-//                           @RequestParam long startDate,
-//                           @RequestParam long endDate) throws IOException {
-//    List<StocksHistory> historyList = service.getHistoryByDateRange(startDate, endDate);
-//    ExcelExportService excelExportService = new ExcelExportService();
-//    excelExportService.exportToExcel(response, historyList, startDate, endDate);
-//  }
 
   @GetMapping("/generate-invoice/{orderId}")
   public ResponseEntity<ByteArrayResource> generateInvoice(@PathVariable Long orderId) {
@@ -97,13 +79,15 @@ public class DemoController {
               ? orderHistory.get().getReceiveF2()
               : orderHistory.get().getReceiveF1();
 
+      var agency = agencyRepository.findByUsername(orderOptional.get().getStaff());
+
       OrderPDFDTO requestHTMLToPDF = new OrderPDFDTO();
       requestHTMLToPDF.setOrder(orderOptional.get());
       requestHTMLToPDF.setName(name);
       requestHTMLToPDF.setDate(orderHistory.get().getDate());
       requestHTMLToPDF.setOrderDetails(orderDetails);
       // Tạo PDF từ đơn hàng
-      byte[] pdfBytes = HtmlToPDF.GenerateInvoicePdf(requestHTMLToPDF);
+      byte[] pdfBytes = HtmlToPDF.GenerateInvoicePdf(requestHTMLToPDF, agency.get());
       ByteArrayResource resource = new ByteArrayResource(pdfBytes);
 
       // Thiết lập headers

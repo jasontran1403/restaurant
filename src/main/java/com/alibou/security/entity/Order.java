@@ -28,8 +28,11 @@ public class Order {
 	@Column(columnDefinition = "TEXT")
 	private String address;
 	@Column(columnDefinition = "TEXT")
+	private String addressReceive;
+	@Column(columnDefinition = "TEXT")
 	private String message;
 	private double total;
+	private double vat;
 	private double actual;
 	private String staff;
 	private String userRole;

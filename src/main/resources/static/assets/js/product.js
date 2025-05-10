@@ -2,7 +2,7 @@ const cartList = document.getElementById("cart-items");
 const subtotalElement = document.getElementById("subtotal");
 let total = 0;
 
-function addToCart(id, name, price, quantity, image) {
+function addToCart(id, name, price, unit, quantity, image) {
     // Lấy danh sách sản phẩm từ localStorage
     let cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
 
@@ -18,6 +18,7 @@ function addToCart(id, name, price, quantity, image) {
             id: id,
             name: name,
             price: price,
+            unit: unit,
             quantity: quantity,
             image: image
         });
@@ -104,7 +105,7 @@ function renderCart() {
         itemContent.appendChild(title);
         const detail = document.createElement("div");
         detail.className = "cart__item-detail";
-        detail.innerText = cartItem.quantity + " X " + "$" + cartItem.price;
+        detail.innerText = cartItem.quantity + " X " + cartItem.unit + " = " + formatPrice(cartItem.quantity*cartItem.price);
         itemContent.appendChild(detail);
         const deleteIcon = document.createElement("i");
         deleteIcon.className = "cart__item-delete";
@@ -135,7 +136,12 @@ function renderCart() {
     });
 
     // Hiển thị tổng giá trị
-    subtotalElement.innerText = "$" + total;
+    subtotalElement.innerText = formatPrice(total) + "VNĐ";
+}
+
+function formatPrice(price) {
+    // Sử dụng Number.toLocaleString() để định dạng số
+    return price.toLocaleString('en-US');
 }
 
 // Gọi hàm renderCart khi trang được tải

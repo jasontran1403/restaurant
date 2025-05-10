@@ -7,7 +7,7 @@ function formatPrice(price) {
   return price.toLocaleString('en-US');
 }
 
-function addToCart(id, name, price, image) {
+function addToCart(id, name, price, unit, image) {
     // Lấy danh sách sản phẩm từ localStorage
     let cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
 
@@ -24,6 +24,7 @@ function addToCart(id, name, price, image) {
             name: name,
             price: price,
             quantity: 1,
+            unit: unit,
             image: image
         });
     }
@@ -118,7 +119,7 @@ function renderCart() {
         itemContent.appendChild(title);
         const detail = document.createElement("div");
         detail.className = "cart__item-detail";
-        detail.innerText = cartItem.quantity + " X " + formatPrice(cartItem.price) + " VNĐ";
+        detail.innerText = cartItem.quantity + " X " + cartItem.unit + " = " + formatPrice(cartItem.quantity*cartItem.price);
         itemContent.appendChild(detail);
         const deleteIcon = document.createElement("i");
         deleteIcon.className = "cart__item-delete";

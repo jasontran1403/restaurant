@@ -42,6 +42,10 @@
             padding: 0 32px;
         }
 
+        .table-order tbody tr {
+            height: 40px;
+        }
+
         .head {
             display: flex;
             align-items: center;
@@ -172,6 +176,14 @@
             font-weight: bold;
         }
 
+        .table-order tbody tr {
+            height: 30px; /* Đặt chiều cao cố định cho tất cả các dòng */
+        }
+
+        .table-order tbody td {
+            vertical-align: middle; /* Căn giữa nội dung theo chiều dọc */
+        }
+
         .center {
             text-align: center;
         }
@@ -193,48 +205,48 @@
 <body>
 <div class="container">
     <div class="receipt_box">
-        <div class="head">
-            <div class="brand-name">
-                <p>Original Taste</p>
-                <img th:src="@{/assets/images/logo/logo-light.png}" height="42" width="42" alt="Logo">
+        <div style="width: 100%; text-align: center;">
+            <div class="brand-name" style="display: inline-block; text-align: center;">
+                <img src="https://iili.io/3vdqwMl.md.png" style="height: 90px; width: 90px;" alt="Logo">
+            </div>
+        </div>
+
+        <div style="width: 100%; text-align: center;">
+            <div class="brand-name" style="display: inline-block; text-align: center;">
+                <p style="margin-top: 10px; font-size: 24px; font-weight: bold;">Phiếu Thu</p>
             </div>
         </div>
         <div class="body">
-            <div class="info">
-                <div class="welcome">Tên khách hàng: </div>
-                <div class="username"><span>{{customer_name}}</span></div>
+            <div style="border: 2px solid black; border-radius: 5px; padding: 5px;">
+                <div class="info">
+                    <div class="welcome">Khách hàng: </div>
+                    <div class="username"><span>{{customer_name}}</span></div>
+                </div>
+
+                <div class="info">
+                    <div class="welcome">Địa chỉ: </div>
+                    <div class="username"><span>{{customer_address}}</span>
+                    </div>
+                </div>
             </div>
             <div class="info">
                 <div class="welcome">Số điện thoại: </div>
                 <div class="username"><span>{{customer_phone}}</span></div>
             </div>
             <div class="info">
-                <div class="welcome">Địa chỉ: </div>
-                <div class="username"><span>{{customer_address}}</span>
+                <div class="welcome">Địa chỉ nhận hàng: </div>
+                <div class="username"><span>{{customer_addressReceive}}</span>
                 </div>
             </div>
-
-            <hr>
             <div class="info">
-                <div class="welcome">Mã đơn hàng: </div>
-                <div class="username"><span>{{order_id}}</span></div>
-            </div>
-            <div class="info">
-                <div class="welcome">Giờ đặt: </div>
-                <div class="username"><span>{{order_time}}</span></div>
-            </div>
-            <div class="info">
-                <div class="welcome">Giờ in: </div>
-                <div class="username"><span>{{print_time}}</span></div>
+                <div class="welcome">Dự kiến giao hàng: </div>
+                <div class="username"><span>{{deli_Time}}</span></div>
             </div>
             <div class="info">
                 <div class="welcome">Ghi chú: </div>
                 <div class="username"><span>{{order_note}}</span></div>
             </div>
-            <div class="info">
-                <div class="welcome">Thu ngân: </div>
-                <div class="username"><span>{{order_staff}}</span></div>
-            </div>
+
             <div class="cart">
                 <div class="title">Thông tin đơn hàng</div>
                 <div class="content">
@@ -246,7 +258,7 @@
                             <col style="width: 22%;">
                         </colgroup>
                         <thead>
-                        <tr>
+                        <tr style="background-color: lightblue;">
                             <td>
                                 <p>Tên sản phẩm</p>
                             </td>
@@ -257,12 +269,12 @@
                                 <p>Đơn giá</p>
                             </td>
                             <td class="center">
-                                <p>Giá thành</p>
+                                <p>Thành tiền</p>
                             </td>
                         </tr>
                         </thead>
                         <tbody>
-                            <tr>{{order_items}}</tr>
+                        <tr>{{order_items}}</tr>
                         </tbody>
                     </table>
 
@@ -273,33 +285,43 @@
                             <col style="width: 22%;">
                             <col style="width: 22%;">
                         </colgroup>
-
                         <tbody>
                         <tr>
                             <td colspan="3">
-                                <p>Giá thành</p>
+                                Giá thành sản phẩm
                             </td>
                             <td class="center">
-                                <p>{{order_totalBeforeFee}}</p>
+                                {{order_totalBeforeFee}}
                             </td>
                         </tr>
                         <tr>
-                            <td>
-                                <p>Giảm giá</p>
-                            </td>
-                            <td colspan="2" class="center">
-                                <p>{{order_sale}}%</p>
+                            <td colspan="2">
+                                Giá ưu đãi
                             </td>
                             <td class="center">
-                                <p>{{order_salePrice}}</p>
+                                {{order_sale}}%
+                            </td>
+                            <td class="center">
+                                {{order_salePrice}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                VAT
+                            </td>
+                            <td class="center">
+                                {{order_vat}}%
+                            </td>
+                            <td class="center">
+                                {{order_vatPrice}}
                             </td>
                         </tr>
                         <tr>
                             <td colspan="3">
-                                <p>Sau giảm giá</p>
+                                Giá sau giảm
                             </td>
-                            <td class="center">
-                                <p>{{order_totalAfterFee}}</p>
+                            <td class="center" style="font-style: italic; font-weight: bold;">
+                                {{order_totalAfterFee}}
                             </td>
                         </tr>
                         </tbody>
@@ -307,6 +329,32 @@
                 </div>
             </div>
         </div>
+
+        <p style="text-align: center; "><small style="font-style: italic; color: red;font-size: 16px;">Please pay via this payment information below</small></p>
+
+        <div style="height: auto; display: flex; justify-content: space-between; align-items: center;">
+            <!-- Thông tin ngân hàng -->
+            <div style="width: 40%;">
+                <p style="text-align: left; margin: 2px 0; line-height: 1.2;">NGUYEN LE HOAI VIET</p>
+                <p style="text-align: left; margin: 2px 0; line-height: 1.2;">8812856177</p>
+                <p style="text-align: left; margin: 2px 0; line-height: 1.2;">BIDV - CN GIA DINH</p>
+            </div>
+
+            <!-- QR Code -->
+            <div style="width: 40%; display: flex; justify-content: center;">
+                <img src="{{qr_url}}" style="margin-left: 10%; width: 150px; height: 150px;" alt="QR Code Payment" />
+            </div>
+
+            <!-- Thông tin đơn hàng -->
+            <div style="width: 40%">
+                <div style="text-align: right; margin: 2px 0;">{{order_id}}</div>
+                <div style="text-align: right; margin: 2px 0;">{{print_time}}</div>
+                <div style="text-align: right; margin: 2px 0;">{{staffName}}</div>
+                <div style="text-align: right; margin: 2px 0;">{{support}}</div>
+            </div>
+        </div>
+
+
         <div class="foot">
             <div class="title">
                 <p>Thank you for your order. Enjoy the meal and see you next time!</p>

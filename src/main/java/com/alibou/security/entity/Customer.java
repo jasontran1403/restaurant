@@ -19,5 +19,11 @@ public class Customer {
 
     @Column(unique = true, nullable = false)
     private String phone;
+
+    private String name;
+    @Column(columnDefinition = "TEXT")
+    private String address;
+    @Column(columnDefinition = "TEXT")
+    private String addressReceive;
     private String f1;
 }
