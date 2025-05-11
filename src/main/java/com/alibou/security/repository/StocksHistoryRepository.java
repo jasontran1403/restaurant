@@ -18,8 +18,9 @@ public interface StocksHistoryRepository extends JpaRepository<StocksHistory, In
     @Query(value = "select COALESCE(sum(quantity), 0) from stocks_history where name = ?1 and date < ?2 and type = ?3 and hide = 1", nativeQuery = true)
     int calculateInitStockReport(String name, long startDate, String type);
 
-    @Query(value = "select COALESCE(sum(quantity), 0) from stocks_history where name = ?1 and type = ?2 and hide = 1", nativeQuery = true)
-    int calculateInitStock(String name, String type);
+    @Query(value = "select COALESCE(sum(quantity), 0) from stocks_history where name = ?1 and type = ?2 and hide = 1 and user_role =?3", nativeQuery = true)
+    int calculateInitStock(String name, String type, String role);
+
 
     @Query(value="select * from stocks_history where order_id = ?1", nativeQuery = true)
     List<StocksHistory> findByOrderId(long orderId);

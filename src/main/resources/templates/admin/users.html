@@ -120,49 +120,49 @@
       <nav class="sidebar sidebar-offcanvas" id="sidebar">
         <ul class="nav">
           <li class="nav-item">
-            <a class="nav-link" href="/admin/dashboard">
+            <a class="nav-link" href="/admin-staff/dashboard">
               <i class="icon-grid menu-icon"></i>
               <span class="menu-title">Tổng quan</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/admin/orders">
+            <a class="nav-link" href="/admin-staff/orders">
               <i class="icon-grid menu-icon"></i>
               <span class="menu-title">Quản lý đơn đặt hàng</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/admin/foods">
+            <a class="nav-link" href="/admin-staff/foods">
               <i class="icon-grid menu-icon"></i>
               <span class="menu-title">Quản lý món ăn</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/admin/cates">
+            <a class="nav-link" href="/admin-staff/cates">
               <i class="icon-grid menu-icon"></i>
               <span class="menu-title">Quản lý danh mục</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/admin/coupons">
+            <a class="nav-link" href="/admin-staff/coupons">
               <i class="icon-grid menu-icon"></i>
               <span class="menu-title">Quản lý mã giảm</span>
             </a>
           </li>
             <li class="nav-item">
-                <a class="nav-link" href="/admin/users">
+                <a class="nav-link" href="/admin-staff/users">
                     <i class="icon-grid menu-icon"></i>
                     <span class="menu-title">Quản lý agency</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/admin/commissions">
+                <a class="nav-link" href="/admin-staff/commissions">
                     <i class="icon-grid menu-icon"></i>
                     <span class="menu-title">Danh sách commission</span>
                 </a>
             </li>
           <li class="nav-item">
-            <a class="nav-link" href="/admin/stocks">
+            <a class="nav-link" href="/admin-staff/stocks">
               <i class="icon-grid menu-icon"></i>
               <span class="menu-title">Quản lý kho</span>
             </a>
@@ -176,19 +176,19 @@
         <div class="content-wrapper">
           <div class="row">
           	<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter">
-			  Thêm agency mới
+			  Thêm user mới
 			</button>
 			<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
 				  <div class="modal-dialog modal-dialog-centered" role="document">
 				    <div class="modal-content">
 				      <div class="modal-header">
-				        <h4 class="card-title">Thêm agency</h4>
+				        <h4 class="card-title">Thêm user</h4>
 				        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
 				          <span aria-hidden="true">&times;</span>
 				        </button>
 				      </div>
 				      <div class="modal-body">
-		                  <form class="forms-sample" th:action="@{/admin/add-agency}" enctype="multipart/form-data" method="POST" th:object="${user}">
+		                  <form class="forms-sample" th:action="@{/admin/add-agency-staff}" enctype="multipart/form-data" method="POST" th:object="${user}">
 				    <div class="form-group">
 				        <label for="exampleInputName1">Username </label>
 				        <input type="text" class="form-control" id="exampleInputName1" placeholder="Username " th:field="*{username}" required/>
@@ -226,14 +226,16 @@
                     <table class="table table-hover">
                       <thead>
                         <tr>
-                          <th>Tên agency </th>
-                            <th>Tổng Commission </th>
+                          <th>Username </th>
+                          <th>Fullname </th>
+                          <th>Tổng Commission </th>
                           <th>Chi Tiết</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr th:each="user : ${usersPage.content}">
                           <td><p th:text="${user.username}"></p></td>
+                          <td><p th:text="${user.fullname}"></p></td>
                             <td><p th:text="${#numbers.formatDecimal(user.total, 1, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'"></p></td>
                           <td><p id="update" class="btn btn-info" data-toggle="modal" data-target="#exampleModalCommission"
                                  th:attr="data-user-name=${user.username}"
@@ -290,10 +292,10 @@
                     <div th:if="${usersPage.totalPages > 1}" style="display: flex; justify-content: space-around">
 					    <ul class="pagination">
 					        <li th:class="${usersPage.first ? 'page-item disabled' : 'page-item'}">
-					            <a th:href="@{/admin/users(page=${usersPage.number - 1})}" class="page-link">Previous</a>
+					            <a th:href="@{/admin-staff/users(page=${usersPage.number - 1})}" class="page-link">Previous</a>
 					        </li>
 					        <li th:class="${usersPage.last ? 'page-item disabled' : 'page-item'}">
-					            <a th:href="@{/admin/users(page=${usersPage.number + 1})}" class="page-link">Next</a>
+					            <a th:href="@{/admin-staff/users(page=${usersPage.number + 1})}" class="page-link">Next</a>
 					        </li>
 					    </ul>
 					</div>

@@ -109,183 +109,125 @@
         </button>
       </div>
     </nav>
-
-
+    
+    
     <!-- partial -->
     <div class="container-fluid page-body-wrapper">
       <!-- partial:../../partials/_settings-panel.html -->
-
+      
       <!-- partial -->
       <!-- partial:../../partials/_sidebar.html -->
       <nav class="sidebar sidebar-offcanvas" id="sidebar">
         <ul class="nav">
           <li class="nav-item">
-            <a class="nav-link" href="/admin-staff/dashboard">
+            <a class="nav-link" href="/admin-customer/dashboard">
               <i class="icon-grid menu-icon"></i>
               <span class="menu-title">Tổng quan</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/admin-staff/orders">
+            <a class="nav-link" href="/admin-customer/orders">
               <i class="icon-grid menu-icon"></i>
               <span class="menu-title">Quản lý đơn đặt hàng</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/admin-staff/foods">
+            <a class="nav-link" href="/admin-customer/foods">
               <i class="icon-grid menu-icon"></i>
               <span class="menu-title">Quản lý món ăn</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/admin-staff/cates">
+            <a class="nav-link" href="/admin-customer/cates">
               <i class="icon-grid menu-icon"></i>
               <span class="menu-title">Quản lý danh mục</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/admin-staff/coupons">
+            <a class="nav-link" href="/admin-customer/coupons">
               <i class="icon-grid menu-icon"></i>
               <span class="menu-title">Quản lý mã giảm</span>
             </a>
           </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin-staff/users">
-                    <i class="icon-grid menu-icon"></i>
-                    <span class="menu-title">Quản lý agency</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin-staff/commissions">
-                    <i class="icon-grid menu-icon"></i>
-                    <span class="menu-title">Danh sách commission</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin-staff/stocks">
-                    <i class="icon-grid menu-icon"></i>
-                    <span class="menu-title">Quản lý kho</span>
-                </a>
-            </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin-customer/users">
+              <i class="icon-grid menu-icon"></i>
+              <span class="menu-title">Quản lý agency</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin-customer/commissions">
+              <i class="icon-grid menu-icon"></i>
+              <span class="menu-title">Danh sách commission</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/admin-customer/stocks">
+              <i class="icon-grid menu-icon"></i>
+              <span class="menu-title">Quản lý kho</span>
+            </a>
+          </li>
         </ul>
       </nav>
-
-
+      
+      
       <!-- partial -->
-      <div class="main-panel">
+      <div class="main-panel">        
         <div class="content-wrapper">
           <div class="row">
-          	<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter">
-			  Thêm danh mục mới
-			</button>
-			<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-				  <div class="modal-dialog modal-dialog-centered" role="document">
-				    <div class="modal-content">
-				      <div class="modal-header">
-				        <h4 class="card-title">Thêm món ăn</h4>
-				        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-				          <span aria-hidden="true">&times;</span>
-				        </button>
-				      </div>
-				      <div class="modal-body">
-		                  <form class="forms-sample" th:action="@{/admin/add-cate-staff}" enctype="multipart/form-data" method="POST" th:object="${cate}">
-				    <div class="form-group">
-				        <label for="exampleInputName1">Tên danh mục </label>
-				        <input type="text" class="form-control" id="exampleInputName1" placeholder="Tên danh mục " th:field="*{cateName}" required/>
-				    </div>
-				    <div class="form-group">
-				        <label for="exampleSelectGender">Trạng thái </label>
-				        <select class="form-control" id="exampleSelectGender" th:field="*{status}" required>
-				        	<option value="0">Hiện </option>
-				            <option value="1">Ẩn </option>
-				        </select>
-				    </div>
-				    <button type="submit" class="btn btn-primary mr-2">Thêm </button>
-				</form>
-				      </div>
-				    </div>
-				  </div>
-				</div>
           	<div class="col-lg-12 grid-margin stretch-card">
               <div class="card">
                 <div class="card-body">
-                  <h4 class="card-title">Danh sách danh mục </h4>
+                  <h4 class="card-title">Danh sách commission </h4>
                   <div class="form-group">
-		                <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm bằng tên danh mục...">
+		                <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm bằng tên đại lý...">
 		            </div>
                   <div class="table-responsive">
                     <table class="table table-hover">
                       <thead>
                         <tr>
-                          <th>Tên danh mục </th>
-                          <th>Chức năng</th>
+                          <th>Thời gian</th>
+                          <th>Thông tin </th>
+                          <th>Số tiền</th>
+                          <th>Người nhận</th>
+                          <th>Trạng thái</th>
                         </tr>
                       </thead>
                       <tbody>
-                        <tr th:each="cate : ${catePage.content}">
-                          <td><p th:text="${cate.cateName}"></p></td>
-                        	<td>
-                                <div class="row-container"><p th:class="${cate.status == false ? 'btn btn-danger' : 'btn btn-success'}"><a th:href="@{/admin/toggle-cate-staff/{cateId}(cateId=${cate.id})}" style="color: white;text-decoration: none;" th:text="${cate.status == false ? 'Ẩn' : 'Hiện'}"></a></p>
-                                    <p id="update" class="btn btn-info" data-toggle="modal" data-target="#exampleModalCenter2"
-                                       th:attr="data-cate-id=${cate.id}, data-cate-name=${cate.cateName}, data-cate-status=${cate.status}"
-                                       onclick="editCate(this.getAttribute('data-cate-id'),
-                           	this.getAttribute('data-cate-name'),
-                           	this.getAttribute('data-cate-status'));"
-                                    >
-                                        Cập nhật</p></div></td>
+                        <tr th:each="commission : ${commissionPage.content}">
+                          <td><p th:text="${@dateUtils.formatTimestamp(commission.date)}"></p>
+                          </td>
+                          <td><p>Từ Order: <span th:text="${commission.fromOrder}"></span></p>
+                            <p>Từ Customer: <span th:text="${commission.fromCustomer}"></span></p>
+                          </td>
+                          <td><p th:text="${#numbers.formatDecimal(commission.amount, 1, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'"></p></td>
+                          <td>
+                            <p>F1: <span th:text="${commission.receiveF1}"></span></p>
+                            <p>F2: <span th:text="${commission.receiveF2}"></span></p>
+                          </td>
+                          <td><p th:class="${commission.status == 0 ? 'btn btn-warning' : commission.status == 1 ? 'btn btn-success' : 'btn btn-danger'}"
+                                 th:text="${commission.status == 0 ? 'Đơn mới' : commission.status == 1 ? 'Thành công' : 'Đã huỷ'}">
+                          </p></td>
                         </tr>
                       </tbody>
-
                     </table>
-
-                      <div th:if="${catePage != null and catePage.totalPages > 1}" style="display: flex; justify-content: space-around">
-                          <ul class="pagination">
-                              <li th:class="${catePage.first ? 'page-item disabled' : 'page-item'}">
-                                  <a th:href="@{/admin-staff/cates(page=${catePage.number - 1})}" class="page-link">Previous</a>
-                              </li>
-                              <li th:class="${catePage.last ? 'page-item disabled' : 'page-item'}">
-                                  <a th:href="@{/admin-staff/cates(page=${catePage.number + 1})}" class="page-link">Next</a>
-                              </li>
-                          </ul>
-                      </div>
+                    
+                    <div th:if="${commissionPage.totalPages > 1}" style="display: flex; justify-content: space-around">
+					    <ul class="pagination">
+					        <li th:class="${commissionPage.first ? 'page-item disabled' : 'page-item'}">
+					            <a th:href="@{/admin/commissions(page=${commissionPage.number - 1})}" class="page-link">Previous</a>
+					        </li>
+					        <li th:class="${commissionPage.last ? 'page-item disabled' : 'page-item'}">
+					            <a th:href="@{/admin/commissions(page=${commissionPage.number + 1})}" class="page-link">Next</a>
+					        </li>
+					    </ul>
+					</div>
 
                   </div>
                 </div>
               </div>
             </div>
           </div>
-            <div class="modal fade" id="exampleModalCenter2" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="exampleModalLongTitle">Cập nhật danh mục</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <form class="forms-sample" th:action="@{/admin/edit-cate-staff}" enctype="multipart/form-data" method="POST">
-                                <div class="form-group" style="display: none;">
-                                    <label for="id">ID</label>
-                                    <input type="text" class="form-control" name="id" id="id" readonly required/>
-                                </div>
-                                <div class="form-group">
-                                    <label for="exampleInputName1">Tên danh mục</label>
-                                    <input type="text" class="form-control" name="cateName" id="cateName" required/>
-                                </div>
-                                <div class="form-group">
-                                    <label for="exampleSelectGender">Hành động</label>
-                                    <select class="form-control" id="status" name="status" required>
-                                        <option value="0">Hiện </option>
-                                        <option value="1">Ẩn </option>
-                                    </select>
-                                </div>
-                                <button type="submit" class="btn btn-primary mr-2">Cập nhật</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
       </div>
       <!-- main-panel ends -->
@@ -311,7 +253,7 @@
         $('#searchInput').on('keyup', function() {
             var searchText = $(this).val().toLowerCase();
             $('table tbody tr').each(function() {
-                var foodName = $(this).find('td:nth-child(2)').text().toLowerCase();
+                var foodName = $(this).find('td:nth-child(6)').text().toLowerCase() || $(this).find('td:nth-child(7)').text().toLowerCase();
                 if (foodName.indexOf(searchText) === -1) {
                     $(this).hide();
                 } else {
@@ -332,29 +274,6 @@
   <script th:src="@{/assets/admin/js/Chart.roundedBarCharts.js}"></script>
   <script th:src="@{/assets/admin/js/script-admin-side.js}"></script>
   <!-- End custom js for this page-->
-  <script>
-      // Hàm để điền dữ liệu vào modal cập nhật
-      function editCate(id, name, status) {
-          document.getElementById('id').value = id;
-          document.getElementById('cateName').value = name;
-          document.getElementById('status').value = status;
-      }
-
-      // Xử lý tìm kiếm
-      $(document).ready(function() {
-          $('#searchInput').on('keyup', function() {
-              var searchText = $(this).val().toLowerCase();
-              $('table tbody tr').each(function() {
-                  var cateName = $(this).find('td:first').text().toLowerCase();
-                  if (cateName.indexOf(searchText) === -1) {
-                      $(this).hide();
-                  } else {
-                      $(this).show();
-                  }
-              });
-          });
-      });
-  </script>
 </body>
 
 </html>

@@ -120,10 +120,11 @@
                 <div class="product__hover">
                   <div class="product__action">
                     <button class="btn btn__primary" th:text="'thêm vào giỏ'" 
-					        th:attr="data-food-id=${food.id}, data-food-name=${food.name}, data-food-price=${food.price}, data-food-quantity=${food.quantity}, data-food-image=${food.image}"
+					        th:attr="data-food-id=${food.id}, data-food-name=${food.name}, data-food-price=${food.price}, data-food-default=${food.defaultPrice}, data-food-quantity=${food.quantity}, data-food-image=${food.image}"
 					        onclick="addToCart(parseInt(this.getAttribute('data-food-id')), 
 					                           this.getAttribute('data-food-name'), 
 					                           parseFloat(this.getAttribute('data-food-price')),
+                                               parseFloat(this.getAttribute('data-food-default')),
                                                this.getAttribute('data-food-quantity'),
 					                           this.getAttribute('data-food-image'));">
 					    thêm vào giỏ

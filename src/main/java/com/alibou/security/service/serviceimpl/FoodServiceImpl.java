@@ -36,7 +36,7 @@ public class FoodServiceImpl implements FoodService{
 	ImageUploadService uploadService;
 
 	@Override
-	public Food addNewFood(AddFoodRequest request) {
+	public Food addNewFood(AddFoodRequest request, String type) {
 		// TODO Auto-generated method stub
 		List<String> cates = new ArrayList<>();
 		for (Integer cateId : request.getCategories()) {
@@ -53,6 +53,7 @@ public class FoodServiceImpl implements FoodService{
 		food.setImage("");
 		food.setCategories(cates);
 		food.setStocks(0);
+		food.setType(type);
 		if (request.getQuantity().isEmpty()) {
 			food.setQuantity("Piece");
 		} else {
@@ -126,6 +127,11 @@ public class FoodServiceImpl implements FoodService{
 	}
 
 	@Override
+	public List<Food> getAllByType(String type) {
+		return foodRepo.findAllFoodByType(type);
+	}
+
+	@Override
 	public Food getById(long id) {
 		// TODO Auto-generated method stub
 		Food food = foodRepo.findFoodById(id);
@@ -133,9 +139,9 @@ public class FoodServiceImpl implements FoodService{
 	}
 
 	@Override
-	public Page<Food> getPaginatedFoods(Pageable pageable) {
+	public Page<Food> getPaginatedFoods(String type, Pageable pageable) {
 		// TODO Auto-generated method stub
-		return foodRepo.findAll(pageable);
+		return foodRepo.findAllByType(type, pageable);
 	}
 
 	@Override
@@ -145,9 +151,9 @@ public class FoodServiceImpl implements FoodService{
 	}
 
 	@Override
-	public Page<Food> getPaginatedFoodsShow(Pageable pageable) {
+	public Page<Food> getPaginatedFoodsShow(String type, Pageable pageable) {
 		// TODO Auto-generated method stub
-		return foodRepo.findAllActive(pageable);
+		return foodRepo.findAllActive(type, pageable);
 	}
 
 }

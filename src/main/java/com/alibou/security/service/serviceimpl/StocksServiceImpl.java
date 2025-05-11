@@ -23,12 +23,23 @@ public class StocksServiceImpl implements StocksService {
     public void updateStocks(int productId, int quantity, double price, String type, String userRole) {
         var food = foodRepository.findFoodById(productId);
 
-        food.setStocks(food.getStocks() + quantity);
-        if (type.equalsIgnoreCase("in")) {
-            food.setDefaultPrice(price);
+        if (userRole.equalsIgnoreCase("staff")) {
+            food.setStocks(food.getStocks() + quantity);
+            if (type.equalsIgnoreCase("in")) {
+                food.setDefaultPrice(price);
+            }
+
+            foodRepository.save(food);
+        } else if (userRole.equalsIgnoreCase("customer")) {
+            food.setStocksCustomer(food.getStocksCustomer() + quantity);
+            if (type.equalsIgnoreCase("in")) {
+                food.setDefaultPrice(price);
+            }
+
+            foodRepository.save(food);
         }
 
-        foodRepository.save(food);
+
 
         StocksHistory stocksHistory = new StocksHistory();
         stocksHistory.setDate(System.currentTimeMillis()/1000);
@@ -75,7 +86,25 @@ public class StocksServiceImpl implements StocksService {
         var stocksHistory = stocksHistoryRepository.findById(stockId);
         if (stocksHistory.isPresent()) {
             if (stocksHistory.get().getType().equalsIgnoreCase("adjustment")) return;
+            var oldQuantity = stocksHistory.get().getQuantity();
+            var diff = newQuantity - oldQuantity;
+
             var food = foodRepository.findFoodByName(stocksHistory.get().getName());
+
+            if (food.getType().equalsIgnoreCase("staff")) {
+                if (stocksHistory.get().getType().equalsIgnoreCase("out")) {
+                    food.setStocks(food.getStocks() - diff);
+                } else if (stocksHistory.get().getType().equalsIgnoreCase("in")) {
+                    food.setStocks(food.getStocks() + diff);
+                }
+            } else if (food.getType().equalsIgnoreCase("customer")) {
+                if (stocksHistory.get().getType().equalsIgnoreCase("out")) {
+                    food.setStocksCustomer(food.getStocksCustomer() - diff);
+                } else if (stocksHistory.get().getType().equalsIgnoreCase("in")) {
+                    food.setStocksCustomer(food.getStocksCustomer() + diff);
+                }
+            }
+
             food.setDefaultPrice(newPrice);
             foodRepository.save(food);
 
@@ -93,13 +122,25 @@ public class StocksServiceImpl implements StocksService {
     }
 
     @Override
-    public void checkStocks(String foodName, int realQuantity) {
+    public void checkStocks(String type, String foodName, int realQuantity) {
         var food = foodRepository.findFoodByName(foodName);
 
-        int initialStockIn = stocksHistoryRepository.calculateInitStock(food.getName(), "In");
-        int initialStockOut = stocksHistoryRepository.calculateInitStock(food.getName(), "Out");
-        int initialStockAdjustment = stocksHistoryRepository.calculateInitStock(food.getName(), "Adjustment");
-        int systemStock = initialStockIn - initialStockOut + initialStockAdjustment;
+        int initialStockIn = 0;
+        int initialStockOut = 0;
+        int initialStockAdjustment = 0;
+        int systemStock = 0;
+
+        if (type.equalsIgnoreCase("staff")) {
+            initialStockIn = stocksHistoryRepository.calculateInitStock(food.getName(), "In", "Staff");
+            initialStockOut = stocksHistoryRepository.calculateInitStock(food.getName(), "Out", "Staff");
+            initialStockAdjustment = stocksHistoryRepository.calculateInitStock(food.getName(), "Adjustment", "Staff");
+            systemStock = initialStockIn - initialStockOut + initialStockAdjustment;
+        } else if (type.equalsIgnoreCase("customer")) {
+            initialStockIn = stocksHistoryRepository.calculateInitStock(food.getName(), "In", "Customer");
+            initialStockOut = stocksHistoryRepository.calculateInitStock(food.getName(), "Out", "Customer");
+            initialStockAdjustment = stocksHistoryRepository.calculateInitStock(food.getName(), "Adjustment", "Customer");
+            systemStock = initialStockIn - initialStockOut + initialStockAdjustment;
+        }
 
         String message = "";
 
@@ -110,8 +151,13 @@ public class StocksServiceImpl implements StocksService {
             stocksHistory.setPrice(0);
             stocksHistory.setType("Adjustment");
             stocksHistory.setHide(1);
+            stocksHistory.setUserRole(type);
 
-            food.setStocks(realQuantity);
+            if (type.equalsIgnoreCase("staff")) {
+                food.setStocks(realQuantity);
+            } else if (type.equalsIgnoreCase("customer")) {
+                food.setStocksCustomer(realQuantity);
+            }
             if (systemStock > realQuantity) {
                 // Trừ bớt trong kho - set giá trị âm cho quantity
                 int difference = systemStock - realQuantity;

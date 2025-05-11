@@ -20,7 +20,7 @@ public class CategoryServiceImpl implements CategoryService{
 	CategoryRepository cateRepo;
 
 	@Override
-	public Category saveCate(AddCateRequest request) {
+	public Category saveCate(String type, AddCateRequest request) {
 		// TODO Auto-generated method stub
 		Category cate = new Category();
 		Optional<Category> cateExisted = cateRepo.findByCateName(request.getCateName());
@@ -29,6 +29,7 @@ public class CategoryServiceImpl implements CategoryService{
 		}
 		cate.setCateName(request.getCateName());
 		cate.setStatus(request.isStatus());
+		cate.setType(type);
 		return cateRepo.save(cate);
 	}
 
@@ -41,9 +42,9 @@ public class CategoryServiceImpl implements CategoryService{
 	}
 
 	@Override
-	public Page<Category> getAllCatesPageable(Pageable pageable) {
+	public Page<Category> getAllCatesPageable(String type, Pageable pageable) {
 		// TODO Auto-generated method stub
-		return cateRepo.findAll(pageable);
+		return cateRepo.findAllByType(type, pageable);
 	}
 
 	@Override
@@ -53,8 +54,13 @@ public class CategoryServiceImpl implements CategoryService{
 	}
 
 	@Override
-	public List<Category> getAllCates() {
+	public List<Category> getAllCatesByType(String type) {
 		// TODO Auto-generated method stub
+		return cateRepo.getAllByType(type);
+	}
+
+	@Override
+	public List<Category> getAllCates() {
 		return cateRepo.findAll();
 	}
 

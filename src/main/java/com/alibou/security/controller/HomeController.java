@@ -133,6 +133,8 @@ public class HomeController {
             return "redirect:/login";
         }
 
+        var agency = agencyRepository.findByUsername(loggedInUser);
+
         List<Order> listOrders = orderService.findOrderByStaff(loggedInUser);
 
         List<OrderDetailDTO> listOrdersDetail = new ArrayList<>();
@@ -154,11 +156,13 @@ public class HomeController {
             item.setVat(order.getVat());
             item.setActual(order.getActual());
             item.setStatus(order.getStatus());
+            item.setUserRole(order.getUserRole());
             listOrdersDetail.add(item);
         }
 
         model.addAttribute("listOrders", listOrdersDetail);
 
+        model.addAttribute("userRole", agency.get().getRole());
         return "landing-page/staff";
     }
 
@@ -196,10 +200,16 @@ public class HomeController {
 
         if (isAuthenticated) {
             session.setAttribute("loggedInUser", username);
-            if (agency.isPresent() && agency.get().getRole().equalsIgnoreCase("admin")) {
-                return "redirect:/admin";
+            if (agency.isPresent()) {
+                if (agency.get().getRole().equalsIgnoreCase("admin staff")) {
+                    return "redirect:/admin-staff";
+                } else if (agency.get().getRole().equalsIgnoreCase("admin customer")) {
+                    return "redirect:/admin-customer";
+                } else {
+                    return "redirect:/";
+                }
             } else {
-                return "redirect:/";
+                return "redirect:/login";
             }
         } else {
             redirectAttributes.addFlashAttribute("errorMessage", "Đăng nhập thất bại, vui lòng kiểm tra lại thông tin!");
@@ -228,8 +238,20 @@ public class HomeController {
             return "redirect:/login";
         }
 
+        var agency = agencyRepository.findByUsername(loggedInUser);
+
+        if (agency.isPresent()) {
+            if (agency.get().getRole().equalsIgnoreCase("admin staff")) {
+                return "redirect:/admin-staff";
+            } else if (agency.get().getRole().equalsIgnoreCase("admin customer")) {
+                return "redirect:/admin-customer";
+            }
+        }
+
         int pageSize = 100;
-        Page<Food> foods = foodService.getPaginatedFoodsShow(PageRequest.of(page, pageSize));
+        String type = agency.get().getRole();
+
+        Page<Food> foods = foodService.getPaginatedFoodsShow(type, PageRequest.of(page, pageSize));
         model.addAttribute("foodPage", foods);
 
         List<Category> cates = cateService.getAllCates();
@@ -247,6 +269,7 @@ public class HomeController {
             redirectAttributes.addFlashAttribute("errorMessage", "Bạn cần đăng nhập để thao tác đặt hàng!");
             return "redirect:/login";
         }
+
         model.addAttribute("query", query);
         int pageSize = 6;
         Page<Food> foods = foodService.findPaginatedFoods(PageRequest.of(page, pageSize), query);
@@ -288,8 +311,8 @@ public class HomeController {
         return "landing-page/product";
     }
 
-    @GetMapping({"/admin/dashboard", "/admin/", "/admin", "/admin/dashboard/{date}"})
-    public String dashboard(Model model, @PathVariable(name = "date", required = false) String date, HttpSession session, RedirectAttributes redirectAttributes) {
+    @GetMapping({"/admin-staff/dashboard", "/admin-staff/", "/admin-staff", "/admin-staff/dashboard/{date}"})
+    public String dashboardStaff(Model model, @PathVariable(name = "date", required = false) String date, HttpSession session, RedirectAttributes redirectAttributes) {
         String loggedInUser = (String) session.getAttribute("loggedInUser");
 
         if (loggedInUser == null) {
@@ -299,7 +322,7 @@ public class HomeController {
 
         var agencyOptional = agencyRepository.findByUsername(loggedInUser);
 
-        if (agencyOptional.isPresent() && !agencyOptional.get().getRole().equalsIgnoreCase("admin")) {
+        if (agencyOptional.isPresent() && !agencyOptional.get().getRole().equalsIgnoreCase("admin staff")) {
             session.invalidate(); // Xoá toàn bộ session
             redirectAttributes.addFlashAttribute("errorMessage", "Bạn không phải là admin để truy cập tài nguyên này!");
             return "redirect:/login";
@@ -316,7 +339,38 @@ public class HomeController {
         }
 
 
-        return "admin/index";
+        return "admin/index-staff";
+    }
+
+    @GetMapping({"/admin-customer/dashboard", "/admin-customer/", "/admin-customer", "/admin-customer/dashboard/{date}"})
+    public String dashboardCustomer(Model model, @PathVariable(name = "date", required = false) String date, HttpSession session, RedirectAttributes redirectAttributes) {
+        String loggedInUser = (String) session.getAttribute("loggedInUser");
+
+        if (loggedInUser == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Bạn cần đăng nhập để thao tác đặt hàng!");
+            return "redirect:/login";
+        }
+
+        var agencyOptional = agencyRepository.findByUsername(loggedInUser);
+
+        if (agencyOptional.isPresent() && !agencyOptional.get().getRole().equalsIgnoreCase("admin customer")) {
+            session.invalidate(); // Xoá toàn bộ session
+            redirectAttributes.addFlashAttribute("errorMessage", "Bạn không phải là admin để truy cập tài nguyên này!");
+            return "redirect:/login";
+        }
+
+        long timestamp = getTimestamp();
+
+        if (date == null || date.equals("today") || date.isBlank()) {
+            processDashboard(model, timestamp, timestamp + 86400);
+        } else if (date.equals("lastweek")) {
+            processDashboard(model, timestamp - 7 * 86400, timestamp);
+        } else if (date.equals("lastmonth")) {
+            processDashboard(model, timestamp - 30 * 86400, timestamp);
+        }
+
+
+        return "admin/index-customer";
     }
 
     private long getTimestamp() {
@@ -365,7 +419,7 @@ public class HomeController {
 
         if (order.getStatus() != 2) {
             redirectAttributes.addFlashAttribute("error", "Đon hàng ở trạng thái 'Hoàn thành' mới có thể thay đổi trạng thái thanh toán.");
-            return "redirect:/admin/orders?page=" + page + "&type=" + type;
+            return "redirect:/admin-" + type.toLowerCase() + "/orders?page=" + page + "&type=" + type;
         }
 
         order.setPaid(!order.isPaid());
@@ -378,13 +432,13 @@ public class HomeController {
         telegramService.sendMessageToGroup(message);
 
         redirectAttributes.addFlashAttribute("success", "Cập nhật trạng thái thanh toán thành công!");
-        return "redirect:/admin/orders?page=" + page + "&type=" + type;
+        return "redirect:/admin-" + type.toLowerCase() + "/orders?page=" + page + "&type=" + type;
     }
 
     @GetMapping("/admin/toggle-order/{id}")
     public String toggleOrder(@PathVariable Long id, @RequestParam(required = false, defaultValue = "0") int page, @RequestParam(required = false, defaultValue = "Staff") String type) {
         int oldOrderStatus = orderService.getOrderById(id).getStatus();
-        if (oldOrderStatus == 2) return "redirect:/admin/orders?page=" + page + "&type=" + type;
+        if (oldOrderStatus == 2) return "redirect:/admin-" + type.toLowerCase() + "/orders?page=" + page + "&type=" + type;
 
         Order order = orderService.toggleStatus(id);
         int newOrderStatus = order.getStatus();
@@ -446,7 +500,7 @@ public class HomeController {
         }
 
         // Redirect về trang hiện tại
-        return "redirect:/admin/orders?page=" + page + "&type=" + type;
+        return "redirect:/admin-" + type.toLowerCase() + "/orders?page=" + page + "&type=" + type;
     }
 
     @GetMapping("/admin/cancel-order/{id}")
@@ -477,23 +531,36 @@ public class HomeController {
                 }
             }
         }
-        return "redirect:/admin/orders?page=" + page + "&type=" + type;
+        return "redirect:/admin-" + type.toLowerCase() + "/orders?page=" + page + "&type=" + type;
 
     }
 
-    @GetMapping("/admin/orders")
-    public String orders(Model model,
-                         @RequestParam(name = "page", defaultValue = "0") int page,
-                         @RequestParam(name = "type", defaultValue = "Staff") String type) {
+    @GetMapping("/admin-staff/orders")
+    public String ordersStaff(Model model,
+                         @RequestParam(name = "page", defaultValue = "0") int page) {
 
         int pageSize = 10;
-        Page<Order> orders = orderService.getPaginatedOrders(type, PageRequest.of(page, pageSize));
+        Page<Order> orders = orderService.getPaginatedOrders("Staff", PageRequest.of(page, pageSize));
 
         model.addAttribute("orderPage", orders);
         model.addAttribute("currentPage", page);
-        model.addAttribute("type", type); // Thêm fetchType vào model
+        model.addAttribute("type", "Staff"); // Thêm fetchType vào model
 
         return "admin/orders";
+    }
+
+    @GetMapping("/admin-customer/orders")
+    public String ordersCustomer(Model model,
+                         @RequestParam(name = "page", defaultValue = "0") int page) {
+
+        int pageSize = 10;
+        Page<Order> orders = orderService.getPaginatedOrders("Customer", PageRequest.of(page, pageSize));
+
+        model.addAttribute("orderPage", orders);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("type", "Customer"); // Thêm fetchType vào model
+
+        return "admin/orders-customer";
     }
 
     @GetMapping("/admin/toglge-paid-status/{orderId}")
@@ -502,10 +569,10 @@ public class HomeController {
         return "redirect:/admin/orders?page=" + page;
     }
 
-    @GetMapping("/admin/cates")
-    public String cates(Model model, @RequestParam(name = "page", defaultValue = "0") int page) {
+    @GetMapping("/admin-staff/cates")
+    public String catesStaff(Model model, @RequestParam(name = "page", defaultValue = "0") int page) {
         int pageSize = 4;
-        Page<Category> cates = cateService.getAllCatesPageable(PageRequest.of(page, pageSize));
+        Page<Category> cates = cateService.getAllCatesPageable("Staff", PageRequest.of(page, pageSize));
         model.addAttribute("catePage", cates);
 
         model.addAttribute("cate", new Category());
@@ -513,10 +580,21 @@ public class HomeController {
         return "admin/cates";
     }
 
-    @GetMapping("/admin/users")
+    @GetMapping("/admin-customer/cates")
+    public String catesCustomer(Model model, @RequestParam(name = "page", defaultValue = "0") int page) {
+        int pageSize = 4;
+        Page<Category> cates = cateService.getAllCatesPageable("Customer", PageRequest.of(page, pageSize));
+        model.addAttribute("catePage", cates);
+
+        model.addAttribute("cate", new Category());
+
+        return "admin/cates-customer";
+    }
+
+    @GetMapping("/admin-staff/users")
     public String users(Model model, @RequestParam(name = "page", defaultValue = "0") int page) {
         int pageSize = 4;
-        Page<Agency> agency = agencyRepository.findAll(PageRequest.of(page, pageSize));
+        Page<Agency> agency = agencyRepository.findAllByType("Staff", PageRequest.of(page, pageSize));
         model.addAttribute("usersPage", agency);
 
         model.addAttribute("user", new Agency());
@@ -524,11 +602,22 @@ public class HomeController {
         return "admin/users";
     }
 
-    @PostMapping("/admin/add-agency")
+    @GetMapping("/admin-customer/users")
+    public String usersCustomer(Model model, @RequestParam(name = "page", defaultValue = "0") int page) {
+        int pageSize = 4;
+        Page<Agency> agency = agencyRepository.findAllByType("Customer", PageRequest.of(page, pageSize));
+        model.addAttribute("usersPage", agency);
+
+        model.addAttribute("user", new Agency());
+
+        return "admin/users-customer";
+    }
+
+    @PostMapping("/admin/add-agency-staff")
     public String addAgency(AddAgencyRequest request) {
         var agencyExisted = agencyRepository.findByUsername(request.getUsername());
         if (agencyExisted.isPresent()) {
-            return "redirect:/admin/users"; // Chuyển hướng đến trang danh sách món ăn sau khi cập nhật
+            return "redirect:/admin-staff/users"; // Chuyển hướng đến trang danh sách món ăn sau khi cập nhật
         }
         Agency agency = new Agency();
         agency.setEmail(request.getEmail());
@@ -536,11 +625,29 @@ public class HomeController {
         agency.setPassword(request.getPassword());
         agency.setPhone(request.getPhone());
         agency.setUsername(request.getUsername());
+        agency.setRole("Staff");
         agencyRepository.save(agency);
-        return "redirect:/admin/users"; // Chuyển hướng đến trang danh sách món ăn sau khi cập nhật
+        return "redirect:/admin-staff/users"; // Chuyển hướng đến trang danh sách món ăn sau khi cập nhật
     }
 
-    @GetMapping("/admin/commissions")
+    @PostMapping("/admin/add-agency-customer")
+    public String addAgencyCustomer(AddAgencyRequest request) {
+        var agencyExisted = agencyRepository.findByUsername(request.getUsername());
+        if (agencyExisted.isPresent()) {
+            return "redirect:/admin-customer/users"; // Chuyển hướng đến trang danh sách món ăn sau khi cập nhật
+        }
+        Agency agency = new Agency();
+        agency.setEmail(request.getEmail());
+        agency.setFullname(request.getFullname());
+        agency.setPassword(request.getPassword());
+        agency.setPhone(request.getPhone());
+        agency.setUsername(request.getUsername());
+        agency.setRole("Customer");
+        agencyRepository.save(agency);
+        return "redirect:/admin-customer/users"; // Chuyển hướng đến trang danh sách món ăn sau khi cập nhật
+    }
+
+    @GetMapping("/admin-staff/commissions")
     public String commissions(Model model, @RequestParam(name = "page", defaultValue = "0") int page) {
         int pageSize = 4;
         Page<CommissionHistory> commissionHistory = commissionHistoryRepository.findAll(
@@ -551,15 +658,33 @@ public class HomeController {
         return "admin/commission";
     }
 
+    @GetMapping("/admin-customer/commissions")
+    public String commissionsCustomer(Model model, @RequestParam(name = "page", defaultValue = "0") int page) {
+        int pageSize = 4;
+        Page<CommissionHistory> commissionHistory = commissionHistoryRepository.findAll(
+                PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "id"))
+        );
+        model.addAttribute("commissionPage", commissionHistory);
 
-    @PostMapping("/admin/add-cate")
-    public String addCate(AddCateRequest request) {
-        cateService.saveCate(request);
-
-        return "redirect:/admin/cates"; // Chuyển hướng đến trang danh sách món ăn sau khi cập nhật
+        return "admin/commission-customer";
     }
 
-    @PostMapping("/admin/edit-cate")
+
+    @PostMapping("/admin/add-cate-staff")
+    public String addCateStaff(AddCateRequest request) {
+        cateService.saveCate("Staff", request);
+
+        return "redirect:/admin-staff/cates"; // Chuyển hướng đến trang danh sách món ăn sau khi cập nhật
+    }
+
+    @PostMapping("/admin/add-cate-customer")
+    public String addCate(AddCateRequest request) {
+        cateService.saveCate("Customer", request);
+
+        return "redirect:/admin-customer/cates"; // Chuyển hướng đến trang danh sách món ăn sau khi cập nhật
+    }
+
+    @PostMapping("/admin/edit-cate-staff")
     public String updateCate(@RequestParam("id") int id, @RequestParam("cateName") String cateName,
                              @RequestParam("status") int status, RedirectAttributes redirectAttributes) {
         UpdateCateRequest request = new UpdateCateRequest();
@@ -567,13 +692,13 @@ public class HomeController {
         request.setCateName(cateName);
         request.setStatus(status);
         cateService.updateCate(request);
-        return "redirect:/admin/cates"; // Chuyển hướng đến trang danh sách món ăn sau khi cập nhật
+        return "redirect:/admin-staff/cates"; // Chuyển hướng đến trang danh sách món ăn sau khi cập nhật
     }
 
-    @GetMapping("/admin/toggle-cate/{id}")
+    @GetMapping("/admin/toggle-cate-staff/{id}")
     public String toggleCate(@PathVariable int id) {
         cateService.toggleCateStatus(id);
-        return "redirect:/admin/cates";
+        return "redirect:/admin-staff/cates";
     }
 
     @Autowired
@@ -590,31 +715,44 @@ public class HomeController {
         stockReportService.exportStockReport(type, response, startDate/1000, endDate/1000);
     }
 
-    @GetMapping("/admin/foods")
-    public String foods(Model model, @RequestParam(name = "page", defaultValue = "0") int page) {
+    @GetMapping("/admin-staff/foods")
+    public String foodsStaff(Model model, @RequestParam(name = "page", defaultValue = "0") int page) {
         int pageSize = 4;
-        Page<Food> foodPage = foodService.getPaginatedFoods(PageRequest.of(page, pageSize));
+        Page<Food> foodPage = foodService.getPaginatedFoods("Staff", PageRequest.of(page, pageSize));
         model.addAttribute("foodPage", foodPage);
 
         model.addAttribute("newFood", new Food());
 
-        List<Category> cates = cateService.getAllCates();
+        List<Category> cates = cateService.getAllCatesByType("Staff");
         model.addAttribute("cates", cates);
         return "admin/foods";
     }
 
-    @GetMapping("/admin/stocks")
-    public String stocks(Model model, @RequestParam(name = "page", defaultValue = "0") int page, @RequestParam(name = "type", defaultValue = "Staff") String fetchType) {
+    @GetMapping("/admin-customer/foods")
+    public String foodsCustomer(Model model, @RequestParam(name = "page", defaultValue = "0") int page) {
         int pageSize = 4;
-        Page<StocksHistory> stocksHistoryPage = stocksService.getAllStocksHistory(fetchType, PageRequest.of(page, pageSize));
+        Page<Food> foodPage = foodService.getPaginatedFoods("Customer", PageRequest.of(page, pageSize));
+        model.addAttribute("foodPage", foodPage);
+
+        model.addAttribute("newFood", new Food());
+
+        List<Category> cates = cateService.getAllCatesByType("Customer");
+        model.addAttribute("cates", cates);
+        return "admin/foods-customer";
+    }
+
+    @GetMapping("/admin-staff/stocks")
+    public String stocks(Model model, @RequestParam(name = "page", defaultValue = "0") int page) {
+        int pageSize = 4;
+        Page<StocksHistory> stocksHistoryPage = stocksService.getAllStocksHistory("Staff", PageRequest.of(page, pageSize));
         model.addAttribute("stocksPage", stocksHistoryPage);
 
-        List<Food> listFood = foodService.getAll();
+        List<Food> listFood = foodService.getAllByType("Staff");
         AddStocksRequest request = new AddStocksRequest();
         model.addAttribute("stockRequest", request);
         model.addAttribute("listFood", listFood);
         model.addAttribute("editStock", new EditStocksRequest());
-        model.addAttribute("type", fetchType);
+        model.addAttribute("type", "Staff");
 
         List<String> listType = new ArrayList<>();
         listType.add("In");
@@ -624,7 +762,29 @@ public class HomeController {
         return "admin/stocks";
     }
 
-    @PostMapping("/admin/add-stocks")
+    @GetMapping("/admin-customer/stocks")
+    public String stocksCustomer(Model model, @RequestParam(name = "page", defaultValue = "0") int page) {
+        int pageSize = 4;
+        Page<StocksHistory> stocksHistoryPage = stocksService.getAllStocksHistory("Customer", PageRequest.of(page, pageSize));
+        model.addAttribute("stocksPage", stocksHistoryPage);
+
+        List<Food> listFood = foodService.getAllByType("Customer");
+        AddStocksRequest request = new AddStocksRequest();
+        model.addAttribute("stockRequest", request);
+        model.addAttribute("listFood", listFood);
+        model.addAttribute("editStock", new EditStocksRequest());
+        model.addAttribute("type", "Customer");
+
+        List<String> listType = new ArrayList<>();
+        listType.add("In");
+        listType.add("Out");
+        model.addAttribute("listType", listType);
+
+        return "admin/stocks-customer";
+    }
+
+
+    @PostMapping("/admin/add-stocks-staff")
     public String addStocks(@ModelAttribute AddStocksRequest request, RedirectAttributes redirectAttributes) {
         String msg = "";
 
@@ -641,7 +801,7 @@ public class HomeController {
             if ("adjustment".equalsIgnoreCase(request.getType())) {
                 // Với loại adjustment, chỉ kiểm tra giá
                 if (request.getPrice() >= 0) {
-                    stocksService.updateStocks(request.getId(), request.getQuantity(), request.getPrice(), request.getType(), request.getUserRole());
+                    stocksService.updateStocks(request.getId(), request.getQuantity(), request.getPrice(), request.getType(), "Staff");
                     msg = action + " kho " + request.getType() + " thành công";
                 } else {
                     msg = action + " kho " + request.getType() + " thất bại, giá " + request.getPrice();
@@ -649,7 +809,7 @@ public class HomeController {
             } else if ("in".equalsIgnoreCase(request.getType()) || "out".equalsIgnoreCase(request.getType())) {
                 // Với loại in hoặc out, kiểm tra cả số lượng và giá
                 if (request.getQuantity() > 0 && request.getPrice() >= 0) {
-                    stocksService.updateStocks(request.getId(), request.getQuantity(), request.getPrice(), request.getType(), request.getUserRole());
+                    stocksService.updateStocks(request.getId(), request.getQuantity(), request.getPrice(), request.getType(), "Staff");
                     msg = action + " kho " + request.getType() + " thành công";
                 } else {
                     msg = action + " kho " + request.getType() + " thất bại, "
@@ -660,35 +820,100 @@ public class HomeController {
             redirectAttributes.addFlashAttribute("msg", msg); // Gửi thông báo
         }
 
-        return "redirect:/admin/stocks?type=" + request.getUserRole();
+        return "redirect:/admin-staff/stocks?type=" + request.getUserRole();
     }
 
+    @PostMapping("/admin/add-stocks-customer")
+    public String addStocksCustomer(@ModelAttribute AddStocksRequest request, RedirectAttributes redirectAttributes) {
+        String msg = "";
 
-    @PostMapping("/admin/edit-stocks")
+        // Ánh xạ loại kho với thông báo tương ứng
+        Map<String, String> typeMessages = new HashMap<>();
+        typeMessages.put("in", "Nhập");
+        typeMessages.put("out", "Xuất");
+        typeMessages.put("adjustment", "Điều chỉnh");
+
+        // Kiểm tra loại kho và xử lý thông báo
+        String action = typeMessages.get(request.getType().toLowerCase());
+
+        if (action != null) {
+            if ("adjustment".equalsIgnoreCase(request.getType())) {
+                // Với loại adjustment, chỉ kiểm tra giá
+                if (request.getPrice() >= 0) {
+                    stocksService.updateStocks(request.getId(), request.getQuantity(), request.getPrice(), request.getType(), "Customer");
+                    msg = action + " kho " + request.getType() + " thành công";
+                } else {
+                    msg = action + " kho " + request.getType() + " thất bại, giá " + request.getPrice();
+                }
+            } else if ("in".equalsIgnoreCase(request.getType()) || "out".equalsIgnoreCase(request.getType())) {
+                // Với loại in hoặc out, kiểm tra cả số lượng và giá
+                if (request.getQuantity() > 0 && request.getPrice() >= 0) {
+                    stocksService.updateStocks(request.getId(), request.getQuantity(), request.getPrice(), request.getType(), "Customer");
+                    msg = action + " kho " + request.getType() + " thành công";
+                } else {
+                    msg = action + " kho " + request.getType() + " thất bại, "
+                            + (request.getQuantity() <= 0 ? "số lượng" : "giá") + " "
+                            + (request.getQuantity() <= 0 ? request.getQuantity() : request.getPrice());
+                }
+            }
+            redirectAttributes.addFlashAttribute("msg", msg); // Gửi thông báo
+        }
+
+        return "redirect:/admin-customer/stocks?type=" + request.getUserRole();
+    }
+
+    @PostMapping("/admin/edit-stocks-staff")
     public String editStocks(@ModelAttribute EditStocksRequest request, RedirectAttributes redirectAttributes) {
         // Tiếp tục xử lý và lưu thông tin thực phẩm
         stocksService.editStocks(request.getNewId(), request.getNewQuantity(), request.getNewPrice(), request.getNewType());
         redirectAttributes.addFlashAttribute("msgSuccess", "Điều chỉnh tồn kho thành công");
 
-        return "redirect:/admin/stocks";
+        return "redirect:/admin-staff/stocks";
     }
 
-    @PostMapping("/admin/check-stocks")
-    public String checkStocks(@ModelAttribute CheckStocksRequest request, RedirectAttributes redirectAttributes) {
+    @PostMapping("/admin/edit-stocks-customer")
+    public String editStocksCustomer(@ModelAttribute EditStocksRequest request, RedirectAttributes redirectAttributes) {
         // Tiếp tục xử lý và lưu thông tin thực phẩm
-        stocksService.checkStocks(request.getFoodName(), request.getRealQuantity());
+        stocksService.editStocks(request.getNewId(), request.getNewQuantity(), request.getNewPrice(), request.getNewType());
         redirectAttributes.addFlashAttribute("msgSuccess", "Điều chỉnh tồn kho thành công");
 
-        return "redirect:/admin/stocks";
+        return "redirect:/admin-customer/stocks";
     }
 
-    @PostMapping("/admin/add-food")
+    @PostMapping("/admin/check-stocks-staff")
+    public String checkStocks(@ModelAttribute CheckStocksRequest request, RedirectAttributes redirectAttributes) {
+        // Tiếp tục xử lý và lưu thông tin thực phẩm
+        stocksService.checkStocks("Staff", request.getFoodName(), request.getRealQuantity());
+        redirectAttributes.addFlashAttribute("msgSuccess", "Kiểm tra tồn kho thành công");
+
+        return "redirect:/admin-staff/stocks";
+    }
+
+    @PostMapping("/admin/check-stocks-customer")
+    public String checkStocksCustomer(@ModelAttribute CheckStocksRequest request, RedirectAttributes redirectAttributes) {
+        // Tiếp tục xử lý và lưu thông tin thực phẩm
+        stocksService.checkStocks("Customer", request.getFoodName(), request.getRealQuantity());
+        redirectAttributes.addFlashAttribute("msgSuccess", "Kiểm tra tồn kho thành công");
+
+        return "redirect:/admin-customer/stocks";
+    }
+
+    @PostMapping("/admin/add-food-staff")
     public String addFood(@ModelAttribute AddFoodRequest foodRequest, RedirectAttributes redirectAttributes) {
         // Tiếp tục xử lý và lưu thông tin thực phẩm
-        foodService.addNewFood(foodRequest);
+        foodService.addNewFood(foodRequest, "Staff");
         redirectAttributes.addFlashAttribute("msgSuccess", "Thêm món ăn thành công");
 
-        return "redirect:/admin/foods";
+        return "redirect:/admin-staff/foods";
+    }
+
+    @PostMapping("/admin/add-food-customer")
+    public String addFoodCustomer(@ModelAttribute AddFoodRequest foodRequest, RedirectAttributes redirectAttributes) {
+        // Tiếp tục xử lý và lưu thông tin thực phẩm
+        foodService.addNewFood(foodRequest, "Customer");
+        redirectAttributes.addFlashAttribute("msgSuccess", "Thêm món ăn thành công");
+
+        return "redirect:/admin-customer/foods";
     }
 
     @GetMapping("/admin/toggle-food/{id}")
@@ -697,7 +922,7 @@ public class HomeController {
         return "redirect:/admin/foods";
     }
 
-    @PostMapping("/admin/edit-food")
+    @PostMapping("/admin/edit-food-staff")
     public String updateFood(@RequestParam("id") Long id, @RequestParam("name") String name,
                              @RequestParam("description") String description, @RequestParam("price") double price,
                              @RequestParam(value = "categories", required = false) List<Integer> categories,
@@ -717,17 +942,50 @@ public class HomeController {
 
         foodService.updateFood(request);
         redirectAttributes.addFlashAttribute("message", "Cập nhật món ăn thành công.");
-        return "redirect:/admin/foods";
+        return "redirect:/admin-staff/foods";
     }
 
-    @GetMapping("/admin/coupons")
-    public String coupons(Model model, @RequestParam(name = "page", defaultValue = "0") int page) {
+    @PostMapping("/admin/edit-food-customer")
+    public String updateFoodCustomer(@RequestParam("id") Long id, @RequestParam("name") String name,
+                             @RequestParam("description") String description, @RequestParam("price") double price,
+                             @RequestParam(value = "categories", required = false) List<Integer> categories,
+                             @RequestParam("image") MultipartFile image, @RequestParam("status") int status,
+                             @RequestParam("quantity") String quantity,
+                             RedirectAttributes redirectAttributes) {
+
+        UpdateFoodRequest request = new UpdateFoodRequest();
+        request.setId(id);
+        request.setName(name);
+        request.setDescription(description);
+        request.setPrice(price);
+        request.setCategories(categories);
+        request.setImage(image);
+        request.setQuantity(quantity);
+        request.setStatus(status);
+
+        foodService.updateFood(request);
+        redirectAttributes.addFlashAttribute("message", "Cập nhật món ăn thành công.");
+        return "redirect:/admin-customer/foods";
+    }
+
+    @GetMapping("/admin-staff/coupons")
+    public String couponsStaff(Model model, @RequestParam(name = "page", defaultValue = "0") int page) {
         int pageSize = 4;
         Page<Coupon> coupons = coupService.getCouponPaginate(PageRequest.of(page, pageSize));
         model.addAttribute("couponPage", coupons);
 
         model.addAttribute("coupon", new Coupon());
         return "admin/coupon";
+    }
+
+    @GetMapping("/admin-customer/coupons")
+    public String couponsCustomer(Model model, @RequestParam(name = "page", defaultValue = "0") int page) {
+        int pageSize = 4;
+        Page<Coupon> coupons = coupService.getCouponPaginate(PageRequest.of(page, pageSize));
+        model.addAttribute("couponPage", coupons);
+
+        model.addAttribute("coupon", new Coupon());
+        return "admin/coupon-customer";
     }
 
     @PostMapping("/admin/add-coupon")

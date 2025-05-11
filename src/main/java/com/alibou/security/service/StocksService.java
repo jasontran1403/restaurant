@@ -12,5 +12,5 @@ public interface StocksService {
     Page<StocksHistory> getAllStocksHistory(String fetchType, Pageable pageable);
     List<StocksHistory> getStocksHistoryByOrderId(long orderId);
     void editStocks(int stockId, int newQuantity, double newPrice, String newType);
-    void checkStocks(String foodName, int realQuantity);
+    void checkStocks(String type, String foodName, int realQuantity);
 }

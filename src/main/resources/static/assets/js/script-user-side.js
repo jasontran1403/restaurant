@@ -1,114 +1,129 @@
 var stompClient = null;
 var username = null;
+var isDefaultPriceApplied = false; // Flag to check if default price is applied
+var isCouponApplied = false; // Flag to check if a coupon is applied
+var check = false;
+var rate = 0.0; // Discount rate (percentage or 200 for default price)
+var codeCoupon = ""; // Coupon code
 
 function formatPrice(price) {
-    // Sử dụng Number.toLocaleString() để định dạng số
     return price.toLocaleString('en-US');
 }
 
-function calculateVAT() {
+function onVatChange() {
+    // Get current cart state
+    const cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
+    const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const vatSelect = document.getElementById('vat');
-    const vatRate = parseFloat(vatSelect.value);
-    const subtotalText = document.getElementById('subtotal').innerText;
-    const subtotal = parseFloat(subtotalText.replace(/[^0-9.-]+/g, ''));
 
-    // Lấy thông tin giảm giá hiện tại
-    const discountText = document.getElementById('discount').innerText;
+    // Calculate discount amount based on current state
     let discountAmount = 0;
-    let discountRate = 0;
-
-    // Kiểm tra nếu discount là phần trăm (ví dụ: 10%)
-    if (discountText.includes('%')) {
-        const discountRateMatch = discountText.match(/\((\d+\.?\d*)\%\)/);
-        discountRate = discountRateMatch ? parseFloat(discountRateMatch[1]) : 0;
-        discountAmount = subtotal * discountRate / 100;
-    } else {
-        // Nếu discount là số tiền cố định
-        discountAmount = parseFloat(discountText.replace(/[^0-9.-]+/g, '')) || 0;
+    if (isCouponApplied) {
+        if (isDefaultPriceApplied) {
+            discountAmount = cartItems.reduce((sum, item) => {
+                const defaultPrice = item.default || item.price;
+                // Sửa ở đây - thêm Math.abs()
+                return sum + Math.abs((defaultPrice - item.price) * item.quantity);
+            }, 0);
+        } else {
+            discountAmount = subtotal * rate / 100;
+        }
     }
 
-    // Tính số tiền sau khi giảm giá (nếu có)
     const discountedSubtotal = subtotal - discountAmount;
+    const { vatAmount, total } = calculateVAT(discountedSubtotal);
 
-    // Tính VAT dựa trên số tiền sau khi đã giảm giá
-    const vatAmount = discountedSubtotal * vatRate / 100;
-
-    // Tính tổng tiền cuối cùng (Subtotal - Discount + VAT)
-    const total = discountedSubtotal + vatAmount;
-
-    // Cập nhật UI
-    document.getElementById('vatAmount').innerText = `${formatPrice(vatAmount)} VNĐ (${vatRate}%)`;
+    // Update UI
+    document.getElementById('subtotal').innerText = `${formatPrice(subtotal)} VNĐ`;
+    document.getElementById('discount').innerText = isCouponApplied
+        ? `${formatPrice(discountAmount)} VNĐ${isDefaultPriceApplied ? '' : ` (${rate}%)`}`
+        : '0 VNĐ';
+    document.getElementById('vatAmount').innerText = `${formatPrice(vatAmount)} VNĐ (${vatSelect.value}%)`;
     document.getElementById('total').innerText = `${formatPrice(total)} VNĐ`;
+}
 
-    // Cập nhật lại hàm updateTotal
-    updateTotal(subtotal, total, vatAmount, discountAmount);
+function calculateVAT(subtotal) {
+    // If subtotal not provided, get it from the UI
+    if (subtotal === undefined) {
+        const subtotalText = document.getElementById('subtotal').innerText;
+        subtotal = parseFloat(subtotalText.replace(/[^0-9.-]+/g, ''));
+    }
+
+    const vatSelect = document.getElementById('vat');
+    const vatRate = parseFloat(vatSelect.value);
+    const vatAmount = Math.abs(subtotal) * vatRate / 100;
+    const total = subtotal + vatAmount;
+
+    return { vatAmount, total };
 }
 
 function applyDiscount(discountPercentage) {
     const subtotalText = document.getElementById('subtotal').innerText;
     const subtotal = parseFloat(subtotalText.replace(/[^0-9.-]+/g, ''));
     const discountAmount = subtotal * discountPercentage / 100;
-
-    // Lấy thông tin VAT hiện tại
-    const vatSelect = document.getElementById('vat');
-    const vatRate = parseFloat(vatSelect.value);
-
-    // Tính lại VAT dựa trên giá sau giảm
     const discountedSubtotal = subtotal - discountAmount;
-    const vatAmount = discountedSubtotal * vatRate / 100;
-    const total = discountedSubtotal + vatAmount;
+
+    const { vatAmount, total } = calculateVAT(discountedSubtotal);
+    const vatRate = parseFloat(document.getElementById('vat').value);
 
     // Update UI
-    document.getElementById('discount').innerText =
-        `${formatPrice(discountAmount)} (${discountPercentage}%)`;
+    document.getElementById('subtotal').innerText = `${formatPrice(subtotal)} VNĐ`;
+    document.getElementById('discount').innerText = `${formatPrice(discountAmount)} VNĐ (${discountPercentage}%)`;
     document.getElementById('vatAmount').innerText = `${formatPrice(vatAmount)} VNĐ (${vatRate}%)`;
     document.getElementById('total').innerText = `${formatPrice(total)} VNĐ`;
 
-    // Cập nhật lại hàm updateTotal
     updateTotal(subtotal, total, vatAmount, discountAmount);
+    onVatChange(); // Add this at the end
 }
 
-function applyDiscountDefaultPrice(discountPercentage) {
-    const subtotalText = document.getElementById('subtotal').innerText;
-    const subtotal = parseFloat(subtotalText.replace(/[^0-9.-]+/g, ''));
-    const discountAmount = subtotal * discountPercentage / 100;
+function applyDefaultPrice() {
+    let cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
+    let total = 0;
+    let totalDiscount = 0;
+    let tempTotal = 0;
 
-    // Lấy thông tin VAT hiện tại
-    const vatSelect = document.getElementById('vat');
-    const vatRate = parseFloat(vatSelect.value);
+    cartItems.forEach(item => {
+        const defaultPrice = item.default || item.price;
+        total += defaultPrice * item.quantity;
+        // Sửa ở đây - thêm Math.abs()
+        totalDiscount += Math.abs((defaultPrice - item.price) * item.quantity);
+        tempTotal += item.price * item.quantity;
+    });
 
-    // Tính lại VAT dựa trên giá sau giảm
-    const discountedSubtotal = subtotal - discountAmount;
-    const vatAmount = discountedSubtotal * vatRate / 100;
-    const total = discountedSubtotal + vatAmount;
+    const discountedSubtotal = total - totalDiscount;
+    const { vatAmount, total: finalTotal } = calculateVAT(discountedSubtotal);
+    const vatRate = parseFloat(document.getElementById('vat').value);
 
     // Update UI
-    document.getElementById('discount').innerText = `Mã giảm giá gốc`;
+    document.getElementById('subtotal').innerText = `${formatPrice(tempTotal)} VNĐ`;
+    document.getElementById('discount').innerText = `${formatPrice(totalDiscount)} VNĐ`;
     document.getElementById('vatAmount').innerText = `${formatPrice(vatAmount)} VNĐ (${vatRate}%)`;
-    document.getElementById('total').innerText = `${formatPrice(total)} VNĐ`;
+    document.getElementById('total').innerText = `${formatPrice(finalTotal)} VNĐ`;
 
-    // Cập nhật lại hàm updateTotal
-    updateTotal(subtotal, total, vatAmount, discountAmount);
+    updateTotal(tempTotal, finalTotal, vatAmount, totalDiscount);
+    onVatChange();
 }
 
 function resetCoupon() {
     isCouponApplied = false;
+    isDefaultPriceApplied = false;
     const subtotalText = document.getElementById('subtotal').innerText;
     const subtotal = parseFloat(subtotalText.replace(/[^0-9.-]+/g, ''));
 
-    // Lấy thông tin VAT hiện tại
-    const vatSelect = document.getElementById('vat');
-    const vatRate = parseFloat(vatSelect.value);
-    const vatAmount = subtotal * vatRate / 100;
-    const total = subtotal + vatAmount;
+    const { vatAmount, total } = calculateVAT(subtotal);
+    const vatRate = parseFloat(document.getElementById('vat').value);
 
     // Reset UI
+    document.getElementById('subtotal').innerText = `${formatPrice(subtotal)} VNĐ`;
     document.getElementById('discount').innerText = "0 VNĐ";
     document.getElementById('vatAmount').innerText = `${formatPrice(vatAmount)} VNĐ (${vatRate}%)`;
     document.getElementById('total').innerText = `${formatPrice(total)} VNĐ`;
 
-    // Cập nhật lại hàm updateTotal
     updateTotal(subtotal, total, vatAmount, 0);
+    rate = 0.0;
+    codeCoupon = "";
+    check = false;
+    onVatChange(); // Add this at the end
 }
 
 function connect(event) {
@@ -118,22 +133,10 @@ function connect(event) {
     stompClient.connect({}, onConnected, onError);
 }
 
-var check = false;
-var rate = 0.0;
-var codeCoupon = "";
-
-
 function onConnected() {
-    // Subscribe to the Public Topic
     stompClient.subscribe('/topic/public', onMessageReceived);
-
-    // Tell your username to the server
-    stompClient.send("/app/register",
-        {},
-        JSON.stringify({ sender: "guest", type: 'JOIN' })
-    )
+    stompClient.send("/app/register", {}, JSON.stringify({ sender: "guest", type: 'JOIN' }));
 }
-
 
 function onError(error) {
     console.log('Could not connect to WebSocket server. Please refresh this page to try again!');
@@ -141,27 +144,23 @@ function onError(error) {
 
 function send(event) {
     var messageContent = "TESTSTSTST";
-
     if (messageContent && stompClient) {
         var chatMessage = {
             sender: "guest",
             content: messageContent,
             type: 'CHAT'
         };
-
         stompClient.send("/app/send", {}, JSON.stringify(chatMessage));
     }
 }
 
 var checkout = () => {
     var user = localStorage.getItem("user");
-
     if (!user) {
         displayToast("Cần phải đăng nhập để đặt đơn hàng!", "error");
         return;
     }
     var cartItems = JSON.parse(localStorage.getItem("cartItems"));
-
     if (cartItems.length === 0) {
         displayToast("Giỏ hàng trống!", "error");
         return;
@@ -212,18 +211,16 @@ var checkout = () => {
         .then(result => {
             console.log(result);
             if (result === 'Đặt thành công!') {
-                const buyBtns = document.querySelectorAll('.js-cart')
-                const modal = document.querySelector('.plus-modal')
-                const modalClose = document.querySelector('.modal-close')
+                const buyBtns = document.querySelectorAll('.js-cart');
+                const modal = document.querySelector('.plus-modal');
+                const modalClose = document.querySelector('.modal-close');
 
                 const bill = document.querySelector('.plus-modal__body');
-                bill.innerHTML = ''; // Clear the content of the bill element
+                bill.innerHTML = '';
 
-                // Create the table element
                 const table = document.createElement('table');
                 table.className = 'table';
 
-                // Create the table header
                 const thead = document.createElement('thead');
                 const headerRow = document.createElement('tr');
                 const headers = ['Tên món ăn', 'Số lượng', 'Đơn giá', 'Thành tiền'];
@@ -237,57 +234,46 @@ var checkout = () => {
                 thead.appendChild(headerRow);
                 table.appendChild(thead);
 
-                // Create the table body
                 const tbody = document.createElement('tbody');
 
                 cartItems.forEach(item => {
                     const row = document.createElement('tr');
-
-                    // Customize the columns based on your item structure
                     const nameCell = document.createElement('td');
                     nameCell.textContent = item.name;
-
                     const quantityCell = document.createElement('td');
                     quantityCell.textContent = item.quantity + " X " + item.unit;
-
                     const priceCell = document.createElement('td');
                     priceCell.textContent = formatPrice(item.price);
-
                     const totalCell = document.createElement('td');
                     totalCell.textContent = formatPrice(item.quantity * item.price) + " VNĐ";
 
-                    // Append cells to the row
                     row.appendChild(nameCell);
                     row.appendChild(quantityCell);
                     row.appendChild(priceCell);
                     row.appendChild(totalCell);
-
-                    // Append the row to the table body
                     tbody.appendChild(row);
                 });
 
-                // Add a row for subtotal
                 const subtotalRow = document.createElement('tr');
-                const emptyCell1 = document.createElement('td'); // Empty cell for alignment
-                const emptyCell2 = document.createElement('td'); // Empty cell for alignment
+                const emptyCell1 = document.createElement('td');
+                const emptyCell2 = document.createElement('td');
                 const subtotalCell1 = document.createElement('td');
                 subtotalCell1.textContent = 'Tạm tính: ';
                 const subtotalCell2 = document.createElement('td');
-                subtotalCell2.textContent = subtotal.innerText;
+                subtotalCell2.textContent = document.getElementById('subtotal').innerText;
 
                 subtotalRow.appendChild(emptyCell1);
                 subtotalRow.appendChild(emptyCell2);
                 subtotalRow.appendChild(subtotalCell1);
                 subtotalRow.appendChild(subtotalCell2);
 
-                // Add a row for discount
                 const discountRow = document.createElement('tr');
-                const emptyCell3 = document.createElement('td'); // Empty cell for alignment
-                const emptyCell4 = document.createElement('td'); // Empty cell for alignment
+                const emptyCell3 = document.createElement('td');
+                const emptyCell4 = document.createElement('td');
                 const discountCell1 = document.createElement('td');
                 discountCell1.textContent = 'Giảm giá: ';
                 const discountCell2 = document.createElement('td');
-                discountCell2.textContent = discount.innerText;
+                discountCell2.textContent = document.getElementById('discount').innerText;
 
                 discountRow.appendChild(emptyCell3);
                 discountRow.appendChild(emptyCell4);
@@ -298,70 +284,56 @@ var checkout = () => {
                 const emptyCell7 = document.createElement('td');
                 const emptyCell8 = document.createElement('td');
                 const vatCell1 = document.createElement('td');
-                vatCell1.textContent = `VAT (${vat}%): `; // Thay 10% bằng biến vat nếu cần
-
-                const subtotalValue = parseFloat(subtotal.innerText.replace(/[^0-9.-]+/g,""));
-                const discountValue = parseFloat(discount.innerText.replace(/[^0-9.-]+/g,""));
-                const vatValue = (subtotalValue - discountValue) * vat/100; // Tính VAT 10%
-
+                vatCell1.textContent = `VAT (${vat}%): `;
                 const vatCell2 = document.createElement('td');
-                vatCell2.textContent = formatPrice(vatValue) + " VNĐ";
+                vatCell2.textContent = document.getElementById('vatAmount').innerText;
 
                 vatRow.appendChild(emptyCell7);
                 vatRow.appendChild(emptyCell8);
                 vatRow.appendChild(vatCell1);
                 vatRow.appendChild(vatCell2);
 
-                const totalPaymentValue = (subtotalValue - discountValue) + vatValue;
-
-                // Add a row for total
                 const totalRow = document.createElement('tr');
-                const emptyCell5 = document.createElement('td'); // Empty cell for alignment
-                const emptyCell6 = document.createElement('td'); // Empty cell for alignment
+                const emptyCell5 = document.createElement('td');
+                const emptyCell6 = document.createElement('td');
                 const totalCell1 = document.createElement('td');
                 totalCell1.textContent = 'Số tiền cần thanh toán: ';
                 const totalCell2 = document.createElement('td');
-                totalCell2.textContent = formatPrice(totalPaymentValue) + " VNĐ"; // Cập nhật lại tổng tiền
+                totalCell2.textContent = document.getElementById('total').innerText;
 
                 totalRow.appendChild(emptyCell5);
                 totalRow.appendChild(emptyCell6);
                 totalRow.appendChild(totalCell1);
                 totalRow.appendChild(totalCell2);
 
-                // Append the rows to the table body
                 tbody.appendChild(subtotalRow);
                 tbody.appendChild(discountRow);
                 tbody.appendChild(vatRow);
                 tbody.appendChild(totalRow);
                 table.appendChild(tbody);
-
-                // Append the table to the bill element
                 bill.appendChild(table);
 
                 modal.classList.add('open');
                 function showBuyModal() {
-                    modal.classList.add('open')
+                    modal.classList.add('open');
                 }
 
                 function hideBuyModal() {
-                    modal.classList.remove('open')
+                    modal.classList.remove('open');
                     window.location.reload();
                 }
 
                 for (const buyBtn of buyBtns) {
-                    buyBtn.addEventListener('click', showBuyModal)
-
+                    buyBtn.addEventListener('click', showBuyModal);
                 }
 
-                modalClose.addEventListener('click', hideBuyModal)
+                modalClose.addEventListener('click', hideBuyModal);
 
                 fetch(`/place-order`, requestOptions)
                     .then(response => {
                         if (response.ok === true) {
                             send();
                             localStorage.removeItem("cartItems");
-
-                            // Hiển thị thông báo và đợi 3 giây trước khi chuyển về trang chủ
                             setTimeout(() => {
                                 window.location.href = '/menu';
                             }, 3000);
@@ -382,42 +354,33 @@ function onMessageReceived(payload) {
 }
 
 function isValidVietnamesePhone(phone) {
-    // Xóa tất cả khoảng trắng trong số điện thoại
     let cleanedPhone = phone.replace(/\s+/g, "");
-
-    // Biểu thức chính quy kiểm tra số điện thoại VN hợp lệ
     const regex = /^(0\d{9}|0\d{10})$/;
     return regex.test(cleanedPhone);
 }
 
-function formatVietnamesePhone(phone) {
-    // Xóa khoảng trắng trước khi định dạng
-    let cleanedPhone = phone.replace(/\s+/g, "");
-
-    // Kiểm tra độ dài để format chuẩn
-    if (cleanedPhone.length === 10) {
-        return cleanedPhone.replace(/(\d{4})(\d{3})(\d{3})/, "$1 $2 $3");
-    } else if (cleanedPhone.length === 11) {
-        return cleanedPhone.replace(/(\d{4})(\d{3})(\d{4})/, "$1 $2 $3");
-    }
-    return phone; // Nếu không hợp lệ, trả về nguyên gốc
-}
-
-connect();
-
-
-// Hàm renderCartTable để hiển thị giỏ hàng trong bảng
 function renderCartTable() {
     var cartTableBody = document.querySelector("table tbody");
     cartTableBody.innerHTML = '';
     var cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
     let total = 0;
+    let totalDiscount = 0;
 
     cartItems.forEach(function (cartItem) {
         var row = document.createElement("tr");
         row.classList.add("cart__product");
 
-        // Hiển thị giá gốc (không nhân 1000)
+        const currentPrice = cartItem.price;
+        const defaultPrice = cartItem.default || cartItem.price;
+        const itemDiscount = Math.abs((defaultPrice - currentPrice) * cartItem.quantity);
+        totalDiscount += itemDiscount;
+        total += currentPrice * cartItem.quantity;
+
+        const priceDisplay = isDefaultPriceApplied ?
+            `<span style="text-decoration: line-through; color: #999;">${formatPrice(currentPrice)} VNĐ</span><br>
+             ${formatPrice(defaultPrice)} VNĐ` :
+            `${formatPrice(currentPrice)} VNĐ`;
+
         row.innerHTML = `
       <td class="cart__product-id" style="display:none;">${cartItem.id}</td>
       <td class="cart__product-item">
@@ -431,7 +394,7 @@ function renderCartTable() {
           <h6>${cartItem.name}</h6>
         </div>
       </td>
-      <td class="cart__product-price">${formatPrice(cartItem.price)} VNĐ</td>
+      <td class="cart__product-price">${priceDisplay}</td>
       <td class="cart__product-quantity">
         <div class="product-quantity">
           <div class="quantity__input-wrap">
@@ -442,123 +405,96 @@ function renderCartTable() {
         </div>
       </td>
       <td class="cart__product-unit">${cartItem.unit}</td>
-      <td class="cart__product-total">${formatPrice(cartItem.price * cartItem.quantity)} VNĐ</td>
+      <td class="cart__product-total">${formatPrice(currentPrice * cartItem.quantity)} VNĐ</td>
     `;
 
         cartTableBody.appendChild(row);
-        total += cartItem.price * cartItem.quantity;
     });
 
-    // Cập nhật tổng tiền
-    var subtotalElement = document.querySelector("#subtotal");
-    subtotalElement.textContent = `${formatPrice(total)} VNĐ`;
+    const subtotal = total;
+    const discountedSubtotal = total - totalDiscount;
+    const { vatAmount, total: finalTotal } = calculateVAT(discountedSubtotal);
+    const vatRate = parseFloat(document.getElementById('vat').value);
+
+    // Update UI
+    document.getElementById('subtotal').innerText = `${formatPrice(subtotal)} VNĐ`;
+    document.getElementById('discount').innerText = totalDiscount > 0 ? `${formatPrice(totalDiscount)} VNĐ` : `0 VNĐ`;
+    document.getElementById('vatAmount').innerText = `${formatPrice(vatAmount)} VNĐ (${vatRate}%)`;
+    document.getElementById('total').innerText = `${formatPrice(finalTotal)} VNĐ`;
+
+    if (isCouponApplied) {
+        if (isDefaultPriceApplied) {
+            applyDefaultPrice();
+        } else {
+            applyDiscount(parseFloat(rate));
+        }
+    }
 }
 
-// Hàm xóa sản phẩm khỏi giỏ hàng
-// function removeCartItem(id) {
-//
-//     let cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
-//
-//     // Lọc ra các sản phẩm khác với id cần xóa
-//     cartItems = cartItems.filter(item => item.id !== id);
-//
-//     // Lưu lại danh sách mới
-//     localStorage.setItem("cartItems", JSON.stringify(cartItems));
-//     displayToast("Xoá món ăn khỏi giỏ thành công!", "success");
-//     // Cập nhật lại bảng giỏ hàng
-//     renderCartTable();
-// }
-
-// Hàm giảm số lượng sản phẩm
 function decreaseQuantity(id) {
     let cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
-    // Tìm sản phẩm cần giảm
     var item = cartItems.find(item => item.id === id);
 
     if (item && item.quantity > 1) {
         item.quantity--;
     }
 
-    // Lưu lại danh sách mới
     localStorage.setItem("cartItems", JSON.stringify(cartItems));
-
-    // Cập nhật lại bảng giỏ hàng
     renderCartTable();
 }
 
-// Hàm tăng số lượng sản phẩm
 function increaseQuantity(id) {
     let cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
-
-    // Tìm sản phẩm cần tăng
     var item = cartItems.find(item => item.id === id);
 
     if (item) {
         item.quantity++;
     }
 
-    // Lưu lại danh sách mới
     localStorage.setItem("cartItems", JSON.stringify(cartItems));
-
-    // Cập nhật lại bảng giỏ hàng
     renderCartTable();
 }
 
-// Hàm cập nhật số lượng sản phẩm
 function updateQuantity(id, newQuantity) {
     let cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
-
-    // Tìm sản phẩm cần cập nhật
     var item = cartItems.find(item => item.id === id);
 
     if (item) {
         item.quantity = parseInt(newQuantity);
     }
 
-    // Lưu lại danh sách mới
     localStorage.setItem("cartItems", JSON.stringify(cartItems));
-
-    // Cập nhật lại bảng giỏ hàng
     renderCartTable();
 }
 
-// Hàm cập nhật giỏ hàng
-function updateCart() {
-    // Đưa ra xử lý cập nhật giỏ hàng (ví dụ: kiểm tra giảm giá, áp dụng mã giảm giá)
-    // Sau đó cập nhật lại bảng giỏ hàng
-    renderCartTable();
-}
-
-// Render giỏ hàng lên table cart.
 function updateQuantityAction(row, action) {
     var quantityInput = row.querySelector(".qty-input");
     var currentValue = parseInt(quantityInput.value);
 
     if (!isNaN(currentValue)) {
-        let quantity = currentValue;
-        quantityInput.value = currentValue;
+        let quantity = action === "increase" ? currentValue + 1 : Math.max(1, currentValue - 1);
+        quantityInput.value = quantity;
 
-        var priceText = row.querySelector(".cart__product-price").textContent;
-        var price = parseFloat(priceText.replace(/[^0-9.-]+/g, ""));
-
-        // KHÔNG nhân với 1000 ở đây
-        var totalPriceCell = row.querySelector(".cart__product-total");
-        totalPriceCell.textContent = `${formatPrice(price * quantity)} VNĐ`;
-
-        updateCart();
+        var idCell = row.querySelector(".cart__product-id");
+        updateQuantity(idCell.textContent, quantity);
     }
 }
 
 function removeProduct(row) {
+    var idCell = row.querySelector(".cart__product-id");
+    let cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
+    cartItems = cartItems.filter(item => item.id != idCell.textContent);
+    localStorage.setItem("cartItems", JSON.stringify(cartItems));
     row.remove();
     displayToast("Xoá sản phẩm giỏ thành công!", "success");
-    updateCart();
+    renderCartTable();
 }
 
 function updateCart() {
     var rows = document.querySelectorAll(".cart__product");
     var updatedCartItems = [];
     var subTotal = 0;
+    var originalCartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
 
     rows.forEach(function (row, index) {
         var idCell = row.querySelector(".cart__product-id");
@@ -566,20 +502,20 @@ function updateCart() {
         var priceText = row.querySelector(".cart__product-price").textContent;
         var price = parseFloat(priceText.replace(/[^0-9.-]+/g, ""));
         var unit = row.querySelector(".cart__product-unit").textContent;
-
-        // KHÔNG nhân với 1000 ở đây nữa
-        let adjustedPrice = price;
-
         var quantityInput = row.querySelector(".qty-input");
         var quantity = parseInt(quantityInput.value);
         var image = row.querySelector(".cart__product-img img").src;
 
-        subTotal += adjustedPrice * quantity;
+        var originalItem = originalCartItems.find(item => item.id == idCell.textContent);
+        var defaultPrice = originalItem ? (originalItem.default || originalItem.price) : price;
+
+        subTotal += price * quantity;
 
         updatedCartItems.push({
             id: idCell.textContent,
             name,
-            price: adjustedPrice,
+            price: price,
+            default: defaultPrice,
             quantity,
             unit,
             image
@@ -587,7 +523,7 @@ function updateCart() {
     });
 
     localStorage.setItem("cartItems", JSON.stringify(updatedCartItems));
-    updateTotal(subTotal, subTotal);
+    renderCartTable();
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -599,7 +535,6 @@ document.addEventListener("DOMContentLoaded", function () {
         var row = document.createElement("tr");
         row.className = "cart__product";
 
-        // KHÔNG nhân giá với 1000 ở đây
         subTotal += item.price * item.quantity;
 
         row.innerHTML = `
@@ -637,9 +572,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function validateNameInput(nameInput) {
     if (!nameInput.value.trim()) {
-        // Hiển thị thông báo lỗi nếu cần
         displayToast("Vui lòng nhập tên khách hàng", "error");
-        return false; // hoặc return; nếu không cần trả về giá trị
+        return false;
     }
     return true;
 }
@@ -652,9 +586,7 @@ function loadCustomer(customerId) {
     if (main) {
         const type = "success";
         const toastElement = document.createElement("div");
-
         const title = "Notification!";
-
         const icon = "fas fa-check-circle";
 
         toastElement.classList.add("toast", `toast--${type}`);
@@ -664,7 +596,6 @@ function loadCustomer(customerId) {
             main.removeChild(toastElement);
         }, 1500);
 
-        // Remove toast when clicked
         toastElement.onclick = function (e) {
             main.removeChild(toastElement);
         };
@@ -687,25 +618,33 @@ function loadCustomer(customerId) {
 
 function updateTotal(subtotal, total, vatAmount = 0, discountAmount = 0) {
     const vatRate = parseFloat(document.getElementById('vat').value);
-    document.getElementById("subtotal").innerText = `${formatPrice(subtotal)} VNĐ`;
+
+    if (isDefaultPriceApplied) {
+        let currentSubtotal = 0;
+        const cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
+        currentSubtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+
+        document.getElementById("subtotal").innerHTML = `
+            ${formatPrice(currentSubtotal)} VNĐ
+        `;
+    } else {
+        document.getElementById("subtotal").innerText = `${formatPrice(subtotal)} VNĐ`;
+    }
+
     document.getElementById("vatAmount").innerText = `${formatPrice(vatAmount)} VNĐ (${vatRate}%)`;
     document.getElementById("total").innerText = `${formatPrice(total)} VNĐ`;
 
-    // Giữ nguyên cách hiển thị discount nếu đã có
     if (!document.getElementById("discount").innerText.includes('%')) {
         document.getElementById("discount").innerText = `${formatPrice(discountAmount)} VNĐ`;
     }
 }
 
-
 function displayToast(message, type) {
     const main = document.getElementById("toast-list");
     if (main) {
         const toastElement = document.createElement("div");
-
         const title = "Notification!";
-
-        const icon = "fas fa-check-circle";
+        const icon = type === "success" ? "fas fa-check-circle" : "fas fa-exclamation-circle";
 
         toastElement.classList.add("toast", `toast--${type}`);
         toastElement.style.animation = `slideInLeft ease .3s forwards`;
@@ -714,7 +653,6 @@ function displayToast(message, type) {
             main.removeChild(toastElement);
         }, 1500);
 
-        // Remove toast when clicked
         toastElement.onclick = function (e) {
             main.removeChild(toastElement);
         };
@@ -735,15 +673,14 @@ function displayToast(message, type) {
     }
 }
 
-var isCouponApplied = false;
-
 function checkCoupon() {
     if (localStorage.getItem("user") == null) {
+        displayToast("Cần đăng nhập để sử dụng mã giảm giá!", "error");
         return;
     }
     var code = document.getElementById('coupon-code');
     if (code.value === "") {
-        alert("Vui lòng nhập mã giảm giá!");
+        displayToast("Vui lòng nhập mã giảm giá!", "error");
         return;
     }
 
@@ -753,7 +690,7 @@ function checkCoupon() {
     };
 
     var requestOptions = {
-        method: 'POST', // Change to 'POST' or another method that supports body
+        method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
@@ -765,51 +702,38 @@ function checkCoupon() {
         .then(response => response.text())
         .then(result => {
             if (result === '0.0') {
-                // Handle invalid coupon
                 displayToast("Mã giảm giá không hợp lệ!", "error");
                 check = true;
                 rate = result;
                 codeCoupon = '';
-                resetCoupon(); // Đặt lại các giá trị khi mã không hợp lệ
+                resetCoupon();
             } else if (result === '-1.0') {
-                // Handle inactive coupon
                 check = true;
                 rate = 0;
                 codeCoupon = '';
                 displayToast("Mã giảm giá đã ngưng hoạt động!", "error");
-                resetCoupon(); // Đặt lại các giá trị khi mã không hợp lệ
+                resetCoupon();
             } else {
-
                 if (isCouponApplied) {
                     displayToast("Mã giảm giá đã được áp dụng!", "info");
                 } else {
-                    // Handle successful coupon application
                     displayToast("Áp dụng mã giảm giá thành công!", "success");
-                    var discountPercentage = parseFloat(result);
-                    applyDiscount(discountPercentage);
-                    if (code.value === "LPMARKETING") {
-                        applyDiscountDefaultPrice(discountPercentage);
+                    rate = parseFloat(result);
+                    if (result == 200) {
+                        isDefaultPriceApplied = true;
+                        applyDefaultPrice();
                     } else {
-                        applyDiscount(discountPercentage);
+                        isDefaultPriceApplied = false;
+                        applyDiscount(rate);
                     }
-                    rate = result;
                     isCouponApplied = true;
                     check = true;
                     codeCoupon = code.value;
+                    onVatChange(); // Add this at the end
                 }
             }
         })
         .catch(error => console.log('error', error));
-}
-
-function resetCoupon() {
-    isCouponApplied = false;
-    // Reset UI elements as needed
-    document.getElementById('total').innerText = ""; // Reset total amount
-    document.getElementById('discount').innerText = "0.0%"; // Reset discount display
-    // Additional reset steps as needed
-    var totalElement = document.getElementById('total');
-    totalElement.innerText = document.getElementById('subtotal').innerText;
 }
 
 document.addEventListener("click", function (e) {
@@ -826,3 +750,5 @@ document.addEventListener("click", function (e) {
         removeProduct(row);
     }
 });
+
+connect();

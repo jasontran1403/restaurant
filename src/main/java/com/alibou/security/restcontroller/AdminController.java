@@ -48,7 +48,7 @@ public class AdminController {
     
     @PostMapping("/create")
     public ResponseEntity<Food> post(@RequestBody AddFoodRequest request) {
-        return ResponseEntity.ok(foodService.addNewFood(request));
+        return ResponseEntity.ok(foodService.addNewFood(request, "Staff"));
     }
     @PutMapping("/update")
     public ResponseEntity<Food> update(@RequestBody UpdateFoodRequest request) {

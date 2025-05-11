@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="assets/images/favicon/favicon.png" rel="icon">
+    <title>Admin</title>
+    <!-- plugins:css -->
+    <link rel="stylesheet" th:href="@{/assets/admin/vendors/feather/feather.css}">
+    <link rel="stylesheet" th:href="@{/assets/admin/vendors/ti-icons/css/themify-icons.css}">
+    <link rel="stylesheet" th:href="@{/assets/admin/vendors/css/vendor.bundle.base.css}">
+    <!-- endinject -->
+    <!-- Plugin css for this page -->
+    <link rel="stylesheet" th:href="@{/assets/admin/vendors/datatables.net-bs4/dataTables.bootstrap4.css}">
+    <link rel="stylesheet" th:href="@{/assets/admin/vendors/ti-icons/css/themify-icons.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/assets/admin/js/select.dataTables.min.css}">
+    <!-- End plugin css for this page -->
+    <!-- inject:css -->
+    <link rel="stylesheet" th:href="@{/assets/admin/css/vertical-layout-light/style.css}">
+    <!-- endinject -->
+    <link rel="shortcut icon" th:href="@{/assets/images/logo/logo-xl.png}" />
+    <link rel="stylesheet" th:href="@{/assets/admin/css/toastStyle.css}" />
+</head>
+
+<body>
+<div class="container-scroller">
+    <div id="toast" class="hidden">
+        <div id="toast-list" class="toast-list"></div>
+    </div>
+    <!-- partial:../../partials/_navbar.html -->
+    <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+        <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+            <a class="navbar-brand brand-logo mr-5" href="/admin/dashboard"><img th:src="@{/assets/images/logo/logo-dark.png}" class="mr-2" alt="logo"/></a>
+            <a class="navbar-brand brand-logo-mini" href="/admin/dashboard"><img th:src="@{/assets/images/logo/logo-dark.png}" alt="logo"/></a>
+        </div>
+        <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
+            <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+                <span class="icon-menu"></span>
+            </button>
+            <ul class="navbar-nav navbar-nav-right">
+                <li class="nav-item dropdown">
+                    <a class="nav-link count-indicator dropdown-toggle" id="notificationDropdown" href="#" data-toggle="dropdown">
+                        <i class="icon-bell mx-0"></i>
+                        <span class="count"></span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list" aria-labelledby="notificationDropdown">
+                        <p class="mb-0 font-weight-normal float-left dropdown-header">Notifications</p>
+                        <a class="dropdown-item preview-item">
+                            <div class="preview-thumbnail">
+                                <div class="preview-icon bg-success">
+                                    <i class="ti-info-alt mx-0"></i>
+                                </div>
+                            </div>
+                            <div class="preview-item-content">
+                                <h6 class="preview-subject font-weight-normal">Application Error</h6>
+                                <p class="font-weight-light small-text mb-0 text-muted">
+                                    Just now
+                                </p>
+                            </div>
+                        </a>
+                        <a class="dropdown-item preview-item">
+                            <div class="preview-thumbnail">
+                                <div class="preview-icon bg-warning">
+                                    <i class="ti-settings mx-0"></i>
+                                </div>
+                            </div>
+                            <div class="preview-item-content">
+                                <h6 class="preview-subject font-weight-normal">Settings</h6>
+                                <p class="font-weight-light small-text mb-0 text-muted">
+                                    Private message
+                                </p>
+                            </div>
+                        </a>
+                        <a class="dropdown-item preview-item">
+                            <div class="preview-thumbnail">
+                                <div class="preview-icon bg-info">
+                                    <i class="ti-user mx-0"></i>
+                                </div>
+                            </div>
+                            <div class="preview-item-content">
+                                <h6 class="preview-subject font-weight-normal">New user registration</h6>
+                                <p class="font-weight-light small-text mb-0 text-muted">
+                                    2 days ago
+                                </p>
+                            </div>
+                        </a>
+                    </div>
+                </li>
+                <li class="nav-item nav-profile dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" id="profileDropdown">
+                        <img th:src="@{/assets/admin/images/faces/face28.jpg}" alt="profile"/>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
+                        <a class="dropdown-item">
+                            <i class="ti-settings text-primary"></i>
+                            Settings
+                        </a>
+                        <a class="dropdown-item" href="/logout">
+                            <i class="ti-power-off text-primary"></i>
+                            Logout
+                        </a>
+                    </div>
+                </li>
+            </ul>
+            <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas">
+                <span class="icon-menu"></span>
+            </button>
+        </div>
+    </nav>
+
+
+    <!-- partial -->
+    <div class="container-fluid page-body-wrapper">
+        <!-- partial:../../partials/_settings-panel.html -->
+
+        <!-- partial -->
+        <!-- partial:../../partials/_sidebar.html -->
+        <nav class="sidebar sidebar-offcanvas" id="sidebar">
+            <ul class="nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin-customer/dashboard">
+                        <i class="icon-grid menu-icon"></i>
+                        <span class="menu-title">Tổng quan</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin-customer/orders">
+                        <i class="icon-grid menu-icon"></i>
+                        <span class="menu-title">Quản lý đơn đặt hàng</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin-customer/foods">
+                        <i class="icon-grid menu-icon"></i>
+                        <span class="menu-title">Quản lý món ăn</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin-customer/cates">
+                        <i class="icon-grid menu-icon"></i>
+                        <span class="menu-title">Quản lý danh mục</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin-customer/coupons">
+                        <i class="icon-grid menu-icon"></i>
+                        <span class="menu-title">Quản lý mã giảm</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin-customer/users">
+                        <i class="icon-grid menu-icon"></i>
+                        <span class="menu-title">Quản lý agency</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin-customer/commissions">
+                        <i class="icon-grid menu-icon"></i>
+                        <span class="menu-title">Danh sách commission</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admin-customer/stocks">
+                        <i class="icon-grid menu-icon"></i>
+                        <span class="menu-title">Quản lý kho</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+
+        <!-- partial -->
+        <div class="main-panel">
+            <div class="content-wrapper">
+                <div class="row">
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalCenter">
+                        Thêm danh mục mới
+                    </button>
+                    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h4 class="card-title">Thêm món ăn</h4>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <form class="forms-sample" th:action="@{/admin/add-cate-customer}" enctype="multipart/form-data" method="POST" th:object="${cate}">
+                                        <div class="form-group">
+                                            <label for="exampleInputName1">Tên danh mục </label>
+                                            <input type="text" class="form-control" id="exampleInputName1" placeholder="Tên danh mục " th:field="*{cateName}" required/>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="exampleSelectGender">Trạng thái </label>
+                                            <select class="form-control" id="exampleSelectGender" th:field="*{status}" required>
+                                                <option value="0">Hiện </option>
+                                                <option value="1">Ẩn </option>
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary mr-2">Thêm </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-12 grid-margin stretch-card">
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title">Danh sách danh mục </h4>
+                                <div class="form-group">
+                                    <input type="text" id="searchInput" class="form-control" placeholder="Tìm kiếm bằng tên danh mục...">
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                        <tr>
+                                            <th>Tên danh mục </th>
+                                            <th>Chức năng</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr th:each="cate : ${catePage.content}">
+                                            <td><p th:text="${cate.cateName}"></p></td>
+                                            <td>
+                                                <div class="row-container"><p th:class="${cate.status == false ? 'btn btn-danger' : 'btn btn-success'}"><a th:href="@{/admin/toggle-cate-customer/{cateId}(cateId=${cate.id})}" style="color: white;text-decoration: none;" th:text="${cate.status == false ? 'Ẩn' : 'Hiện'}"></a></p>
+                                                    <p id="update" class="btn btn-info" data-toggle="modal" data-target="#exampleModalCenter2"
+                                                       th:attr="data-cate-id=${cate.id}, data-cate-name=${cate.cateName}, data-cate-status=${cate.status}"
+                                                       onclick="editCate(this.getAttribute('data-cate-id'),
+                           	this.getAttribute('data-cate-name'),
+                           	this.getAttribute('data-cate-status'));"
+                                                    >
+                                                        Cập nhật</p></div></td>
+                                        </tr>
+                                        </tbody>
+
+                                    </table>
+
+                                    <div th:if="${catePage != null and catePage.totalPages > 1}" style="display: flex; justify-content: space-around">
+                                        <ul class="pagination">
+                                            <li th:class="${catePage.first ? 'page-item disabled' : 'page-item'}">
+                                                <a th:href="@{/admin-customer/cates(page=${catePage.number - 1})}" class="page-link">Previous</a>
+                                            </li>
+                                            <li th:class="${catePage.last ? 'page-item disabled' : 'page-item'}">
+                                                <a th:href="@{/admin-customer/cates(page=${catePage.number + 1})}" class="page-link">Next</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="exampleModalCenter2" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLongTitle">Cập nhật danh mục</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form class="forms-sample" th:action="@{/admin/edit-cate-customer}" enctype="multipart/form-data" method="POST">
+                                    <div class="form-group" style="display: none;">
+                                        <label for="id">ID</label>
+                                        <input type="text" class="form-control" name="id" id="id" readonly required/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="exampleInputName1">Tên danh mục</label>
+                                        <input type="text" class="form-control" name="cateName" id="cateName" required/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="exampleSelectGender">Hành động</label>
+                                        <select class="form-control" id="status" name="status" required>
+                                            <option value="0">Hiện </option>
+                                            <option value="1">Ẩn </option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary mr-2">Cập nhật</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- main-panel ends -->
+    </div>
+    <!-- page-body-wrapper ends -->
+</div>
+<!-- container-scroller -->
+<!-- plugins:js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+<script th:src="@{/assets/admin/vendors/js/vendor.bundle.base.js}"></script>
+<!-- endinject -->
+<!-- Plugin js for this page -->
+<script th:src="@{/assets/admin/vendors/chart.js/Chart.min.js}"></script>
+<script th:src="@{/assets/admin/vendors/datatables.net/jquery.dataTables.js}"></script>
+<script th:src="@{/assets/admin/vendors/datatables.net-bs4/dataTables.bootstrap4.js}"></script>
+<script th:src="@{/assets/admin/js/dataTables.select.min.js}"></script>
+
+<!-- End plugin js for this page -->
+<!-- inject:js -->
+<script>
+    $(document).ready(function() {
+        $('#searchInput').on('keyup', function() {
+            var searchText = $(this).val().toLowerCase();
+            $('table tbody tr').each(function() {
+                var foodName = $(this).find('td:nth-child(2)').text().toLowerCase();
+                if (foodName.indexOf(searchText) === -1) {
+                    $(this).hide();
+                } else {
+                    $(this).show();
+                }
+            });
+        });
+    });
+</script>
+<script th:src="@{/assets/admin/js/off-canvas.js}"></script>
+<script th:src="@{/assets/admin/js/hoverable-collapse.js}"></script>
+<script th:src="@{/assets/admin/js/template.js}"></script>
+<script th:src="@{/assets/admin/js/settings.js}"></script>
+<script th:src="@{/assets/admin/js/todolist.js}"></script>
+<!-- endinject -->
+<!-- Custom js for this page-->
+<script th:src="@{/assets/admin/js/dashboard.js}"></script>
+<script th:src="@{/assets/admin/js/Chart.roundedBarCharts.js}"></script>
+<script th:src="@{/assets/admin/js/script-admin-side.js}"></script>
+<!-- End custom js for this page-->
+<script>
+    // Hàm để điền dữ liệu vào modal cập nhật
+    function editCate(id, name, status) {
+        document.getElementById('id').value = id;
+        document.getElementById('cateName').value = name;
+        document.getElementById('status').value = status;
+    }
+
+    // Xử lý tìm kiếm
+    $(document).ready(function() {
+        $('#searchInput').on('keyup', function() {
+            var searchText = $(this).val().toLowerCase();
+            $('table tbody tr').each(function() {
+                var cateName = $(this).find('td:first').text().toLowerCase();
+                if (cateName.indexOf(searchText) === -1) {
+                    $(this).hide();
+                } else {
+                    $(this).show();
+                }
+            });
+        });
+    });
+</script>
+</body>
+
+</html>

@@ -18,6 +18,7 @@ public class OrderDetailDTO {
     private double actual;
     private double vat;
     private String time;
+    private String userRole;
     private int status;
     private double commission;
 }

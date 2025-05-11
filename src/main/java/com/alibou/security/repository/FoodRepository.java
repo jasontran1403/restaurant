@@ -1,5 +1,6 @@
 package com.alibou.security.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -24,8 +25,18 @@ public interface FoodRepository extends JpaRepository<Food, Long>{
 	           nativeQuery = false)
 	Page<Food> findPaginatedFoods(Pageable pageable, String query);
 	
-	@Query(value = "SELECT f FROM Food f WHERE f.status = 0",
+	@Query(value = "SELECT f FROM Food f WHERE f.status = 0  and f.type = :type",
 	           countQuery = "SELECT f FROM Food f WHERE f.status = 0",
 	           nativeQuery = false)
-	Page<Food> findAllActive(Pageable pageable);
+	Page<Food> findAllActive(String type, Pageable pageable);
+
+	@Query(value = "SELECT f FROM Food f WHERE f.type = :type",
+			countQuery = "SELECT f FROM Food f WHERE f.status = 0",
+			nativeQuery = false)
+	Page<Food> findAllByType(String type, Pageable pageable);
+
+	@Query(value = "SELECT f FROM Food f WHERE f.type = :type",
+			countQuery = "SELECT f FROM Food f WHERE f.status = 0",
+			nativeQuery = false)
+	List<Food> findAllFoodByType(String type);
 }

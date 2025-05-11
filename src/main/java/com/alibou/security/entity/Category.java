@@ -22,4 +22,5 @@ public class Category {
 	private Integer id;
 	private String cateName;
 	private boolean status;
+	private String type;
 }

@@ -121,49 +121,49 @@
       <nav class="sidebar sidebar-offcanvas" id="sidebar">
         <ul class="nav">
           <li class="nav-item">
-            <a class="nav-link" href="/admin-staff/dashboard">
+            <a class="nav-link" href="/admin-customer/dashboard">
               <i class="icon-grid menu-icon"></i>
               <span class="menu-title">Tổng quan</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/admin-staff/orders">
+            <a class="nav-link" href="/admin-customer/orders">
               <i class="icon-grid menu-icon"></i>
               <span class="menu-title">Quản lý đơn đặt hàng</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/admin-staff/foods">
+            <a class="nav-link" href="/admin-customer/foods">
               <i class="icon-grid menu-icon"></i>
               <span class="menu-title">Quản lý món ăn</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/admin-staff/cates">
+            <a class="nav-link" href="/admin-customer/cates">
               <i class="icon-grid menu-icon"></i>
               <span class="menu-title">Quản lý danh mục</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/admin-staff/coupons">
+            <a class="nav-link" href="/admin-customer/coupons">
               <i class="icon-grid menu-icon"></i>
               <span class="menu-title">Quản lý mã giảm</span>
             </a>
           </li>
             <li class="nav-item">
-                <a class="nav-link" href="/admin-staff/users">
+                <a class="nav-link" href="/admin-customer/users">
                     <i class="icon-grid menu-icon"></i>
                     <span class="menu-title">Quản lý agency</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/admin-staff/commissions">
+                <a class="nav-link" href="/admin-customer/commissions">
                     <i class="icon-grid menu-icon"></i>
                     <span class="menu-title">Danh sách commission</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="/admin-staff/stocks">
+                <a class="nav-link" href="/admin-customer/stocks">
                     <i class="icon-grid menu-icon"></i>
                     <span class="menu-title">Quản lý kho</span>
                 </a>
@@ -189,7 +189,7 @@
                               </button>
                           </div>
                           <div class="modal-body" style="overflow-y: auto;">
-                              <form class="forms-sample" th:action="@{/admin/add-food-staff}" enctype="multipart/form-data" method="POST" th:object="${newFood}">
+                              <form class="forms-sample" th:action="@{/admin/add-food-customer}" enctype="multipart/form-data" method="POST" th:object="${newFood}">
 						    <div class="form-group">
 						        <label for="exampleInputName1">Tên món </label>
 						        <input type="text" class="form-control" id="exampleInputName1" placeholder="Tên món " th:field="*{name}" required/>
@@ -267,7 +267,7 @@
                                 </td>
                           <td><p th:text="${#numbers.formatDecimal(food.price, 1, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'"></p></td>
                             <td><p th:text="${#numbers.formatDecimal(food.defaultPrice, 1, 'DEFAULT', 0, 'DEFAULT')} + ' VNĐ'"></p></td>
-                          <td><p th:text="${food.stocks}"></p></td>
+                            <td><p th:text="${food.stocksCustomer}"></p></td>
                           <td>
                               <div class="row-container"><p th:class="${food.status eq 0 ? 'btn btn-danger' : 'btn btn-success'}"><a style="color: white;text-decoration: none;" th:href="@{/admin/toggle-food/{foodId}(foodId=${food.id})}" th:text="${food.status eq 0 ? 'Ẩn' : 'Hiện'}"></a></p>
                                   <p id="update" class="btn btn-info" data-toggle="modal" data-target="#exampleModalCenter2"
@@ -303,10 +303,10 @@
                     <div th:if="${foodPage.totalPages > 1}" style="display: flex; justify-content: space-around">
 					    <ul class="pagination">
 					        <li th:class="${foodPage.first ? 'page-item disabled' : 'page-item'}">
-					            <a th:href="@{/admin-staff/foods(page=${foodPage.number - 1})}" class="page-link">Previous</a>
+					            <a th:href="@{/admin-customer/foods(page=${foodPage.number - 1})}" class="page-link">Previous</a>
 					        </li>
 					        <li th:class="${foodPage.last ? 'page-item disabled' : 'page-item'}">
-					            <a th:href="@{/admin-staff/foods(page=${foodPage.number + 1})}" class="page-link">Next</a>
+					            <a th:href="@{/admin-customer/foods(page=${foodPage.number + 1})}" class="page-link">Next</a>
 					        </li>
 					    </ul>
 					</div>
@@ -330,7 +330,7 @@
                               </button>
                           </div>
                           <div class="modal-body">
-                              <form class="forms-sample" th:action="@{/admin/edit-food-staff}" enctype="multipart/form-data" method="POST">
+                              <form class="forms-sample" th:action="@{/admin/edit-food-customer}" enctype="multipart/form-data" method="POST">
                                   <div class="form-group" style="display: none;">
                                       <label for="id">ID</label>
                                       <input type="text" class="form-control" name="id" id="id" readonly required/>

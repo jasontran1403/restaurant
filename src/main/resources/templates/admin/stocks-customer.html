@@ -154,49 +154,49 @@
     <nav class="sidebar sidebar-offcanvas" id="sidebar">
       <ul class="nav">
         <li class="nav-item">
-          <a class="nav-link" href="/admin-staff/dashboard">
+          <a class="nav-link" href="/admin-customer/dashboard">
             <i class="icon-grid menu-icon"></i>
             <span class="menu-title">Tổng quan</span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/admin-staff/orders">
+          <a class="nav-link" href="/admin-customer/orders">
             <i class="icon-grid menu-icon"></i>
             <span class="menu-title">Quản lý đơn đặt hàng</span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/admin-staff/foods">
+          <a class="nav-link" href="/admin-customer/foods">
             <i class="icon-grid menu-icon"></i>
             <span class="menu-title">Quản lý món ăn</span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/admin-staff/cates">
+          <a class="nav-link" href="/admin-customer/cates">
             <i class="icon-grid menu-icon"></i>
             <span class="menu-title">Quản lý danh mục</span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/admin-staff/coupons">
+          <a class="nav-link" href="/admin-customer/coupons">
             <i class="icon-grid menu-icon"></i>
             <span class="menu-title">Quản lý mã giảm</span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/admin-staff/users">
+          <a class="nav-link" href="/admin-customer/users">
             <i class="icon-grid menu-icon"></i>
             <span class="menu-title">Quản lý agency</span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/admin-staff/commissions">
+          <a class="nav-link" href="/admin-customer/commissions">
             <i class="icon-grid menu-icon"></i>
             <span class="menu-title">Danh sách commission</span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/admin-staff/stocks">
+          <a class="nav-link" href="/admin-customer/stocks">
             <i class="icon-grid menu-icon"></i>
             <span class="menu-title">Quản lý kho</span>
           </a>
@@ -358,7 +358,7 @@
                           </button>
                         </div>
                         <div class="modal-body">
-                          <form class="forms-sample" th:action="@{/admin/edit-stocks-staff}" enctype="multipart/form-data" method="POST" th:object="${editStock}">
+                          <form class="forms-sample" th:action="@{/admin/edit-stocks-customer}" enctype="multipart/form-data" method="POST" th:object="${editStock}">
                             <div class="form-group">
                               <label for="exampleSelectProduct5">Stock History ID</label>
                               <input type="number" class="form-control" min="1" id="exampleSelectProduct5" placeholder="ID" th:field="*{newId}" required readonly />
@@ -398,7 +398,7 @@
                           </button>
                         </div>
                         <div class="modal-body">
-                          <form class="forms-sample" th:action="@{/admin/check-stocks-staff}" enctype="multipart/form-data" method="POST">
+                          <form class="forms-sample" th:action="@{/admin/check-stocks-customer}" enctype="multipart/form-data" method="POST">
                             <div class="form-group">
                               <label for="foodName">Tên sản phẩm</label>
                               <input type="text" class="form-control" id="foodName" name="foodName" readonly />
@@ -418,11 +418,11 @@
                     <ul class="pagination">
                       <!-- Nút First -->
                       <li th:class="${stocksPage.number == 0 ? 'page-item disabled' : 'page-item'}">
-                        <a th:href="@{/admin-staff/stocks(page=0, type=${type})}" class="page-link">First</a>
+                        <a th:href="@{/admin-customer/stocks(page=0, type=${type})}" class="page-link">First</a>
                       </li>
                       <!-- Nút Prev -->
                       <li th:class="${stocksPage.first ? 'page-item disabled' : 'page-item'}">
-                        <a th:href="@{/admin-staff/stocks(page=${stocksPage.number - 1}, type=${type})}" class="page-link">Prev</a>
+                        <a th:href="@{/admin-customer/stocks(page=${stocksPage.number - 1}, type=${type})}" class="page-link">Prev</a>
                       </li>
 
                       <li th:each="i : ${#numbers.sequence(
@@ -430,16 +430,16 @@
                           stocksPage.number + 2 < stocksPage.totalPages ? stocksPage.number + 2 : stocksPage.totalPages - 1
                         )}"
                           th:class="${i == stocksPage.number ? 'page-item active' : 'page-item'}">
-                        <a th:href="@{/admin-staff/stocks(page=${i}, type=${type})}" class="page-link" th:text="${i + 1}"></a>
+                        <a th:href="@{/admin-customer/stocks(page=${i}, type=${type})}" class="page-link" th:text="${i + 1}"></a>
                       </li>
 
                       <!-- Nút Next -->
                       <li th:class="${stocksPage.last ? 'page-item disabled' : 'page-item'}">
-                        <a th:href="@{/admin-staff/stocks(page=${stocksPage.number + 1}, type=${type})}" class="page-link">Next</a>
+                        <a th:href="@{/admin-customer/stocks(page=${stocksPage.number + 1}, type=${type})}" class="page-link">Next</a>
                       </li>
                       <!-- Nút Last -->
                       <li th:class="${stocksPage.number == stocksPage.totalPages - 1 ? 'page-item disabled' : 'page-item'}">
-                        <a th:href="@{/admin-staff/stocks(page=${stocksPage.totalPages - 1}, type=${type})}" class="page-link">Last</a>
+                        <a th:href="@{/admin-customer/stocks(page=${stocksPage.totalPages - 1}, type=${type})}" class="page-link">Last</a>
                       </li>
                     </ul>
                   </div>

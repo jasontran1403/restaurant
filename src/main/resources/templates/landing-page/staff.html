@@ -192,7 +192,7 @@
                   <th>Người nhận</th>
                   <th>SĐT</th>
                   <th>Tổng Tiền</th>
-                  <th>Hoa Hồng</th>
+                  <th th:if="${userRole == 'Staff'}">Hoa Hồng</th>
                   <th>Trạng Thái</th>
                   <th></th>
                 </tr>
@@ -204,7 +204,7 @@
                   <td th:text="${order.name}"></td>
                   <td th:text="${order.phone}"></td>
                   <td th:text="${#numbers.formatDecimal(order.total + (order.vat*order.total/100), 0, 'COMMA', 0, 'POINT')}"></td>
-                  <td th:text="${#numbers.formatDecimal(order.commission, 0, 'COMMA', 0, 'POINT')}"></td>
+                  <td th:if="${userRole == 'Staff'}" th:text="${#numbers.formatDecimal(order.commission, 0, 'COMMA', 0, 'POINT')}"></td>
                   <td>
                     <div class="d-flex justify-content-center">
                       <span th:if="${order.status == 0}" class="badge bg-warning">Đơn mới tạo</span>

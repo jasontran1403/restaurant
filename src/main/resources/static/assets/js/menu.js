@@ -7,7 +7,7 @@ function formatPrice(price) {
   return price.toLocaleString('en-US');
 }
 
-function addToCart(id, name, price, unit, image) {
+function addToCart(id, name, price, defaultPrice, unit, image) {
     // Lấy danh sách sản phẩm từ localStorage
     let cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
 
@@ -23,6 +23,7 @@ function addToCart(id, name, price, unit, image) {
             id: id,
             name: name,
             price: price,
+            default: defaultPrice,
             quantity: 1,
             unit: unit,
             image: image

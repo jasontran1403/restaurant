@@ -2,7 +2,7 @@ const cartList = document.getElementById("cart-items");
 const subtotalElement = document.getElementById("subtotal");
 let total = 0;
 
-function addToCart(id, name, price, unit, quantity, image) {
+function addToCart(id, name, price, defaultPrice, unit, quantity, image) {
     // Lấy danh sách sản phẩm từ localStorage
     let cartItems = JSON.parse(localStorage.getItem("cartItems")) || [];
 
@@ -19,6 +19,7 @@ function addToCart(id, name, price, unit, quantity, image) {
             name: name,
             price: price,
             unit: unit,
+            default: defaultPrice,
             quantity: quantity,
             image: image
         });

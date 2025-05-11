@@ -38,6 +38,7 @@ public class Food {
 	private int stocks;
 	private int stocksCustomer;
 	private double defaultPrice;
+	private String type;
     private List<String> categories;
     @OneToMany(mappedBy = "food")
     @JsonIgnore
